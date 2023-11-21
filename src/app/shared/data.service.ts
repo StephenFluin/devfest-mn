@@ -106,8 +106,13 @@ export class DataService {
             floors = {
                 '3rd': 'Lumber Exchange',
             };
+        } else if (this.yearService.year == '2023'){
+            rooms = ['110', '150',];
+            floors = {
+                '3rd': 'HSCS',
+            };
         } else {
-            rooms = ['235', '238', '244', '321', '334', '446', '458'];
+            rooms = ['110', '150', '244', '321', '334', '446', '458'];
             floors = {
                 'Large Auditorium': 'Schultze',
                 'Small Auditorium': 'Schultze',
