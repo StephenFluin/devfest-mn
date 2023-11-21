@@ -618,17 +618,27 @@ button.button.warn {
     vertical-align: top;
 }
 
+/* Colors choesn by GhapGPT. || https://chat.openai.com/share/17b6363e-9a11-4aaa-9b2c-fbf1e8c20e59
+.... bard.google.com was aweful || https://g.co/bard/share/4419a089dd04
+ */
 .schedule .Android {
-    background-color: rgba(123, 192, 67, 1);
+    /* background-color: rgba(123, 192, 67, 1); */
+    background-color: #a4c639 ;
 }
 .schedule .Web {
-    background-color: #ffbf00;
+    /* background-color: #ffbf00; */
+    background-color: #3498db ;
 }
 .schedule .Design {
-    background-color: #f37736;
+    background-color: #e74c3c ;
 }
 .schedule .Cloud {
-    background-color: #ee4035;
+    /* background-color: #ee4035; */
+    background-color: #3498db ;
+}
+.schedule .AI {
+    /* background-color: #ee35ee; */
+    background-color: #ff7675 ;
 }
 .schedule .IoT {
     background-color: #6380ea;
@@ -640,10 +650,8 @@ button.button.warn {
     background-color: #656f78;
 }
 .schedule .Keynote {
-    background-color: #19a9e5;
-}
-.schedule .Keynote {
-    background-color: #19a9e5;
+    /* background-color: #19a9e5; */
+    background-color: #f39c12 ;
 }
 
 .schedule .lunch div {

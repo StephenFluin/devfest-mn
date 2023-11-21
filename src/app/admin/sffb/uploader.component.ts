@@ -123,4 +123,19 @@ export class UploaderComponent implements OnChanges {
                 console.error('File reference was not deleted successfully from the database', err);
             });
     }
+
+    select(image: Image) {
+        console.log('update speaker image, set Speaker ImageUrl or something....')
+        console.log(`${this.folder}`)
+
+        const storageRef = this.storage.ref();
+        const path = `/${this.folder}/imageUrl`;
+        const iRef = storageRef.child(path);
+
+        console.log('Attempting to set image', path, image.downloadURL.valueOf());
+        // cache files for up to a week
+        // iRef.putString(image.downloadURL.valueOf() )
+        // iRef.put(image.downloadURL.valueOf())
+     
+    }
 }

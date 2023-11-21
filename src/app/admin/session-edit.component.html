@@ -31,6 +31,8 @@
             <mat-option
                 *ngFor="
                     let room of [
+                        '110',
+                        '150',
                         'Large Auditorium',
                         'Small Auditorium',
                         '235',
@@ -47,6 +49,7 @@
                 {{ room }}
             </mat-option>
         </mat-autocomplete>
+        <label>Track</label>
         <mat-form-field
             ><input
                 matInput
@@ -62,6 +65,7 @@
                         'all',
                         'Web',
                         'Android',
+                        'AI',
                         'Design',
                         'Cloud',
                         'IoT',
@@ -73,6 +77,7 @@
                 >{{ track }}</mat-option
             >
         </mat-autocomplete>
+        <label>Start Time</label><em>Enter time in UTC format ... i.e. 2023-12-02T12:00-06:00</em>
         <mat-form-field
             ><input matInput [(ngModel)]="session.startTime" placeholder="Start Time"
         /></mat-form-field>
@@ -113,7 +118,7 @@
         <em>Add speakers from the list below</em>
         <speaker-selector
             [session]="session"
-            style="overflow: scroll; max-height: 300px; display: block"
+            style="overflow: scroll; max-height: 300px; display: flex; flex-flow: wrap row;"
         ></speaker-selector>
 
         <button type="submit" mat-raised-button>
