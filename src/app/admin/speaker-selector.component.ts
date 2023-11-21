@@ -8,7 +8,7 @@ import { NgIf, NgFor, AsyncPipe } from '@angular/common';
 @Component({
     selector: 'speaker-selector',
     template: `
-    <div *ngIf="session.$key">
+    <div *ngIf="session.$key" style="display:flex; flex-wrap:wrap">
         <div *ngFor="let speakerSnapshot of speakers | async" style="border:1px solid #CCC;padding:16px;">
             <div>
                 {{speakerSnapshot.payload.val().name}}
