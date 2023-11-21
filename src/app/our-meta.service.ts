@@ -1,10 +1,11 @@
 import { Title, Meta } from '@angular/platform-browser';
 import { environment } from '../environments/environment';
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 
 @Injectable({ providedIn: 'root' })
 export class OurMeta {
-    constructor(public title: Title, public meta: Meta) {}
+    constructor(public title: Title, public meta: Meta, @Inject(DOCUMENT) private doc) {}
 
     setTitle(title: string) {
         this.title.setTitle(`${title} | ${environment.siteName}`);
@@ -14,8 +15,8 @@ export class OurMeta {
     }
 
     clearCanonical() {
-        const existing = document.querySelector('link[rel="canonical"]');
-        const head = document.querySelector('head');
+        const existing = this.doc.querySelector('link[rel="canonical"]');
+        const head = this.doc.querySelector('head');
 
         if (existing) {
             head.removeChild(existing);
@@ -24,9 +25,9 @@ export class OurMeta {
     setCanonical(path: string) {
         this.clearCanonical();
 
-        const head = document.querySelector('head');
+        const head = this.doc.querySelector('head');
 
-        let canonical = document.createElement('link');
+        let canonical = this.doc.createElement('link');
         canonical.rel = 'canonical';
         canonical.href = `/${path}`;
 

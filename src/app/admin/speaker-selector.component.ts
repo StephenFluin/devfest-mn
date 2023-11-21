@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, Output, OnChanges } from '@angular/core
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 
 import { YearService } from '../year.service';
+import { NgIf, NgFor, AsyncPipe } from '@angular/common';
 
 @Component({
     selector: 'speaker-selector',
@@ -16,6 +17,12 @@ import { YearService } from '../year.service';
         </div>
     </div>
     <div *ngIf="!session.$key">Save your new session before adding speakers</div>`,
+    standalone: true,
+    imports: [
+        NgIf,
+        NgFor,
+        AsyncPipe,
+    ],
 })
 export class SpeakerSelectorComponent implements OnChanges {
     @Input() session;

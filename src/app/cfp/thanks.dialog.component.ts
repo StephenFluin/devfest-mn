@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
     template: `
@@ -10,6 +11,8 @@ import { MatDialogRef } from '@angular/material/dialog';
     <button mat-raised-button color="primary" style="margin:16px auto;" (click)="closeDialog()">Close</button>
     </div>
     `,
+    standalone: true,
+    imports: [MatButtonModule],
 })
 export class ThanksDialogComponent {
     constructor(public dialogRef: MatDialogRef<ThanksDialogComponent>) { }

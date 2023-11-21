@@ -4,89 +4,96 @@
     "newProjectRoot": "projects",
     "projects": {
         "devfestmn": {
+            "projectType": "application",
+            "schematics": {
+                "@schematics/angular:component": {
+                    "style": "scss"
+                }
+            },
             "root": "",
             "sourceRoot": "src",
-            "projectType": "application",
+            "prefix": "app",
             "architect": {
                 "build": {
-                    "builder": "@angular-devkit/build-angular:browser",
+                    "builder": "@angular-devkit/build-angular:application",
                     "options": {
                         "outputPath": "dist",
                         "index": "src/index.html",
-                        "main": "src/main.ts",
-                        "tsConfig": "tsconfig.json",
-                        "polyfills": "src/polyfills.ts",
-                        "assets": ["src/a", "src/favicon.ico", "src/webfont.js"],
-                        "styles": ["src/styles.css"],
+                        "browser": "src/main.ts",
+                        "polyfills": ["zone.js"],
+                        "tsConfig": "tsconfig.app.json",
+                        "inlineStyleLanguage": "scss",
+                        "assets": ["src/favicon.ico", "src/a", "src/webfont.js"],
+                        "styles": ["src/styles.scss"],
                         "scripts": [],
-                        "vendorChunk": true,
-                        "extractLicenses": false,
-                        "buildOptimizer": false,
-                        "sourceMap": true,
-                        "optimization": false,
+                        "server": "src/main.server.ts",
+                        "prerender": false,
+                        "ssr": {
+                            "entry": "server.ts"
+                        },
                         "namedChunks": true
                     },
                     "configurations": {
                         "production": {
-                            "optimization": true,
-                            "outputHashing": "all",
-                            "sourceMap": true,
-                            "extractLicenses": true,
-                            "vendorChunk": false,
-                            "buildOptimizer": true,
-                            "namedChunks": true,
                             "fileReplacements": [
                                 {
                                     "replace": "src/environments/environment.ts",
                                     "with": "src/environments/environment.prod.ts"
                                 }
-                            ]
+                            ],
+                            "budgets": [
+                                {
+                                    "type": "initial",
+                                    "maximumWarning": "500kb",
+                                    "maximumError": "1500kb"
+                                },
+                                {
+                                    "type": "anyComponentStyle",
+                                    "maximumWarning": "2kb",
+                                    "maximumError": "4kb"
+                                }
+                            ],
+                            "outputHashing": "all",
+                            "namedChunks": true
                         },
                         "development": {
-                            "buildOptimizer": false,
                             "optimization": false,
-                            "vendorChunk": true,
                             "extractLicenses": false,
-                            "sourceMap": true,
-                            "namedChunks": true,
-                            "outputHashing": "none"
+                            "sourceMap": true
                         }
                     },
                     "defaultConfiguration": "production"
                 },
                 "serve": {
                     "builder": "@angular-devkit/build-angular:dev-server",
-                    "options": {
-                      "buildTarget": "devfestmn:build"
-                    },
                     "configurations": {
                         "production": {
-                          "buildTarget": "devfestmn:build:production"
+                            "buildTarget": "devfestmn:build:production"
+                        },
+                        "development": {
+                            "buildTarget": "devfestmn:build:development"
                         }
-                    }
+                    },
+                    "defaultConfiguration": "development"
                 },
                 "extract-i18n": {
                     "builder": "@angular-devkit/build-angular:extract-i18n",
                     "options": {
-                      "buildTarget": "devfestmn:build"
+                        "buildTarget": "devfestmn:build"
+                    }
+                },
+                "test": {
+                    "builder": "@angular-devkit/build-angular:karma",
+                    "options": {
+                        "polyfills": ["zone.js", "zone.js/testing"],
+                        "tsConfig": "tsconfig.spec.json",
+                        "inlineStyleLanguage": "scss",
+                        "assets": ["src/favicon.ico", "src/a"],
+                        "styles": ["src/styles.scss"],
+                        "scripts": []
                     }
                 }
             }
-        }
-    },
-    "schematics": {
-        "@schematics/angular:class": {
-            "spec": false
-        },
-        "@schematics/angular:component": {
-            "spec": true,
-            "inlineStyle": false,
-            "inlineTemplate": false,
-            "prefix": "app",
-            "styleext": "css"
-        },
-        "@schematics/angular:directive": {
-            "prefix": "app"
         }
     },
     "cli": {

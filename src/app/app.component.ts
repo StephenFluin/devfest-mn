@@ -1,12 +1,18 @@
 import { Component } from '@angular/core';
-import { Router, NavigationStart, NavigationEnd } from '@angular/router';
+import { Router, NavigationStart, NavigationEnd, RouterLink, RouterOutlet } from '@angular/router';
 import { trigger, transition, group, query, style, animate } from '@angular/animations';
 import { environment } from '../environments/environment';
 
 import { filter } from 'rxjs/operators';
 import { OurMeta } from './our-meta.service';
+import { NgIf } from '@angular/common';
+import { ADirective } from './a.directive';
 
-declare var ga: any;
+declare global {
+    interface Window {
+        ga: any;
+    }
+}
 
 @Component({
     selector: 'app-root',
@@ -59,6 +65,8 @@ declare var ga: any;
             ]),
         ]),
     ],
+    standalone: true,
+    imports: [ADirective, RouterLink, NgIf, RouterOutlet],
 })
 export class AppComponent {
     environment = environment;
@@ -78,9 +86,10 @@ export class AppComponent {
 
                 meta.clearCanonical();
 
-                window.scrollTo(0, 0);
-
-                ga('send', 'pageview', n.urlAfterRedirects);
+                if (typeof window !== 'undefined') {
+                    window.scrollTo(0, 0);
+                    window.ga('send', 'pageview', n.urlAfterRedirects);
+                }
             });
         router.events
             .pipe(filter((e) => e instanceof NavigationStart))

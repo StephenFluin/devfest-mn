@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Output, Input } from '@angular/core';
+import { NgFor, NgIf } from '@angular/common';
 
-@Component({ 
+@Component({
     selector: 'star-bar',
     template: `
     <span *ngFor="let val of options" (click)="select(val)">
@@ -18,6 +19,8 @@ import { Component, EventEmitter, Output, Input } from '@angular/core';
     </span>
     
 `,
+    standalone: true,
+    imports: [NgFor, NgIf],
 })
 export class StarBarComponent {
     @Input() selected = 0;

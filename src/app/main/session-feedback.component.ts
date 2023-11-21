@@ -5,6 +5,8 @@ import { switchMap, map } from 'rxjs/operators';
 import { DataService } from '../shared/data.service';
 import { OurMeta } from '../our-meta.service';
 import { YearService } from '../year.service';
+import { AsyncPipe } from '@angular/common';
+import { UserFeedbackComponent } from './user-feedback.component';
 
 @Component({
     template: `
@@ -13,6 +15,8 @@ import { YearService } from '../year.service';
             <user-feedback [session]="session | async"></user-feedback>
         </section>
     `,
+    standalone: true,
+    imports: [UserFeedbackComponent, AsyncPipe],
 })
 export class SessionFeedbackComponent {
     session;

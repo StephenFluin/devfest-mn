@@ -16,6 +16,6 @@ export const environment = {
         messagingSenderId: '27347020178',
     },
     showRegister: 'https://www.eventbrite.com/e/68810735763?aff=devfestmnwebsite',
-    showSchedule: false,
+    showSchedule: true,
     showSpeakers: true,
 };

@@ -7,6 +7,8 @@ import { Observable, combineLatest } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { YearService } from '../year.service';
 import { AuthService } from '../realtime-data/auth.service';
+import { NgIf, NgFor, AsyncPipe } from '@angular/common';
+import { AdminNavComponent } from './admin-nav.component';
 
 @Component({
     template: `
@@ -43,6 +45,13 @@ import { AuthService } from '../realtime-data/auth.service';
     </ol>
 </div>
     `,
+    standalone: true,
+    imports: [
+        AdminNavComponent,
+        NgIf,
+        NgFor,
+        AsyncPipe,
+    ],
 })
 export class ReportsComponent {
     feedback: Observable<any>;

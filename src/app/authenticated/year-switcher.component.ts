@@ -1,9 +1,12 @@
 import { Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterOutlet } from '@angular/router';
 import { YearService } from '../year.service';
 
 @Component({
+    selector: 'app-year-switcher',
     template: '<router-outlet>',
+    standalone: true,
+    imports: [RouterOutlet],
 })
 export class YearSwitcherComponent {
     constructor(route: ActivatedRoute, yearService: YearService) {

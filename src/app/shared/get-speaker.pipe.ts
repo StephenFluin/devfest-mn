@@ -9,7 +9,10 @@ import { YearService } from '../year.service';
  * example template expression:
  * {{ (community | getSpeaker | async)?.['name'] }}
  */
-@Pipe({ name: 'getSpeaker' })
+@Pipe({
+    name: 'getSpeaker',
+    standalone: true
+})
 export class GetSpeakerPipe implements PipeTransform {
     constructor(private ds: DataService, private yearService: YearService) {}
 

@@ -4,7 +4,6 @@ import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { YearService } from '../year.service';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import 'firebase/compat/firestore';
 import { combineLatest, EMPTY as observableEmpty, Observable, of as observableOf } from 'rxjs';
 import { map, shareReplay, switchMap } from 'rxjs/operators';
 import { Feedback } from '../shared/data.service';
@@ -29,7 +28,7 @@ export class AuthService {
         yearService: YearService
     ) {
         this.uid = this.state.pipe(
-            map(authState => {
+            map((authState) => {
                 if (authState) {
                     return authState.uid;
                 } else {
@@ -38,7 +37,7 @@ export class AuthService {
             })
         );
         this.name = this.state.pipe(
-            map(authState => {
+            map((authState) => {
                 if (authState) {
                     return authState.displayName || authState.providerData[0].displayName;
                 } else {
@@ -48,18 +47,22 @@ export class AuthService {
         );
         /** Used to filter the agenda of a user on the schedule */
         this.agenda = this.state.pipe(
-            switchMap(authState => {
+            switchMap((authState) => {
                 if (authState && authState.uid) {
                     let year = yearService.year;
-                    return this.db.list<any>(`devfest${year}/agendas/${authState.uid}`).snapshotChanges().pipe(
-                        map(actions => actions.map(a => {
-                            const value = a.payload.val();
-                            const key = a.payload.key;
-                            console.log('payload includes', a.payload);
-                            return { key: key, ...value };
-                          })
-                    )
-                    );
+                    return this.db
+                        .list<any>(`devfest${year}/agendas/${authState.uid}`)
+                        .snapshotChanges()
+                        .pipe(
+                            map((actions) =>
+                                actions.map((a) => {
+                                    const value = a.payload.val();
+                                    const key = a.payload.key;
+                                    console.log('payload includes', a.payload);
+                                    return { key: key, ...value };
+                                })
+                            )
+                        );
                 } else {
                     return observableEmpty;
                 }
@@ -68,20 +71,20 @@ export class AuthService {
         );
 
         this.isAdmin = this.state.pipe(
-            switchMap(authState => {
+            switchMap((authState) => {
                 if (!authState) {
                     return observableOf(false);
                 } else {
                     return this.db.object('/admin/' + authState.uid).valueChanges();
                 }
             }),
-            map(value => !!value),
+            map((value) => !!value),
             localstorageCache('isAdmin')
         );
 
         this.isVolunteer = this.state
             .pipe(
-                switchMap(authState => {
+                switchMap((authState) => {
                     if (!authState) {
                         return observableOf(false);
                     } else {
@@ -91,7 +94,7 @@ export class AuthService {
                     }
                 })
             )
-            .pipe(map(volunteerObject => volunteerObject && volunteerObject['$value'] === true));
+            .pipe(map((volunteerObject) => volunteerObject && volunteerObject['$value'] === true));
 
         this.isAdminOrVolunteer = combineLatest(this.isAdmin, this.isVolunteer, (x, y) => x || y);
     }

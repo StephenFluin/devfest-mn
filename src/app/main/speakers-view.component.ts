@@ -6,13 +6,17 @@ import { DataService } from '../shared/data.service';
 import { switchMap, map } from 'rxjs/operators';
 
 import { YearService } from '../year.service';
+import { AsyncPipe } from '@angular/common';
+import { SpeakerFullComponent } from './speaker-full.component';
 
 @Component({
     template: `
     <section>
             <speaker-full [speaker]="speaker | async" [year]="yearService.year"></speaker-full>
     </section>
-    `
+    `,
+    standalone: true,
+    imports: [SpeakerFullComponent, AsyncPipe]
 })
 export class SpeakersViewComponent {
     speaker;

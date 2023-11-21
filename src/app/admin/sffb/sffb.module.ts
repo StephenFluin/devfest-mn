@@ -12,8 +12,7 @@ export const FIREBASE_STORAGE_CONFIG = new InjectionToken<FirebaseStorageConfig>
 
 @NgModule({
     exports: [UploaderComponent],
-    declarations: [UploaderComponent],
-    imports: [CommonModule],
+    imports: [CommonModule, UploaderComponent],
 })
 export class SFFBModule {
     private static configure(config: FirebaseStorageConfig): ModuleWithProviders<SFFBModule> {

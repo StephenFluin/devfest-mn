@@ -4,15 +4,19 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
-import * as Showdown from 'showdown';
+import snarkdown from 'snarkdown';
 
 import { DataService, Session } from '../shared/data.service';
 import { YearService } from '../year.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { OurMeta } from '../our-meta.service';
+import { AsyncPipe } from '@angular/common';
+import { SessionDetailsComponent } from './session-details.component';
 
 @Component({
     templateUrl: './session-view.component.html',
+    standalone: true,
+    imports: [SessionDetailsComponent, AsyncPipe],
 })
 export class SessionViewComponent {
     session: Observable<Session>;
@@ -25,17 +29,15 @@ export class SessionViewComponent {
         sanitizer: DomSanitizer
     ) {
         this.session = route.params.pipe(
-            switchMap(params =>
+            switchMap((params) =>
                 ds.getSchedule(yearService.year).pipe(
-                    map(list => list.find(item => item.$key === params['id'])),
-                    map(item => {
+                    map((list) => list.find((item) => item.$key === params['id'])),
+                    map((item) => {
                         if (!item) {
                             return {};
                         }
-                        let converter = new Showdown.Converter({ extensions: [] });
-                        converter.setOption('noHeaderId', 'true');
                         item.renderedDescription = sanitizer.bypassSecurityTrustHtml(
-                            converter.makeHtml(item.description || '')
+                            snarkdown(item.description || '')
                         );
                         return item;
                     })
@@ -43,7 +45,7 @@ export class SessionViewComponent {
             )
         );
 
-        this.session.subscribe(sessionData => {
+        this.session.subscribe((sessionData) => {
             if (sessionData) {
                 console.log('setting session view metadata');
                 meta.setTitle(sessionData.title);

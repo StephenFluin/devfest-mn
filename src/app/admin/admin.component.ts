@@ -5,9 +5,18 @@ import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { AngularFireList } from '@angular/fire/compat/database/interfaces';
 import { AuthService } from '../realtime-data/auth.service';
 import { YearService } from '../year.service';
+import { RouterLink, RouterOutlet } from '@angular/router';
+import { NgIf, AsyncPipe } from '@angular/common';
 
 @Component({
     templateUrl: './admin.component.html',
+    standalone: true,
+    imports: [
+        NgIf,
+        RouterLink,
+        RouterOutlet,
+        AsyncPipe,
+    ],
 })
 export class AdminComponent {
     schedule: AngularFireList<any>;

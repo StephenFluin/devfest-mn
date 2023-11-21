@@ -5,9 +5,27 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { switchMap, map } from 'rxjs/operators';
 import { DataService, Speaker } from '../shared/data.service';
 import { YearService } from '../year.service';
+import { UploaderComponent } from './sffb/uploader.component';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { FormsModule } from '@angular/forms';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { NgIf, AsyncPipe } from '@angular/common';
 
 @Component({
     templateUrl: './speaker-edit.component.html',
+    standalone: true,
+    imports: [
+        NgIf,
+        MatFormFieldModule,
+        MatInputModule,
+        FormsModule,
+        MatCheckboxModule,
+        MatButtonModule,
+        UploaderComponent,
+        AsyncPipe,
+    ],
 })
 export class SpeakerEditComponent {
     speakerData: Observable<Speaker>;

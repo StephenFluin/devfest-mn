@@ -6,12 +6,10 @@ import { DataService } from './data.service';
 
 
 @NgModule({
-    declarations: [
-        EncodeURI,
-        GetSpeakerPipe,
-    ],
     imports: [
         CommonModule,
+        EncodeURI,
+        GetSpeakerPipe,
     ],
     exports: [
         EncodeURI,

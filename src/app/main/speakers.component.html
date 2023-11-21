@@ -15,7 +15,6 @@
         <speaker-container
             *ngFor="let speaker of speakers | async"
             [speaker]="speaker"
-            [year]="yearService.year"
             [showEdit]="auth.isAdmin | async"
         ></speaker-container>
     </div>

@@ -9,7 +9,10 @@ import { map } from 'rxjs/operators';
  * example template expression:
  * {{ (community | fireJoin:'/communities/' | async)?.['name'] }}
  */
-@Pipe({ name: 'fireJoin' })
+@Pipe({
+    name: 'fireJoin',
+    standalone: true
+})
 export class FireJoinPipe implements PipeTransform {
     constructor(private fs: FirebaseService) {
         console.log('constructing pipe with fs', fs);

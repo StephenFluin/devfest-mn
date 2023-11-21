@@ -8,14 +8,18 @@ import { Observable } from 'rxjs';
  *
  * @param cacheKey Key used in localStorage
  */
-export const localstorageCache = (cacheKey: string) => <T>(source: Observable<T>) => {
-    let cachedValue: T = null;
-    try {
-        cachedValue = JSON.parse(localStorage[cacheKey]);
-    } catch (parseException) {}
-    let result = source.pipe(tap(next => (localStorage[cacheKey] = JSON.stringify(next))));
-    if (cachedValue) {
-        result = result.pipe(startWith(<T>JSON.parse(localStorage[cacheKey])));
-    }
-    return result.pipe(shareReplay(1));
-};
+export const localstorageCache =
+    (cacheKey: string) =>
+    <T>(source: Observable<T>) => {
+        let cachedValue: T = null;
+        try {
+            cachedValue = JSON.parse(localStorage[cacheKey]);
+        } catch (parseException) {
+            return source;
+        }
+        let result = source.pipe(tap((next) => (localStorage[cacheKey] = JSON.stringify(next))));
+        if (cachedValue) {
+            result = result.pipe(startWith(<T>JSON.parse(localStorage[cacheKey])));
+        }
+        return result.pipe(shareReplay(1));
+    };

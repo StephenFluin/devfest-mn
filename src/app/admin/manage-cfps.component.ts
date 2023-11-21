@@ -1,8 +1,9 @@
-import { Component, Pipe, PipeTransform } from '@angular/core';
+import { Component, Pipe, PipeTransform, forwardRef } from '@angular/core';
 import { YearService } from '../year.service';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { map } from 'rxjs/operators';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
+import { NgFor, AsyncPipe, TitleCasePipe, DatePipe, KeyValuePipe } from '@angular/common';
 
 interface Proposal {
     name: string;
@@ -15,6 +16,15 @@ interface Proposal {
 
 @Component({
     templateUrl: './manage-cfps.component.html',
+    standalone: true,
+    imports: [
+        NgFor,
+        AsyncPipe,
+        TitleCasePipe,
+        DatePipe,
+        KeyValuePipe,
+        forwardRef(() => IgnoreFields),
+    ],
 })
 export class ManageCFPsComponent {
     cfps = this.store.collection<Proposal>(`/years/${this.yearService.year}/proposals/`).snapshotChanges()
@@ -71,7 +81,10 @@ export class ManageCFPsComponent {
     }
 }
 
-@Pipe({ name: 'ignoreFields' })
+@Pipe({
+    name: 'ignoreFields',
+    standalone: true
+})
 export class IgnoreFields implements PipeTransform {
     transform(value: any[], ignored: string[]) {
         const newValue = [];

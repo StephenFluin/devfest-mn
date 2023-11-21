@@ -3,7 +3,7 @@
         {{ session.title }}
         <a
             *ngIf="auth.isAdmin | async"
-            [routerLink]="['/', year, 'admin', 'sessions', session.$key, 'edit']"
+            [routerLink]="['/', 'admin', 'sessions', session.$key, 'edit']"
         >
             <img src="/a/edit.svg" />
         </a>
@@ -14,7 +14,6 @@
                 <div *ngFor="let speaker of session.speakers | keyvalue">
                     <speaker-container
                         [speaker]="speaker.value | getSpeaker | async"
-                        [year]="year"
                     ></speaker-container>
                 </div>
             </div>

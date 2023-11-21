@@ -1,12 +1,15 @@
-import { map, startWith, filter, shareReplay, tap } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
-import { AngularFireDatabase, AngularFireObject, AngularFireList, QueryFn } from '@angular/fire/compat/database';
+import {
+    AngularFireDatabase,
+    AngularFireList,
+    AngularFireObject,
+    QueryFn,
+} from '@angular/fire/compat/database';
 import { Observable } from 'rxjs';
-
-import { YearService } from '../year.service';
+import { filter, map } from 'rxjs/operators';
 import { SafeHtml } from '@angular/platform-browser';
+import { YearService } from '../year.service';
 import { localstorageCache } from './localstorage-cache.operator';
-import { AuthenticatedModule } from '../authenticated/authenticated.module';
 
 export interface Session {
     $key?: string;
@@ -52,9 +55,11 @@ export class DataService {
             return this.speakersByYear[year];
         }
 
-        this.speakersByYear[year] = this.listPath('speakers', ref => ref.orderByChild('name')).pipe(
-            filter(x => !!x),
-            localstorageCache('speakerCache' + year),
+        this.speakersByYear[year] = this.listPath('speakers', (ref) =>
+            ref.orderByChild('name')
+        ).pipe(
+            filter((x) => !!x),
+            localstorageCache('speakerCache' + year)
         );
         return this.speakersByYear[year];
     }
@@ -63,9 +68,11 @@ export class DataService {
         if (this.scheduleByYear[year]) {
             return this.scheduleByYear[year];
         }
-        this.scheduleByYear[year] = this.listPath<Session>('schedule', ref => ref.orderByChild('title')).pipe(
-            filter(x => !!x),
-            localstorageCache('sessionsCache' + year),
+        this.scheduleByYear[year] = this.listPath<Session>('schedule', (ref) =>
+            ref.orderByChild('title')
+        ).pipe(
+            filter((x) => !!x),
+            localstorageCache('sessionsCache' + year)
         );
         return this.scheduleByYear[year];
     }
@@ -94,7 +101,7 @@ export class DataService {
                 'Classroom C': 3,
                 'Classroom D': 3,
             };
-        } else if (this.yearService.year == '2019ai'){
+        } else if (this.yearService.year == '2019ai') {
             rooms = ['fountain'];
             floors = {
                 '3rd': 'Lumber Exchange',
@@ -116,8 +123,6 @@ export class DataService {
         return { floors: floors, rooms: rooms };
     }
 
-
-
     getFeedback(): Observable<Feedback[]> {
         return this.listPath('feedback');
     }
@@ -137,7 +142,8 @@ export class DataService {
      */
     customDateFormatter(isoDateTime) {
         let dateTime = new Date(isoDateTime);
-        if (dateTime.toString() != "Invalid Date"){          //Check if is actually a DATE.... otherwise look for AMPM
+        if (dateTime.toString() != 'Invalid Date') {
+            //Check if is actually a DATE.... otherwise look for AMPM
             let time = dateTime.getHours();
             let min = dateTime.getMinutes();
             time -= 6 - dateTime.getTimezoneOffset() / 60;
@@ -145,21 +151,18 @@ export class DataService {
             if (time > 12) {
                 time -= 12;
             }
-            if (min == 0){
+            if (min == 0) {
                 return `${time} ${indicator}`;
-            }else {
+            } else {
                 return `${time}:${min} ${indicator}`;
             }
         } else {
-            if (isoDateTime.toString().toLowerCase().indexOf('am') == -1){
+            if (isoDateTime.toString().toLowerCase().indexOf('am') == -1) {
                 return 'PM';
             } else {
                 return 'AM';
             }
-
         }
-
-
     }
 
     save(path: 'schedule' | 'speakers', item) {
@@ -184,22 +187,27 @@ export class DataService {
     }
 
     deleteSpeakerFromSession(session: Session, speakerKey: string) {
-        const list = this.db.list(`devfest${this.yearService.year}/schedule/${session.$key}/speakers`);
+        const list = this.db.list(
+            `devfest${this.yearService.year}/schedule/${session.$key}/speakers`
+        );
         list.remove(speakerKey)
             .then(() => {
                 console.log(`Speaker (${speakerKey} deleted from session (${session.$key}) .`);
             })
-            .catch(err => {
+            .catch((err) => {
                 console.error('Error deleting speaker from session', err);
             });
     }
 
-    listPath<T>(type: 'schedule' | 'speakers' | 'feedback' | 'volunteers', query?: QueryFn): Observable<T[]> {
+    listPath<T>(
+        type: 'schedule' | 'speakers' | 'feedback' | 'volunteers',
+        query?: QueryFn
+    ): Observable<T[]> {
         return this.modifiableList<T>(type, query)
             .snapshotChanges()
             .pipe(
-                map(actions =>
-                    actions.map(action => {
+                map((actions) =>
+                    actions.map((action) => {
                         let value = action.payload.val();
                         value['$key'] = action.key;
                         return value;
@@ -208,7 +216,10 @@ export class DataService {
             );
     }
 
-    modifiableList<T>(type: 'schedule' | 'speakers' | 'feedback' | 'volunteers', query?: QueryFn): AngularFireList<T> {
+    modifiableList<T>(
+        type: 'schedule' | 'speakers' | 'feedback' | 'volunteers',
+        query?: QueryFn
+    ): AngularFireList<T> {
         return this.db.list<T>(`devfest${this.yearService.year}/${type}`, query);
     }
 }

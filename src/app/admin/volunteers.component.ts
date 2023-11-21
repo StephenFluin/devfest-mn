@@ -3,6 +3,8 @@ import { AngularFireDatabase, AngularFireObject } from '@angular/fire/compat/dat
 import { map } from 'rxjs/operators';
 
 import { DataService } from '../shared/data.service';
+import { NgFor, AsyncPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 
 @Component({
@@ -16,7 +18,9 @@ import { DataService } from '../shared/data.service';
         {{volunteer}} (<a href="#" (click)="set(volunteer, null)">x</a>)
     </div>
 
-    `
+    `,
+    standalone: true,
+    imports: [FormsModule, NgFor, AsyncPipe]
 })
 export class VolunteersComponent {
     volunteers: AngularFireObject<any>;

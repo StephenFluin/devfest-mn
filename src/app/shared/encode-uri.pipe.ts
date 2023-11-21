@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 
 @Pipe({
     name: 'encodeURI',
+    standalone: true,
 })
 export class EncodeURI implements PipeTransform {
     transform(value) {

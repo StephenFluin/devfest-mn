@@ -34,7 +34,6 @@
                                     *ngIf="auth.isAdmin | async"
                                     [routerLink]="[
                                         '/',
-                                        year,
                                         'admin',
                                         'sessions',
                                         data.gridData[time][room].$key,
@@ -60,16 +59,7 @@
                     <td *ngIf="data.gridData[time][room] === 'placeholder'">
                         <button
                             *ngIf="auth.isAdmin | async"
-                            [routerLink]="[
-                                '/',
-                                year,
-                                'admin',
-                                'sessions',
-                                'new',
-                                'edit',
-                                time,
-                                room
-                            ]"
+                            [routerLink]="['/', 'admin', 'sessions', 'new', 'edit', time, room]"
                             mat-raised-button
                             color="primary"
                         >
@@ -101,7 +91,6 @@
                                 *ngIf="auth.isAdmin | async"
                                 [routerLink]="[
                                     '/',
-                                    year,
                                     'admin',
                                     'sessions',
                                     data.gridData[time]['all'].$key,
@@ -146,7 +135,6 @@
                                 *ngIf="auth.isAdmin | async"
                                 [routerLink]="[
                                     '/',
-                                    year,
                                     'admin',
                                     'sessions',
                                     data.gridData[time][room].$key,
@@ -189,7 +177,6 @@
                             *ngIf="auth.isAdmin | async"
                             [routerLink]="[
                                 '/',
-                                year,
                                 'admin',
                                 'sessions',
                                 data.gridData[time]['all'].$key,
@@ -213,7 +200,7 @@
                 <pre>{{ data.rooms | json }}</pre>
                 <div class="title">
                     {{ slot.title }}
-                    <a [routerLink]="['/', year, 'admin', 'sessions', slot.$key, 'edit']"
+                    <a [routerLink]="['/', 'admin', 'sessions', slot.$key, 'edit']"
                         ><img src="/a/edit.svg"
                     /></a>
                 </div>
