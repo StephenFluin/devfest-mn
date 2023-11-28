@@ -22,6 +22,7 @@ export interface Session {
     blocks?: number;
     renderedDescription?: SafeHtml;
     notes?: string;
+    adminNotes?: string;
 }
 
 export interface Speaker {
