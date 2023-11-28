@@ -82,49 +82,11 @@ export class DataService {
     getVenueLayout() {
         let rooms, floors;
 
-        if (this.yearService.year < '2018') {
-            rooms = [
-                'Large Auditorium',
-                'Small Auditorium',
-                'Lab',
-                'Classroom A',
-                'Classroom B',
-                'Classroom C',
-                'Classroom D',
-            ];
-            floors = {
-                'Large Auditorium': 1,
-                'Small Auditorium': 1,
-                Lab: 3,
-                'Classroom A': 3,
-                'Classroom B': 3,
-                'Classroom C': 3,
-                'Classroom D': 3,
-            };
-        } else if (this.yearService.year == '2019ai') {
-            rooms = ['fountain'];
-            floors = {
-                '3rd': 'Lumber Exchange',
-            };
-        } else if (this.yearService.year == '2023'){
-            rooms = ['110', '150',];
-            floors = {
-                '3rd': 'HSCS',
-            };
-        } else {
-            rooms = ['110', '150', '244', '321', '334', '446', '458'];
-            floors = {
-                'Large Auditorium': 'Schultze',
-                'Small Auditorium': 'Schultze',
-                '235': 'Law',
-                '238': 'Law',
-                '244': 'Law',
-                '321': 'Law',
-                '334': 'Law',
-                '446': 'Law',
-                '458': 'Law',
-            };
-        }
+        rooms = ['3-150'];
+        floors = {
+            '3-150': 3,
+        };
+
         return { floors: floors, rooms: rooms };
     }
 
