@@ -11,7 +11,7 @@ import { map } from 'rxjs/operators';
  */
 @Pipe({
     name: 'fireJoin',
-    standalone: true
+    standalone: true,
 })
 export class FireJoinPipe implements PipeTransform {
     constructor(private fs: FirebaseService) {
@@ -21,7 +21,11 @@ export class FireJoinPipe implements PipeTransform {
     transform(value: string, destination: string): any {
         if (value && destination && this.fs) {
             let service = this.fs.attach<any>(destination);
-            return service.list.pipe(map((list) => list.find((item) => item.$key === value)));
+            return service.list.pipe(
+                map((list) => {
+                    return list.find((item) => item.$key === value);
+                })
+            );
         }
     }
 }

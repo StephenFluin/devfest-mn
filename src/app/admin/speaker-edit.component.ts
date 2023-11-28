@@ -37,11 +37,13 @@ export class SpeakerEditComponent {
         public yearService: YearService
     ) {
         this.speakerData = route.params.pipe(
-            switchMap(params => {
+            switchMap((params) => {
                 if (params['id'] === 'new') {
                     return observableOf({});
                 }
-                return ds.getSpeakers(this.yearService.year).pipe(map(list => list.find(item => item.$key === params['id'])));
+                return ds
+                    .getSpeakers(this.yearService.year)
+                    .pipe(map((list) => list.find((item) => item.$key === params['id'])));
             })
         );
     }
@@ -51,13 +53,13 @@ export class SpeakerEditComponent {
         event.preventDefault();
         this.ds.save('speakers', speaker);
         console.log('rerouting to', this.yearService.year);
-        this.router.navigate(['/', this.yearService.year, 'speakers']);
+        this.router.navigate(['/', 'speakers']);
     }
 
     delete(speaker) {
         if (confirm('Are you sure you want to delete this speaker?')) {
             this.ds.delete('speakers', speaker);
-            this.router.navigate(['/', this.yearService.year, 'speakers']);
+            this.router.navigate(['/', 'speakers']);
         }
     }
 }

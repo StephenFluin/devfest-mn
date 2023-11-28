@@ -31,6 +31,6 @@ export class SpeakersComponent {
     }
 
     addSpeaker() {
-        this.router.navigate(['/', this.yearService.year, 'admin', 'speakers', 'new', 'edit']);
+        this.router.navigate(['/', 'admin', 'speakers', 'new', 'edit']);
     }
 }

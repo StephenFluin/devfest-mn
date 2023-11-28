@@ -63,6 +63,11 @@ export class DataService {
         );
         return this.speakersByYear[year];
     }
+    getSpeaker(speakerKey: string) {
+        return this.db
+            .object<Speaker>(`devfest${this.yearService.year}/speakers/${speakerKey}/name`)
+            .valueChanges();
+    }
 
     getSchedule(year: string): Observable<Session[]> {
         if (this.scheduleByYear[year]) {

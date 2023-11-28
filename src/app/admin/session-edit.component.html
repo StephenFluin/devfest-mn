@@ -28,24 +28,7 @@
                 autocomplete="off"
         /></mat-form-field>
         <mat-autocomplete #roomAuto="matAutocomplete">
-            <mat-option
-                *ngFor="
-                    let room of [
-                        '110',
-                        '150',
-                        'Large Auditorium',
-                        'Small Auditorium',
-                        '235',
-                        '238',
-                        '244',
-                        '321',
-                        '334',
-                        '446',
-                        '458'
-                    ]
-                "
-                [value]="room"
-            >
+            <mat-option *ngFor="let room of ['3-150']" [value]="room">
                 {{ room }}
             </mat-option>
         </mat-autocomplete>
@@ -95,17 +78,12 @@
                         src="{{
                             (
                                 speaker.value
-                                | fireJoin : '/devfest' + yearService.year + '/speakers/'
-                                | async
+                                | getSpeaker | async
                             )?.['imageUrl']
                         }}"
                         style="max-height: 50px"
                     />
-                    {{
-                        (speaker.value
-                            | fireJoin : '/devfest' + yearService.year + '/speakers/'
-                            | async)?.['name']
-                    }}
+                    {{ (speaker.value | getSpeaker | async)?.name }}
                     <button type="button" (click)="deleteSpeakerFromSession(session, speaker.key)">
                         -X-
                     </button>
@@ -118,7 +96,7 @@
         <em>Add speakers from the list below</em>
         <speaker-selector
             [session]="session"
-            style="overflow: scroll; max-height: 300px; display: flex; flex-flow: wrap row;"
+            style="overflow: scroll; max-height: 300px; display: flex; flex-flow: wrap row"
         ></speaker-selector>
 
         <button type="submit" mat-raised-button>

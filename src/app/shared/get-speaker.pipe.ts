@@ -1,7 +1,8 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { DataService } from './data.service';
+import { DataService, Speaker } from './data.service';
 import { map } from 'rxjs/operators';
 import { YearService } from '../year.service';
+import { NEVER, Observable } from 'rxjs';
 
 /**
  * Take a speaker ID and returns a speaker
@@ -11,12 +12,13 @@ import { YearService } from '../year.service';
  */
 @Pipe({
     name: 'getSpeaker',
-    standalone: true
+    standalone: true,
 })
 export class GetSpeakerPipe implements PipeTransform {
     constructor(private ds: DataService, private yearService: YearService) {}
 
-    transform(value: string): any {
+    transform(value: string): Observable<Speaker> {
+        console.log('evaluating value of pipe');
         if (value) {
             let speakers = this.ds.getSpeakers(this.yearService.year);
             return speakers.pipe(
@@ -29,5 +31,6 @@ export class GetSpeakerPipe implements PipeTransform {
                 })
             );
         }
+        return NEVER;
     }
 }

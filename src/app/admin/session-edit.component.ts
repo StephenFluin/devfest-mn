@@ -16,6 +16,7 @@ import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { NgIf, NgFor, AsyncPipe, KeyValuePipe } from '@angular/common';
+import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
 
 @Component({
     templateUrl: './session-edit.component.html',
@@ -33,6 +34,7 @@ import { NgIf, NgFor, AsyncPipe, KeyValuePipe } from '@angular/common';
         AsyncPipe,
         KeyValuePipe,
         FireJoinPipe,
+        GetSpeakerPipe,
     ],
 })
 export class SessionEditComponent {
@@ -74,3 +76,21 @@ export class SessionEditComponent {
         return Object.keys(obj).map((key) => obj[key]);
     }
 }
+// @Pipe({
+//     name: 'getSpeaker',
+//     standalone: true,
+// })
+// export class getSpeaker implements PipeTransform {
+//     constructor(private ds: DataService) {
+//         console.log('constructing pipe with ds', ds);
+//     }
+
+//     transform(value: string, destination: string): any {
+//         if (value && destination && this.ds) {
+//             console.log('generating observable for speaker at', value);
+//             return this.ds
+//                 .getSpeaker(value)
+//                 .pipe(tap((speaker) => console.log('showing data for speaker', speaker)));
+//         }
+//     }
+// }
