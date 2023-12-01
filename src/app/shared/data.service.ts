@@ -88,9 +88,9 @@ export class DataService {
     getVenueLayout() {
         let rooms, floors;
 
-        rooms = ['3-150'];
+        rooms = ['Main Auditorium'];
         floors = {
-            '3-150': 3,
+            'Main Auditorium': 3,
         };
 
         return { floors: floors, rooms: rooms };

@@ -28,7 +28,7 @@
                 autocomplete="off"
         /></mat-form-field>
         <mat-autocomplete #roomAuto="matAutocomplete">
-            <mat-option *ngFor="let room of ['3-150']" [value]="room">
+            <mat-option *ngFor="let room of ['3-150','Main Auditorium']" [value]="room">
                 {{ room }}
             </mat-option>
         </mat-autocomplete>
