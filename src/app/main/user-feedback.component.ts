@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges, computed, signal } from '@angular/core';
 import { AngularFireDatabase, AngularFireObject } from '@angular/fire/compat/database';
 import { DataService, Session, Feedback } from '../shared/data.service';
 
@@ -14,12 +14,7 @@ import { NgIf, AsyncPipe } from '@angular/common';
     selector: 'user-feedback',
     templateUrl: 'user-feedback.component.html',
     standalone: true,
-    imports: [
-        NgIf,
-        StarBarComponent,
-        MatButtonModule,
-        AsyncPipe,
-    ],
+    imports: [NgIf, StarBarComponent, MatButtonModule, AsyncPipe],
 })
 export class UserFeedbackComponent implements OnChanges {
     @Input()
@@ -28,6 +23,9 @@ export class UserFeedbackComponent implements OnChanges {
     editableFeedback: AngularFireObject<any>;
     uid;
     count = 0;
+    saved = signal(false);
+    saveButtonText = computed(() => (this.saved() ? 'Saved!' : 'Save'));
+    saveButtonDisabled = computed(() => this.saved());
 
     newSession: Subject<Session> = new Subject();
 
@@ -38,7 +36,7 @@ export class UserFeedbackComponent implements OnChanges {
         public yearService: YearService
     ) {
         let url = combineLatest(this.auth.uid, this.newSession).pipe(
-            map(combinedData => {
+            map((combinedData) => {
                 let [uid, session] = combinedData;
                 if (uid && session && session.$key) {
                     return `/devfest${yearService.year}/feedback/${uid}/${session.$key}/`;
@@ -49,23 +47,22 @@ export class UserFeedbackComponent implements OnChanges {
         );
 
         url.pipe(
-            tap(path => {
+            tap((path) => {
                 console.log('fetching data for', path);
             }),
-            switchMap(path => (path ? db.object<Feedback>(path).valueChanges() : empty())),
-            filter(x => !!x)
-        ).subscribe(feedback => {
+            switchMap((path) => (path ? db.object<Feedback>(path).valueChanges() : empty())),
+            filter((x) => !!x)
+        ).subscribe((feedback) => {
             console.log('feedback is', feedback);
             this.feedback = feedback;
         });
 
-        url.subscribe(path => {
+        url.subscribe((path) => {
             if (path) {
                 this.editableFeedback = db.object(path);
             }
         });
     }
-
 
     ngOnChanges() {
         if (this.session && this.count++ < 10) {
@@ -90,10 +87,14 @@ export class UserFeedbackComponent implements OnChanges {
         this.save();
     }
     save() {
-        console.log(this.feedback);
         if (this.editableFeedback) {
             delete this.feedback.$key;
-            this.editableFeedback.set(this.feedback);
+            this.editableFeedback.set(this.feedback).then((result) => {
+                this.saved.set(true);
+                setTimeout(() => {
+                    this.saved.set(false);
+                }, 2000);
+            });
         } else {
         }
     }
