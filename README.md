@@ -8,7 +8,7 @@ This project was generated with [angular-cli](https://github.com/angular/angular
 2. Create local branch and make changes
 3. `ng serve`
 4. Submit PR
-5. Marge PR into master
+5. Merge PR into master
 6. Firebase authentication - may not be required
 7. Run `tools/deploy.sh`
 
