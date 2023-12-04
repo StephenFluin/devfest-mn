@@ -8,7 +8,7 @@ This project was generated with [angular-cli](https://github.com/angular/angular
 2. Create local branch and make changes
 3. `ng serve`
 4. Submit PR
-5. Marge PR into master
+5. Merge PR into master
 6. Firebase authentication - may not be required
 7. Run `tools/deploy.sh`
 
@@ -35,12 +35,14 @@ Run `tools/deploy.sh`
 ## Common Errors
 
 If you see an 'HTTP Error: 401, Request had invalid authentication credentials.' error:
-- First try running `firebase login`
+
+-   First try running `firebase login`
 
 If 'Already logged in as ..':
-- Run `firebase logout`
-- Run `firebase login` and supply credentials
-- Try re-running `tools/deploy.sh`
+
+-   Run `firebase logout`
+-   Run `firebase login` and supply credentials
+-   Try re-running `tools/deploy.sh`
 
 ## Further Help
 
