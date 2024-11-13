@@ -32,7 +32,7 @@
         "core-js": "^2.5.4",
         "firebase": "^10.6.0",
         "firebase-http2-push-config": "^0.0.11",
-        "firebase-tools": "^12.5.4",
+        "firebase-tools": "^13.25.0",
         "promise-polyfill": "^6.0.2",
         "rxjs": "^7.8.1",
         "snarkdown": "^2.0.0",
