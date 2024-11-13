@@ -1,6 +1,6 @@
 export const environment = {
     production: true,
-    defaultYear: '2023',
+    defaultYear: '2024',
     siteName: 'DevFestMN',
     firebaseConfig: {
         apiKey: 'AIzaSyBrWJx91j512T3q6AaTGNxu_3fq47bYhfg',

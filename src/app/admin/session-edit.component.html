@@ -28,7 +28,7 @@
                 autocomplete="off"
         /></mat-form-field>
         <mat-autocomplete #roomAuto="matAutocomplete">
-            <mat-option *ngFor="let room of ['3-150','Main Auditorium']" [value]="room">
+            <mat-option *ngFor="let room of ['3-150', 'Main Auditorium']" [value]="room">
                 {{ room }}
             </mat-option>
         </mat-autocomplete>
@@ -60,7 +60,7 @@
                 >{{ track }}</mat-option
             >
         </mat-autocomplete>
-        <label>Start Time</label><em>Enter time in UTC format ... i.e. 2023-12-02T12:00-06:00</em>
+        <label>Start Time</label><em>Enter time in UTC format ... i.e. 2024-12-02T12:00-06:00</em>
         <mat-form-field
             ><input matInput [(ngModel)]="session.startTime" placeholder="Start Time"
         /></mat-form-field>
