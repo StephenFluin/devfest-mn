@@ -128,7 +128,7 @@ export class AppComponent {
             };
             window['EBWidgets'].createWidget({
                 widgetType: 'checkout',
-                eventId: '723185506317',
+                eventId: '1082249821349',
                 modal: true,
                 modalTriggerElementId: 'global-ticket-button',
                 onOrderComplete: exampleCallback,
