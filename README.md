@@ -1,6 +1,6 @@
 # DevFestMN
 
-This project was generated with [angular-cli](https://github.com/angular/angular-cli) version 1.0.0-beta.29.
+This project is an Angular CLI project.
 
 ## Summary
 
@@ -9,8 +9,7 @@ This project was generated with [angular-cli](https://github.com/angular/angular
 3. `ng serve`
 4. Submit PR
 5. Merge PR into master
-6. Firebase authentication - may not be required
-7. Run `tools/deploy.sh`
+6. Deployment will happen automatically
 
 ## Project Setup
 
@@ -26,22 +25,8 @@ Run `ng serve -o` to have the browser open once the initial build is complete.
 
 ## Pushing to GitHub
 
-Create a branch and push a pull request to GitHub. Once the PR has succesfully passed Travis tests, and has been approved and merged, the update will be automatically be pushed to GitHub pages `https://gdgtc.github.io/devfest/`.
+Create a branch and push a pull request to GitHub. Once the PR has successfully built, and has been approved and merged, the update will be automatically be pushed to Firebase Hosting.
 
 ## Deploying to live http://devfest.mn website
 
-Run `tools/deploy.sh`
-
-## Common Errors
-
-If you see an 'HTTP Error: 401, Request had invalid authentication credentials.' error:
-- First try running `firebase login`
-
-If 'Already logged in as ..':
-- Run `firebase logout`
-- Run `firebase login` and supply credentials
-- Try re-running `tools/deploy.sh`
-
-## Further Help
-
-To get more help on the `angular-cli` use `ng help` or go check out the [Angular-CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+Will happen automatically upon merge to main.
