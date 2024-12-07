@@ -10,8 +10,7 @@ import { ADirective } from '../a.directive';
 @Component({
     selector: 'speaker-full',
     templateUrl: 'speaker-full.component.html',
-    standalone: true,
-    imports: [NgIf, RouterLink, AsyncPipe, ADirective],
+    imports: [NgIf, RouterLink, AsyncPipe, ADirective]
 })
 export class SpeakerFullComponent implements OnChanges {
     @Input()

@@ -20,7 +20,6 @@ import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
 
 @Component({
     templateUrl: './session-edit.component.html',
-    standalone: true,
     imports: [
         NgIf,
         MatFormFieldModule,
@@ -35,7 +34,7 @@ import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
         KeyValuePipe,
         FireJoinPipe,
         GetSpeakerPipe,
-    ],
+    ]
 })
 export class SessionEditComponent {
     sessionData: Observable<Session>;

@@ -13,8 +13,7 @@ import { NgIf, AsyncPipe } from '@angular/common';
 @Component({
     selector: 'user-feedback',
     templateUrl: 'user-feedback.component.html',
-    standalone: true,
-    imports: [NgIf, StarBarComponent, MatButtonModule, AsyncPipe],
+    imports: [NgIf, StarBarComponent, MatButtonModule, AsyncPipe]
 })
 export class UserFeedbackComponent implements OnChanges {
     @Input()

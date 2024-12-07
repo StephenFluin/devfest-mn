@@ -16,7 +16,6 @@ import { NgIf, AsyncPipe } from '@angular/common';
     </ng-template>
   `,
     styles: [],
-    standalone: true,
     imports: [NgIf, AsyncPipe]
 })
 export class AdminHomeComponent {

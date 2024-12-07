@@ -14,8 +14,7 @@ import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 
     </mat-tab-group>
   `,
-    standalone: true,
-    imports: [MatTabsModule],
+    imports: [MatTabsModule]
 })
 export class AdminNavComponent {
   constructor(public router: Router) {

@@ -17,12 +17,11 @@ export interface Image {
 @Component({
     selector: 'sffb-uploader',
     templateUrl: './uploader.component.html',
-    standalone: true,
     imports: [
         NgIf,
         NgFor,
         AsyncPipe,
-    ],
+    ]
 })
 export class UploaderComponent implements OnChanges {
     /**

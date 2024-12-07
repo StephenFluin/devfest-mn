@@ -12,7 +12,6 @@ import { NgIf, NgFor, AsyncPipe, JsonPipe, KeyValuePipe } from '@angular/common'
     selector: 'schedule-grid',
     templateUrl: 'schedule-grid.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: true,
     imports: [
         NgIf,
         NgFor,
@@ -23,7 +22,7 @@ import { NgIf, NgFor, AsyncPipe, JsonPipe, KeyValuePipe } from '@angular/common'
         KeyValuePipe,
         EncodeURI,
         GetSpeakerPipe,
-    ],
+    ]
 })
 export class ScheduleGridComponent {
     @Input() data;

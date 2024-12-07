@@ -8,12 +8,11 @@ import { NgIf, NgFor, AsyncPipe } from '@angular/common';
 
 @Component({
     templateUrl: 'session-report.component.html',
-    standalone: true,
     imports: [
         NgIf,
         NgFor,
         AsyncPipe,
-    ],
+    ]
 })
 export class SessionReportComponent {
     sessions: Observable<any>;

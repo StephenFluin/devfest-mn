@@ -15,8 +15,7 @@ import { SessionDetailsComponent } from './session-details.component';
 
 @Component({
     templateUrl: './session-view.component.html',
-    standalone: true,
-    imports: [SessionDetailsComponent, AsyncPipe],
+    imports: [SessionDetailsComponent, AsyncPipe]
 })
 export class SessionViewComponent {
     session: Observable<Session>;

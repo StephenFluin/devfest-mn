@@ -8,8 +8,7 @@ import { ADirective } from '../a.directive';
 
 @Component({
     templateUrl: './home.component.html',
-    standalone: true,
-    imports: [NgIf, RouterLink, ADirective],
+    imports: [NgIf, RouterLink, ADirective]
 })
 export class HomeComponent {
     environment = environment;

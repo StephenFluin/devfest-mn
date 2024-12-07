@@ -4,7 +4,6 @@ import { ADirective } from '../a.directive';
 @Component({
     selector: 'app-speaker-cfp',
     templateUrl: './speaker-cfp.component.html',
-    standalone: true,
-    imports: [ADirective],
+    imports: [ADirective]
 })
 export class SpeakerCfpComponent {}

@@ -15,7 +15,6 @@ import { NgIf, NgFor, AsyncPipe, KeyValuePipe } from '@angular/common';
 @Component({
     selector: 'session-details',
     templateUrl: 'session-details.component.html',
-    standalone: true,
     imports: [
         NgIf,
         RouterLink,
@@ -25,7 +24,7 @@ import { NgIf, NgFor, AsyncPipe, KeyValuePipe } from '@angular/common';
         AsyncPipe,
         KeyValuePipe,
         GetSpeakerPipe,
-    ],
+    ]
 })
 export class SessionDetailsComponent {
     @Input()

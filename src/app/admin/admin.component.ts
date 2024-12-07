@@ -10,13 +10,12 @@ import { NgIf, AsyncPipe } from '@angular/common';
 
 @Component({
     templateUrl: './admin.component.html',
-    standalone: true,
     imports: [
         NgIf,
         RouterLink,
         RouterOutlet,
         AsyncPipe,
-    ],
+    ]
 })
 export class AdminComponent {
     schedule: AngularFireList<any>;

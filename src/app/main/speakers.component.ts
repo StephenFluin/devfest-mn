@@ -10,8 +10,7 @@ import { NgIf, NgFor, AsyncPipe } from '@angular/common';
 @Component({
     templateUrl: './speakers.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: true,
-    imports: [NgIf, MatButtonModule, NgFor, SpeakerContainerComponent, AsyncPipe],
+    imports: [NgIf, MatButtonModule, NgFor, SpeakerContainerComponent, AsyncPipe]
 })
 export class SpeakersComponent {
     speakers;

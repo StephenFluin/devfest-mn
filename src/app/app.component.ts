@@ -26,19 +26,10 @@ declare global {
                 // animate the leave page away
                 group([
                     query(':leave', [
-                        animate(
-                            '0.3s cubic-bezier(.35,0,.25,1)',
-                            style({ transform: 'translateX(-100%)' })
-                        ),
+                        animate('0.3s cubic-bezier(.35,0,.25,1)', style({ transform: 'translateX(-100%)' })),
                     ]),
                     // and now reveal the enter
-                    query(
-                        ':enter',
-                        animate(
-                            '0.3s cubic-bezier(.35,0,.25,1)',
-                            style({ transform: 'translateX(0)' })
-                        )
-                    ),
+                    query(':enter', animate('0.3s cubic-bezier(.35,0,.25,1)', style({ transform: 'translateX(0)' }))),
                 ]),
             ]),
             transition('2 => 1', [
@@ -48,25 +39,15 @@ declare global {
                 // animate the leave page away
                 group([
                     query(':leave', [
-                        animate(
-                            '0.3s cubic-bezier(.35,0,.25,1)',
-                            style({ transform: 'translateX(100%)' })
-                        ),
+                        animate('0.3s cubic-bezier(.35,0,.25,1)', style({ transform: 'translateX(100%)' })),
                     ]),
                     // and now reveal the enter
-                    query(
-                        ':enter',
-                        animate(
-                            '0.3s cubic-bezier(.35,0,.25,1)',
-                            style({ transform: 'translateX(0)' })
-                        )
-                    ),
+                    query(':enter', animate('0.3s cubic-bezier(.35,0,.25,1)', style({ transform: 'translateX(0)' }))),
                 ]),
             ]),
         ]),
     ],
-    standalone: true,
-    imports: [ADirective, RouterLink, NgIf, RouterOutlet],
+    imports: [ADirective, RouterLink, NgIf, RouterOutlet]
 })
 export class AppComponent {
     environment = environment;

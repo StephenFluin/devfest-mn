@@ -15,7 +15,6 @@ import { SpeakerFullComponent } from './speaker-full.component';
             <speaker-full [speaker]="speaker | async" [year]="yearService.year"></speaker-full>
     </section>
     `,
-    standalone: true,
     imports: [SpeakerFullComponent, AsyncPipe]
 })
 export class SpeakersViewComponent {
