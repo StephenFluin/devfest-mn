@@ -29,6 +29,7 @@ export interface Speaker {
     $key?: string;
     name?: string;
     bio?: string;
+    renderedBio?: SafeHtml;
     confirmed?: boolean;
     company?: string;
     twitter?: string;
