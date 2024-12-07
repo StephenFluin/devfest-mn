@@ -9,7 +9,9 @@
             {
                 "source": "**",
                 "destination": "/index.html"
-            },
+            }
+        ],
+        "redirects": [
             {
                 "source": "/survey",
                 "destination": "https://bit.ly/devfest2024-survey"
