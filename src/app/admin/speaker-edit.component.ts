@@ -15,7 +15,6 @@ import { NgIf, AsyncPipe } from '@angular/common';
 
 @Component({
     templateUrl: './speaker-edit.component.html',
-    standalone: true,
     imports: [
         NgIf,
         MatFormFieldModule,
@@ -25,7 +24,7 @@ import { NgIf, AsyncPipe } from '@angular/common';
         MatButtonModule,
         UploaderComponent,
         AsyncPipe,
-    ],
+    ]
 })
 export class SpeakerEditComponent {
     speakerData: Observable<Speaker>;

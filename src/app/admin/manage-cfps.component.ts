@@ -16,7 +16,6 @@ interface Proposal {
 
 @Component({
     templateUrl: './manage-cfps.component.html',
-    standalone: true,
     imports: [
         NgFor,
         AsyncPipe,
@@ -24,7 +23,7 @@ interface Proposal {
         DatePipe,
         KeyValuePipe,
         forwardRef(() => IgnoreFields),
-    ],
+    ]
 })
 export class ManageCFPsComponent {
     cfps = this.store.collection<Proposal>(`/years/${this.yearService.year}/proposals/`).snapshotChanges()

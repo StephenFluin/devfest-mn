@@ -19,7 +19,6 @@ import { FormsModule } from '@angular/forms';
     </div>
 
     `,
-    standalone: true,
     imports: [FormsModule, NgFor, AsyncPipe]
 })
 export class VolunteersComponent {
