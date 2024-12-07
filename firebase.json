@@ -14,7 +14,8 @@
         "redirects": [
             {
                 "source": "/survey",
-                "destination": "https://bit.ly/devfest2024-survey"
+                "destination": "https://bit.ly/devfest2024-survey",
+                "type": 301
             }
         ]
     },
