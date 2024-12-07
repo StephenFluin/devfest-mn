@@ -53,7 +53,6 @@ export class UserFeedbackComponent implements OnChanges {
             switchMap((path) => (path ? db.object<Feedback>(path).valueChanges() : empty())),
             filter((x) => !!x)
         ).subscribe((feedback) => {
-            console.log('feedback is', feedback);
             this.feedback = feedback;
         });
 
