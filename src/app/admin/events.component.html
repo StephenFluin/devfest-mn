@@ -1,5 +1,7 @@
 <h2>Events</h2>
-<div *ngFor="let event of events | async">
+@for (event of events | async; track event) {
+  <div>
     <h3>{{event.title}}</h3>
     <input [(ngModel)]="event.id">
-</div>
+  </div>
+}

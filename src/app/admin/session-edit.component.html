@@ -1,111 +1,121 @@
 <style>
-    mat-form-field {
-        display: block;
-        margin: 16px 0;
-        min-width: 400px;
-    }
+  mat-form-field {
+  display: block;
+  margin: 16px 0;
+  min-width: 400px;
+}
 </style>
 
-<ng-container *ngIf="sessionData | async as session; else loading">
-    <h1>{{ session.$key ? 'Edit' : 'New' }} Session</h1>
-    <form ngNoForm (submit)="save(session)" autocomplete="off">
-        <mat-form-field
-            ><input matInput [(ngModel)]="session.title" placeholder="Title" style="width: 100%"
-        /></mat-form-field>
-        <br />
-        <textarea
-            [(ngModel)]="session.description"
-            placeholder="Description"
-            style="width: 100%; height: 24em"
-        ></textarea>
-        <br />
-        <mat-form-field
-            ><input
-                matInput
-                [(ngModel)]="session.room"
-                placeholder="Room"
-                [matAutocomplete]="roomAuto"
-                autocomplete="off"
-        /></mat-form-field>
-        <mat-autocomplete #roomAuto="matAutocomplete">
-            <mat-option *ngFor="let room of ['3-150', 'Main Auditorium']" [value]="room">
-                {{ room }}
-            </mat-option>
-        </mat-autocomplete>
-        <label>Track</label>
-        <mat-form-field
-            ><input
-                matInput
-                [(ngModel)]="session.track"
-                placeholder="Track"
-                [matAutocomplete]="trackAuto"
-                autocomplete="off"
-        /></mat-form-field>
-        <mat-autocomplete #trackAuto="matAutocomplete">
-            <mat-option
-                *ngFor="
-                    let track of [
-                        'all',
-                        'Web',
-                        'Android',
-                        'AI',
-                        'Design',
-                        'Cloud',
-                        'IoT',
-                        'General',
-                        'Keynote'
-                    ]
-                "
-                [value]="track"
-                >{{ track }}</mat-option
-            >
-        </mat-autocomplete>
-        <label>Start Time</label><em>Enter time in UTC format ... i.e. 2024-12-02T12:00-06:00</em>
-        <mat-form-field
-            ><input matInput [(ngModel)]="session.startTime" placeholder="Start Time"
-        /></mat-form-field>
-        <mat-form-field
-            ><input matInput [(ngModel)]="session.blocks" placeholder="# of Blocks"
-        /></mat-form-field>
-        <mat-form-field>
-            <input matInput [(ngModel)]="session.notes" placeholder="Last Minute Notes" />
-        </mat-form-field>
-        <mat-form-field>
-            <input matInput [(ngModel)]="session.adminNotes" placeholder="Internal Admin Notes" />
-        </mat-form-field>
-        <div>
-            <em>speakers</em>
-            <ul class="speakerlist">
-                <li *ngFor="let speaker of session.speakers | keyvalue">
-                    <img
+@if (sessionData | async; as session) {
+  <h1>{{ session.$key ? 'Edit' : 'New' }} Session</h1>
+  <form ngNoForm (submit)="save(session)" autocomplete="off">
+    <mat-form-field
+      ><input matInput [(ngModel)]="session.title" placeholder="Title" style="width: 100%"
+    /></mat-form-field>
+    <br />
+    <textarea
+      [(ngModel)]="session.description"
+      placeholder="Description"
+      style="width: 100%; height: 24em"
+    ></textarea>
+    <br />
+    <mat-form-field
+      ><input
+      matInput
+      [(ngModel)]="session.room"
+      placeholder="Room"
+      [matAutocomplete]="roomAuto"
+      autocomplete="off"
+    /></mat-form-field>
+    <mat-autocomplete #roomAuto="matAutocomplete">
+      @for (room of ['3-150', 'Main Auditorium']; track room) {
+        <mat-option [value]="room">
+          {{ room }}
+        </mat-option>
+      }
+    </mat-autocomplete>
+    <label>Track</label>
+    <mat-form-field
+      ><input
+      matInput
+      [(ngModel)]="session.track"
+      placeholder="Track"
+      [matAutocomplete]="trackAuto"
+      autocomplete="off"
+    /></mat-form-field>
+    <mat-autocomplete #trackAuto="matAutocomplete">
+      @for (
+        track of [
+        'all',
+        'Web',
+        'Android',
+        'AI',
+        'Design',
+        'Cloud',
+        'IoT',
+        'General',
+        'Keynote'
+        ]
+        ; track
+        track) {
+        <mat-option
+          [value]="track"
+          >{{ track }}</mat-option
+          >
+        }
+      </mat-autocomplete>
+      <label>Start Time</label><em>Enter time in UTC format ... i.e. 2024-12-02T12:00-06:00</em>
+      <mat-form-field
+        ><input matInput [(ngModel)]="session.startTime" placeholder="Start Time"
+      /></mat-form-field>
+      <mat-form-field
+        ><input matInput [(ngModel)]="session.blocks" placeholder="# of Blocks"
+      /></mat-form-field>
+      <mat-form-field>
+        <input matInput [(ngModel)]="session.notes" placeholder="Last Minute Notes" />
+      </mat-form-field>
+      <mat-form-field>
+        <input matInput [(ngModel)]="session.adminNotes" placeholder="Internal Admin Notes" />
+      </mat-form-field>
+      <div>
+        <em>speakers</em>
+        <ul class="speakerlist">
+          @for (speaker of session.speakers | keyvalue; track speaker) {
+            <li>
+              <img
                         src="{{
                             (
                                 speaker.value
                                 | getSpeaker | async
                             )?.['imageUrl']
                         }}"
-                        style="max-height: 50px"
-                    />
-                    {{ (speaker.value | getSpeaker | async)?.name }}
-                    <button type="button" (click)="deleteSpeakerFromSession(session, speaker.key)">
-                        -X-
-                    </button>
-                </li>
-            </ul>
-        </div>
-        <button mat-raised-button type="submit" *ngIf="!session.$key">Create Session</button>
-        <button mat-raised-button type="submit" *ngIf="session.$key">Save Session</button>
-        <br />
-        <em>Add speakers from the list below</em>
-        <speaker-selector
-            [session]="session"
-            style="overflow: scroll; max-height: 300px; display: flex; flex-flow: wrap row"
-        ></speaker-selector>
-
-        <button type="submit" mat-raised-button>
-            {{ session.$key ? 'Save' : 'Create' }} Session
-        </button>
-        <button (click)="delete(session)" mat-button color="secondary">Delete</button>
+                style="max-height: 50px"
+                />
+              {{ (speaker.value | getSpeaker | async)?.name }}
+              <button type="button" (click)="deleteSpeakerFromSession(session, speaker.key)">
+                -X-
+              </button>
+            </li>
+          }
+        </ul>
+      </div>
+      @if (!session.$key) {
+        <button mat-raised-button type="submit">Create Session</button>
+      }
+      @if (session.$key) {
+        <button mat-raised-button type="submit">Save Session</button>
+      }
+      <br />
+      <em>Add speakers from the list below</em>
+      <speaker-selector
+        [session]="session"
+        style="overflow: scroll; max-height: 300px; display: flex; flex-flow: wrap row"
+      ></speaker-selector>
+      <button type="submit" mat-raised-button>
+        {{ session.$key ? 'Save' : 'Create' }} Session
+      </button>
+      <button (click)="delete(session)" mat-button color="secondary">Delete</button>
     </form>
-</ng-container>
-<ng-template #loading> Loading session data... </ng-template>
+  } @else {
+    Loading session data...
+  }

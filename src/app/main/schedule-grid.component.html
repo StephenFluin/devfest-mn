@@ -1,37 +1,41 @@
-<div *ngIf="data">
+@if (data) {
+  <div>
     <!-- Show the big schedule table -->
     <table class="schedule big" [style.display]="forceMobile ? 'none' : ''">
+      <tr>
+        <td></td>
+        @for (room of data.rooms; track room) {
+          <td style="height: 55px; vertical-align: middle">
+            <div>{{ room }}</div>
+            <div style="font-size: 0.75em">{{ ds.getVenueLayout().floors[room] }}</div>
+          </td>
+        }
+      </tr>
+      @for (time of data.startTimes; track time) {
         <tr>
-            <td></td>
-            <td *ngFor="let room of data.rooms" style="height: 55px; vertical-align: middle">
-                <div>{{ room }}</div>
-                <div style="font-size: 0.75em">{{ ds.getVenueLayout().floors[room] }}</div>
-            </td>
-        </tr>
-        <tr *ngFor="let time of data.startTimes">
-            <td style="width: 55px">{{ ds.customDateFormatter(time) }}</td>
-            <!-- Show one event spanning all rooms -->
-            <ng-template [ngIf]="!data.gridData[time].all">
-                <ng-container *ngFor="let room of data.rooms">
-                    <td
-                        *ngIf="data.gridData[time][room] && data.gridData[time][room].title"
-                        [rowSpan]="data.gridData[time][room].blocks"
-                        class="{{ data.gridData[time][room].track }} session"
+          <td style="width: 55px">{{ ds.customDateFormatter(time) }}</td>
+          <!-- Show one event spanning all rooms -->
+          @if (!data.gridData[time].all) {
+            @for (room of data.rooms; track room) {
+              @if (data.gridData[time][room] && data.gridData[time][room].title) {
+                <td
+                  [rowSpan]="data.gridData[time][room].blocks"
+                  class="{{ data.gridData[time][room].track }} session"
                         [routerLink]="[
                             data.gridData[time][room].$key,
                             data.gridData[time][room].title | encodeURI
                         ]"
-                    >
-                        <a
+                  >
+                  <a
                             [routerLink]="[
                                 data.gridData[time][room].$key,
                                 data.gridData[time][room].title | encodeURI
                             ]"
-                        >
-                            <div class="title">
-                                {{ data.gridData[time][room].title }}
-                                <a
-                                    *ngIf="auth.isAdmin | async"
+                    >
+                    <div class="title">
+                      {{ data.gridData[time][room].title }}
+                      @if (auth.isAdmin | async) {
+                        <a
                                     [routerLink]="[
                                         '/',
                                         'admin',
@@ -39,56 +43,64 @@
                                         data.gridData[time][room].$key,
                                         'edit'
                                     ]"
-                                    ><img src="/a/edit.svg"
-                                /></a>
-                            </div>
-                            <div
-                                *ngFor="
-                                    let speaker of $any(
-                                        data.gridData[time][room].speakers | keyvalue
-                                    )
-                                "
-                            >
-                                {{(speaker.value | getSpeaker | async)?.['name']}}
-                            </div>
-                        </a>
-                        <div *ngIf="data.gridData[time][room].notes">
-                            <em>{{ data.gridData[time][room].notes }}</em>
-                        </div>
-                    </td>
-                    <td *ngIf="data.gridData[time][room] === 'placeholder'">
-                        <button
-                            *ngIf="auth.isAdmin | async"
-                            [routerLink]="['/', 'admin', 'sessions', 'new', 'edit', time, room]"
-                            mat-raised-button
-                            color="primary"
+                          ><img src="/a/edit.svg"
+                        /></a>
+                      }
+                    </div>
+                    @for (
+                      speaker of $any(
+                      data.gridData[time][room].speakers | keyvalue
+                      )
+                      ; track
+                      speaker) {
+                      <div
                         >
-                            Create Session
-                        </button>
-                    </td>
-                </ng-container>
-            </ng-template>
-
-            <!-- Show one event per room -->
-            <ng-template [ngIf]="data.gridData[time].all">
-                <td
-                    [colSpan]="data.rooms.length"
-                    class="{{ data.gridData[time].all.track }} session"
+                        {{(speaker.value | getSpeaker | async)?.['name']}}
+                      </div>
+                    }
+                  </a>
+                  @if (data.gridData[time][room].notes) {
+                    <div>
+                      <em>{{ data.gridData[time][room].notes }}</em>
+                    </div>
+                  }
+                </td>
+              }
+              @if (data.gridData[time][room] === 'placeholder') {
+                <td>
+                  @if (auth.isAdmin | async) {
+                    <button
+                      [routerLink]="['/', 'admin', 'sessions', 'new', 'edit', time, room]"
+                      mat-raised-button
+                      color="primary"
+                      >
+                      Create Session
+                    </button>
+                  }
+                </td>
+              }
+            }
+          }
+          <!-- Show one event per room -->
+          @if (data.gridData[time].all) {
+            <td
+              [colSpan]="data.rooms.length"
+              class="{{ data.gridData[time].all.track }} session"
                     [routerLink]="[
                         data.gridData[time]['all'].$key,
                         data.gridData[time]['all'].title | encodeURI
                     ]"
-                >
-                    <a
+              >
+              <a
                         [routerLink]="[
                             data.gridData[time]['all'].$key,
                             data.gridData[time]['all'].title | encodeURI
                         ]"
-                    >
-                        <div class="title">
-                            {{ data.gridData[time]['all'].title }}
-                            <a
-                                *ngIf="auth.isAdmin | async"
+                >
+                <div class="title">
+                  {{ data.gridData[time]['all'].title }}
+                  @if (auth.isAdmin | async) {
+                    <a
                                 [routerLink]="[
                                     '/',
                                     'admin',
@@ -96,43 +108,47 @@
                                     data.gridData[time]['all'].$key,
                                     'edit'
                                 ]"
-                                ><img src="/a/edit.svg"
-                            /></a>
-                        </div>
-                        <div>{{ data.gridData[time]['all'].room }}</div>
-                        <div
-                            *ngFor="
-                                let speaker of $any(data.gridData[time].all.speakers | keyvalue)
-                            "
-                        >
-                            {{(speaker.value | getSpeaker | async)?.['name']}}
-                        </div>
-                    </a>
-                </td>
-            </ng-template>
+                      ><img src="/a/edit.svg"
+                    /></a>
+                  }
+                </div>
+                <div>{{ data.gridData[time]['all'].room }}</div>
+                @for (
+                  speaker of $any(data.gridData[time].all.speakers | keyvalue)
+                  ; track
+                  speaker) {
+                  <div
+                    >
+                    {{(speaker.value | getSpeaker | async)?.['name']}}
+                  </div>
+                }
+              </a>
+            </td>
+          }
         </tr>
+      }
     </table>
-
     <!-- OR show the long schedule list -->
     <div class="schedule small" [style.display]="forceMobile ? 'block' : ''">
-        <div *ngFor="let time of data.startTimes">
-            <div class="time">{{ ds.customDateFormatter(time) }}</div>
-            <!-- Show one event spanning all rooms -->
-            <ng-template [ngIf]="!data.gridData[time].all">
-                <ng-container *ngFor="let room of data.rooms">
-                    <a
-                        *ngIf="data.gridData[time][room]"
-                        class="{{ data.gridData[time][room].track }} session"
+      @for (time of data.startTimes; track time) {
+        <div>
+          <div class="time">{{ ds.customDateFormatter(time) }}</div>
+          <!-- Show one event spanning all rooms -->
+          @if (!data.gridData[time].all) {
+            @for (room of data.rooms; track room) {
+              @if (data.gridData[time][room]) {
+                <a
+                  class="{{ data.gridData[time][room].track }} session"
                         [routerLink]="[
                             '/schedule',
                             data.gridData[time][room].$key,
                             data.gridData[time][room].title | encodeURI
                         ]"
-                    >
-                        <div class="title">
-                            {{ data.gridData[time][room].title }}
-                            <a
-                                *ngIf="auth.isAdmin | async"
+                  >
+                  <div class="title">
+                    {{ data.gridData[time][room].title }}
+                    @if (auth.isAdmin | async) {
+                      <a
                                 [routerLink]="[
                                     '/',
                                     'admin',
@@ -140,41 +156,48 @@
                                     data.gridData[time][room].$key,
                                     'edit'
                                 ]"
-                                ><img src="/a/edit.svg"
-                            /></a>
-                        </div>
-                        <div>{{ data.gridData[time][room].room }}</div>
-                        <div
-                            *ngFor="
-                                let speaker of $any(data.gridData[time][room].speakers | keyvalue)
-                            "
-                        >
-                            {{(speaker.value | getSpeaker | async)?.['name']}}
-                        </div>
-                        <div *ngIf="data.gridData[time][room].blocks == 2">
-                            <em>Note: This session is 2 hours long.</em>
-                        </div>
-                        <div *ngIf="data.gridData[time][room].notes">
-                            <em>{{ data.gridData[time][room].notes }}</em>
-                        </div>
-                    </a>
-                </ng-container>
-            </ng-template>
-
-            <!-- OR show one event per room -->
-            <ng-template [ngIf]="data.gridData[time].all">
-                <a
-                    class="{{ data.gridData[time].all.track }} session"
+                        ><img src="/a/edit.svg"
+                      /></a>
+                    }
+                  </div>
+                  <div>{{ data.gridData[time][room].room }}</div>
+                  @for (
+                    speaker of $any(data.gridData[time][room].speakers | keyvalue)
+                    ; track
+                    speaker) {
+                    <div
+                      >
+                      {{(speaker.value | getSpeaker | async)?.['name']}}
+                    </div>
+                  }
+                  @if (data.gridData[time][room].blocks == 2) {
+                    <div>
+                      <em>Note: This session is 2 hours long.</em>
+                    </div>
+                  }
+                  @if (data.gridData[time][room].notes) {
+                    <div>
+                      <em>{{ data.gridData[time][room].notes }}</em>
+                    </div>
+                  }
+                </a>
+              }
+            }
+          }
+          <!-- OR show one event per room -->
+          @if (data.gridData[time].all) {
+            <a
+              class="{{ data.gridData[time].all.track }} session"
                     [routerLink]="[
                         '/schedule',
                         data.gridData[time]['all'].$key,
                         data.gridData[time]['all'].title | encodeURI
                     ]"
-                >
-                    <div class="title">
-                        {{ data.gridData[time]['all'].title }}
-                        <a
-                            *ngIf="auth.isAdmin | async"
+              >
+              <div class="title">
+                {{ data.gridData[time]['all'].title }}
+                @if (auth.isAdmin | async) {
+                  <a
                             [routerLink]="[
                                 '/',
                                 'admin',
@@ -182,32 +205,43 @@
                                 data.gridData[time]['all'].$key,
                                 'edit'
                             ]"
-                            ><img src="/a/edit.svg"
-                        /></a>
-                    </div>
-                    <div>{{ data.gridData[time]['all'].room }}</div>
-                    <div *ngFor="let speaker of $any(data.gridData[time].all.speakers | keyvalue)">
-                        {{(speaker.value | getSpeaker | async)?.['name']}}
-                    </div>
-                </a>
-            </ng-template>
+                    ><img src="/a/edit.svg"
+                  /></a>
+                }
+              </div>
+              <div>{{ data.gridData[time]['all'].room }}</div>
+              @for (speaker of $any(data.gridData[time].all.speakers | keyvalue); track speaker) {
+                <div>
+                  {{(speaker.value | getSpeaker | async)?.['name']}}
+                </div>
+              }
+            </a>
+          }
         </div>
+      }
     </div>
-    <div *ngIf="auth.isAdmin | async">
-        <ng-container *ngFor="let time of $any(data.gridData | keyvalue)">
-            <div *ngIf="time.value.undefined as slot">
-                <h3>Unassigned Session</h3>
-                <pre>{{ data.rooms | json }}</pre>
-                <div class="title">
-                    {{ slot.title }}
-                    <a [routerLink]="['/', 'admin', 'sessions', slot.$key, 'edit']"
-                        ><img src="/a/edit.svg"
-                    /></a>
+    @if (auth.isAdmin | async) {
+      <div>
+        @for (time of $any(data.gridData | keyvalue); track time) {
+          @if (time.value.undefined; as slot) {
+            <div>
+              <h3>Unassigned Session</h3>
+              <pre>{{ data.rooms | json }}</pre>
+              <div class="title">
+                {{ slot.title }}
+                <a [routerLink]="['/', 'admin', 'sessions', slot.$key, 'edit']"
+                  ><img src="/a/edit.svg"
+                /></a>
+              </div>
+              @for (speaker of $any(slot.speakers | keyvalue); track speaker) {
+                <div>
+                  {{(speaker.value | getSpeaker | async)?.['name']}}
                 </div>
-                <div *ngFor="let speaker of $any(slot.speakers | keyvalue)">
-                    {{(speaker.value | getSpeaker | async)?.['name']}}
-                </div>
+              }
             </div>
-        </ng-container>
-    </div>
-</div>
+          }
+        }
+      </div>
+    }
+  </div>
+}

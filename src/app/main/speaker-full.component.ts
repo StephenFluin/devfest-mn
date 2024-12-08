@@ -4,7 +4,7 @@ import { OurMeta } from '../our-meta.service';
 import { OnChanges } from '@angular/core';
 import { AuthService } from '../realtime-data/auth.service';
 import { RouterLink } from '@angular/router';
-import { NgIf, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { ADirective } from '../a.directive';
 import { DomSanitizer } from '@angular/platform-browser';
 
@@ -13,7 +13,7 @@ import snarkdown from 'snarkdown';
 @Component({
     selector: 'speaker-full',
     templateUrl: 'speaker-full.component.html',
-    imports: [NgIf, RouterLink, AsyncPipe, ADirective]
+    imports: [RouterLink, AsyncPipe, ADirective]
 })
 export class SpeakerFullComponent implements OnChanges {
     @Input()

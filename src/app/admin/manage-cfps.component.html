@@ -1,35 +1,37 @@
 <h2>{{ yearService.year }} CFPs</h2>
-<div class="cfp-block" *ngFor="let cfp of cfps | async">
+@for (cfp of cfps | async; track cfp) {
+  <div class="cfp-block">
     <h3>
-        <span [title]="cfp.id">{{ cfp.title }}</span> by
-        <a href="mailto:{{ cfp.email }}">{{ cfp.name }}</a>
+      <span [title]="cfp.id">{{ cfp.title }}</span> by
+      <a href="mailto:{{ cfp.email }}">{{ cfp.name }}</a>
     </h3>
     <table>
-        <tr>
-            <td><strong>Date Submitted: </strong></td>
-            <td>{{ cfp.date | date }}</td>
-        </tr>
+      <tr>
+        <td><strong>Date Submitted: </strong></td>
+        <td>{{ cfp.date | date }}</td>
+      </tr>
+      @for (
+        item of $any(cfp | keyvalue)
+        | ignoreFields : ['title', 'name', 'email', 'date', 'id']
+        ; track
+        item) {
         <tr
-            *ngFor="
-                let item of $any(cfp | keyvalue)
-                    | ignoreFields : ['title', 'name', 'email', 'date', 'id']
-            "
-        >
-            <td>
-                <strong>{{ item.key | titlecase }}:</strong>
-            </td>
-            <td>{{ item.value }}</td>
+          >
+          <td>
+            <strong>{{ item.key | titlecase }}:</strong>
+          </td>
+          <td>{{ item.value }}</td>
         </tr>
+      }
     </table>
-
     <!-- <mat-form-field style="display:block;">
-        <textarea matInput placeholder="private admin notes"></textarea>
-        <button>Save Notes</button>
-    </mat-form-field> -->
-
-    <div class="button-container">
-        <!-- <button class="button warn" (click)="reject(cfp)">Reject Session (not yet implemented)</button> -->
-        <button class="button" (click)="approve(cfp)">Approve Session</button>
-    </div>
-    <hr />
+    <textarea matInput placeholder="private admin notes"></textarea>
+    <button>Save Notes</button>
+  </mat-form-field> -->
+  <div class="button-container">
+    <!-- <button class="button warn" (click)="reject(cfp)">Reject Session (not yet implemented)</button> -->
+    <button class="button" (click)="approve(cfp)">Approve Session</button>
+  </div>
+  <hr />
 </div>
+}

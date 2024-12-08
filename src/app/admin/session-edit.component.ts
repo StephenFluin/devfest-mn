@@ -15,26 +15,24 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { NgIf, NgFor, AsyncPipe, KeyValuePipe } from '@angular/common';
+import { AsyncPipe, KeyValuePipe } from '@angular/common';
 import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
 
 @Component({
     templateUrl: './session-edit.component.html',
     imports: [
-        NgIf,
-        MatFormFieldModule,
-        MatInputModule,
-        FormsModule,
-        MatAutocompleteModule,
-        NgFor,
-        MatOptionModule,
-        MatButtonModule,
-        SpeakerSelectorComponent,
-        AsyncPipe,
-        KeyValuePipe,
-        FireJoinPipe,
-        GetSpeakerPipe,
-    ]
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule,
+    MatAutocompleteModule,
+    MatOptionModule,
+    MatButtonModule,
+    SpeakerSelectorComponent,
+    AsyncPipe,
+    KeyValuePipe,
+    FireJoinPipe,
+    GetSpeakerPipe
+]
 })
 export class SessionEditComponent {
     sessionData: Observable<Session>;

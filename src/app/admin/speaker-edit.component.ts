@@ -11,20 +11,19 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { NgIf, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
     templateUrl: './speaker-edit.component.html',
     imports: [
-        NgIf,
-        MatFormFieldModule,
-        MatInputModule,
-        FormsModule,
-        MatCheckboxModule,
-        MatButtonModule,
-        UploaderComponent,
-        AsyncPipe,
-    ]
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule,
+    MatCheckboxModule,
+    MatButtonModule,
+    UploaderComponent,
+    AsyncPipe
+]
 })
 export class SpeakerEditComponent {
     speakerData: Observable<Speaker>;

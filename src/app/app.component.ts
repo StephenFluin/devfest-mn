@@ -5,7 +5,7 @@ import { environment } from '../environments/environment';
 
 import { filter } from 'rxjs/operators';
 import { OurMeta } from './our-meta.service';
-import { NgIf } from '@angular/common';
+
 import { ADirective } from './a.directive';
 
 declare global {
@@ -47,7 +47,7 @@ declare global {
             ]),
         ]),
     ],
-    imports: [ADirective, RouterLink, NgIf, RouterOutlet]
+    imports: [ADirective, RouterLink, RouterOutlet]
 })
 export class AppComponent {
     environment = environment;

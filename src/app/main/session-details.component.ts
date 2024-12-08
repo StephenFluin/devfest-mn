@@ -10,21 +10,19 @@ import { AuthService } from '../realtime-data/auth.service';
 import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
 import { UserFeedbackComponent } from './user-feedback.component';
 import { SpeakerContainerComponent } from './speaker-container.component';
-import { NgIf, NgFor, AsyncPipe, KeyValuePipe } from '@angular/common';
+import { AsyncPipe, KeyValuePipe } from '@angular/common';
 
 @Component({
     selector: 'session-details',
     templateUrl: 'session-details.component.html',
     imports: [
-        NgIf,
-        RouterLink,
-        NgFor,
-        SpeakerContainerComponent,
-        UserFeedbackComponent,
-        AsyncPipe,
-        KeyValuePipe,
-        GetSpeakerPipe,
-    ]
+    RouterLink,
+    SpeakerContainerComponent,
+    UserFeedbackComponent,
+    AsyncPipe,
+    KeyValuePipe,
+    GetSpeakerPipe
+]
 })
 export class SessionDetailsComponent {
     @Input()

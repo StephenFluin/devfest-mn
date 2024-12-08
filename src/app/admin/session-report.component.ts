@@ -4,15 +4,13 @@ import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { YearService } from '../year.service';
 import { AuthService } from '../realtime-data/auth.service';
-import { NgIf, NgFor, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
     templateUrl: 'session-report.component.html',
     imports: [
-        NgIf,
-        NgFor,
-        AsyncPipe,
-    ]
+    AsyncPipe
+]
 })
 export class SessionReportComponent {
     sessions: Observable<any>;

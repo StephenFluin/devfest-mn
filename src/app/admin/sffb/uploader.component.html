@@ -1,14 +1,17 @@
 <h2>Upload a File</h2>
 <form ngNoForm>
-    <input id="file" name="file" type="file" />
-    <button (click)="upload()" type="button">Upload</button>
+  <input id="file" name="file" type="file" />
+  <button (click)="upload()" type="button">Upload</button>
 </form>
 
 <h2>File Gallery</h2>
-<div style="overflow: hidden" *ngIf="imageList | async as images; else loading">
-    <div *ngIf="images.length === 0">There are not any images in this folder yet.</div>
-    <div
-        *ngFor="let img of images"
+@if (imageList | async; as images) {
+  <div style="overflow: hidden">
+    @if (images.length === 0) {
+      <div>There are not any images in this folder yet.</div>
+    }
+    @for (img of images; track img) {
+      <div
         style="
             position: relative;
             width: 100px;
@@ -18,15 +21,18 @@
             justify-content: center;
             align-items: center;
         "
-    >
-        <img
-            *ngIf="img && img.downloadURL && ($any(img.downloadURL) | async)"
+        >
+        @if (img && img.downloadURL && ($any(img.downloadURL) | async)) {
+          <img
             [src]="$any(img.downloadURL) | async"
             style="max-width: 100px; max-height: 100px"
-        />
-
+            />
+        }
         <button (click)="delete(img)" style="position: absolute; top: -15px; right: -30px">[x]</button>
         <button (click)="select(img)" style="position: absolute; top: 10px; right: -30px">[ ]</button>
-    </div>
-</div>
-<ng-template #loading>Retrieving images...</ng-template>
+      </div>
+    }
+  </div>
+} @else {
+  Retrieving images...
+}

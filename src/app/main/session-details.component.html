@@ -1,80 +1,92 @@
-<div *ngIf="session">
+@if (session) {
+  <div>
     <a style="float: left; width: 24px; height: 24px" routerLink="/schedule">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <title>Back</title>
-            <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
-        </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <title>Back</title>
+        <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
+      </svg>
     </a>
     <h1 style="font-size: 32px; font-family: Montserrat, sans-serif; margin-bottom: 32px">
-        {{ session.title }}
+      {{ session.title }}
+      @if (auth.isAdmin | async) {
         <a
-            *ngIf="auth.isAdmin | async"
-            [routerLink]="['/', 'admin', 'sessions', session.$key, 'edit']"
-        >
-            <img src="/a/edit.svg" />
+          [routerLink]="['/', 'admin', 'sessions', session.$key, 'edit']"
+          >
+          <img src="/a/edit.svg" />
         </a>
+      }
     </h1>
     <div class="session-details">
-        <div>
-            <div class="speaker-list-container" style="margin-top: 16px; width: 325px">
-                <div *ngFor="let speaker of session.speakers | keyvalue">
-                    <speaker-container
-                        [speaker]="speaker.value | getSpeaker | async"
-                    ></speaker-container>
-                </div>
+      <div>
+        <div class="speaker-list-container" style="margin-top: 16px; width: 325px">
+          @for (speaker of session.speakers | keyvalue; track speaker) {
+            <div>
+              <speaker-container
+                [speaker]="speaker.value | getSpeaker | async"
+              ></speaker-container>
             </div>
+          }
         </div>
-        <div class="session-details-right" style="text-align: left">
-            <div *ngIf="session.track !== 'all'" style="font-weight: bold; margin-bottom: 24px">
-                Track: {{ session.track }}
-            </div>
-            <div style="font-weight: bold; margin-bottom: 8px">{{ session.room }}</div>
-            <div style="margin-bottom: 24px">{{ ds.customDateFormatter(session.startTime) }}</div>
-            <div *ngIf="session.notes" style="margin-bottom: 24px">
-                <strong>
-                    <em>Note: {{ session.notes }}</em>
-                </strong>
-            </div>
-            <div
-                *ngIf="session.renderedDescription"
-                [innerHTML]="session.renderedDescription"
-                style="max-width: 500px; display: inline-block"
-            ></div>
-            <div *ngIf="auth.uid | async; else elseNotLoggedIn">
-                <button
-                    *ngIf="!(sessionAgendaRead | async)?.value"
-                    (click)="addToAgenda()"
-                    class="cta"
-                    style="display: inline"
+      </div>
+      <div class="session-details-right" style="text-align: left">
+        @if (session.track !== 'all') {
+          <div style="font-weight: bold; margin-bottom: 24px">
+            Track: {{ session.track }}
+          </div>
+        }
+        <div style="font-weight: bold; margin-bottom: 8px">{{ session.room }}</div>
+        <div style="margin-bottom: 24px">{{ ds.customDateFormatter(session.startTime) }}</div>
+        @if (session.notes) {
+          <div style="margin-bottom: 24px">
+            <strong>
+              <em>Note: {{ session.notes }}</em>
+            </strong>
+          </div>
+        }
+        @if (session.renderedDescription) {
+          <div
+            [innerHTML]="session.renderedDescription"
+            style="max-width: 500px; display: inline-block"
+          ></div>
+        }
+        @if (auth.uid | async) {
+          <div>
+            @if (!(sessionAgendaRead | async)?.value) {
+              <button
+                (click)="addToAgenda()"
+                class="cta"
+                style="display: inline"
                 >
-                    Add to My Agenda
-                </button>
-                <button
-                    *ngIf="(sessionAgendaRead | async)?.value"
-                    (click)="removeFromAgenda()"
-                    class="cta"
-                    style="display: inline"
+                Add to My Agenda
+              </button>
+            }
+            @if ((sessionAgendaRead | async)?.value) {
+              <button
+                (click)="removeFromAgenda()"
+                class="cta"
+                style="display: inline"
                 >
-                    Remove from My Agenda
-                </button>
-                <div>
-                    <h3 style="margin-top: 32px">Provide Feedback</h3>
-                    <user-feedback [session]="session"></user-feedback>
-                </div>
+                Remove from My Agenda
+              </button>
+            }
+            <div>
+              <h3 style="margin-top: 32px">Provide Feedback</h3>
+              <user-feedback [session]="session"></user-feedback>
             </div>
-
-            <ng-template #elseNotLoggedIn>
-                <div style="margin-top: 64px">
-                    <h3>Login for More</h3>
-                    <p>
-                        Login to save this session to your agenda, or to provide feedback after the
-                        session ends.
-                    </p>
-                    <button (click)="auth.login()" class="cta" style="display: inline">
-                        Login
-                    </button>
-                </div>
-            </ng-template>
-        </div>
+          </div>
+        } @else {
+          <div style="margin-top: 64px">
+            <h3>Login for More</h3>
+            <p>
+              Login to save this session to your agenda, or to provide feedback after the
+              session ends.
+            </p>
+            <button (click)="auth.login()" class="cta" style="display: inline">
+              Login
+            </button>
+          </div>
+        }
+      </div>
     </div>
-</div>
+  </div>
+}
