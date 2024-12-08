@@ -45,13 +45,12 @@ import { AdminNavComponent } from './admin-nav.component';
     </ol>
 </div>
     `,
-    standalone: true,
     imports: [
         AdminNavComponent,
         NgIf,
         NgFor,
         AsyncPipe,
-    ],
+    ]
 })
 export class ReportsComponent {
     feedback: Observable<any>;

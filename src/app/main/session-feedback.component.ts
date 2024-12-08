@@ -15,8 +15,7 @@ import { UserFeedbackComponent } from './user-feedback.component';
             <user-feedback [session]="session | async"></user-feedback>
         </section>
     `,
-    standalone: true,
-    imports: [UserFeedbackComponent, AsyncPipe],
+    imports: [UserFeedbackComponent, AsyncPipe]
 })
 export class SessionFeedbackComponent {
     session;

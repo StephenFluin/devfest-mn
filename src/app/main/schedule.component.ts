@@ -20,8 +20,7 @@ export interface Schedule {
 
 @Component({
     templateUrl: './schedule.component.html',
-    standalone: true,
-    imports: [NgIf, ScheduleGridComponent, MatButtonModule, AsyncPipe],
+    imports: [NgIf, ScheduleGridComponent, MatButtonModule, AsyncPipe]
 })
 export class ScheduleComponent {
     // Two versions of the same data, one filtered, one not

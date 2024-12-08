@@ -19,8 +19,7 @@ import { NgFor, NgIf } from '@angular/common';
     </span>
     
 `,
-    standalone: true,
-    imports: [NgFor, NgIf],
+    imports: [NgFor, NgIf]
 })
 export class StarBarComponent {
     @Input() selected = 0;

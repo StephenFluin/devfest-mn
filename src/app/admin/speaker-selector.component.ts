@@ -17,12 +17,11 @@ import { NgIf, NgFor, AsyncPipe } from '@angular/common';
         </div>
     </div>
     <div *ngIf="!session.$key">Save your new session before adding speakers</div>`,
-    standalone: true,
     imports: [
         NgIf,
         NgFor,
         AsyncPipe,
-    ],
+    ]
 })
 export class SpeakerSelectorComponent implements OnChanges {
     @Input() session;
