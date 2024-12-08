@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform, inject } from '@angular/core';
 import { FirebaseService } from './firebase.service';
 import { map } from 'rxjs/operators';
 
@@ -14,7 +14,11 @@ import { map } from 'rxjs/operators';
     standalone: true,
 })
 export class FireJoinPipe implements PipeTransform {
-    constructor(private fs: FirebaseService) {
+    private fs = inject(FirebaseService);
+
+    constructor() {
+        const fs = this.fs;
+
         console.log('constructing pipe with fs', fs);
     }
 

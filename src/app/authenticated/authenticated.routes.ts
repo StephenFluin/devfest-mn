@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import HomeComponent from '../home/home.component';
+
 import { DataService } from '../shared/data.service';
 import { importProvidersFrom } from '@angular/core';
 import { AngularFireModule } from '@angular/fire/compat';
@@ -25,7 +25,7 @@ export const AuthenticatedRoutes: Routes = [
             FirebaseService,
         ],
         children: [
-            { path: 'test', component: HomeComponent },
+            { path: 'test', loadComponent: () => import('../home/home.component').then(m => m.HomeComponent) },
             {
                 path: 'admin',
                 loadChildren: () => import('../admin/admin.routes'),

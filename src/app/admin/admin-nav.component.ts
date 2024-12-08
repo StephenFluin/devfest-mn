@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
@@ -17,8 +17,8 @@ import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
     imports: [MatTabsModule]
 })
 export class AdminNavComponent {
-  constructor(public router: Router) {
-  }
+  router = inject(Router);
+
 
   select(event: MatTabChangeEvent) {
     if(event.index === 0) {

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 
@@ -23,6 +23,12 @@ export interface Schedule {
     imports: [ScheduleGridComponent, MatButtonModule, AsyncPipe]
 })
 export class ScheduleComponent {
+    ds = inject(DataService);
+    auth = inject(AuthService);
+    route = inject(ActivatedRoute);
+    router = inject(Router);
+    yearService = inject(YearService);
+
     // Two versions of the same data, one filtered, one not
     allSessions: Observable<Schedule>;
     populatedAgenda: Observable<any>;
@@ -30,13 +36,10 @@ export class ScheduleComponent {
     // Where we store the reference to the currently selected data.
     filteredData: Observable<any>;
 
-    constructor(
-        public ds: DataService,
-        public auth: AuthService,
-        public route: ActivatedRoute,
-        public router: Router,
-        public yearService: YearService
-    ) {
+    constructor() {
+        const ds = this.ds;
+        const yearService = this.yearService;
+
         this.filteredData = this.allSessions;
 
         /**

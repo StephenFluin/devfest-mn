@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
@@ -13,10 +13,15 @@ import { AsyncPipe } from '@angular/common';
 ]
 })
 export class SessionReportComponent {
+    auth = inject(AuthService);
+
     sessions: Observable<any>;
     year;
 
-    constructor(http: HttpClient, yearService: YearService, public auth: AuthService) {
+    constructor() {
+        const http = inject(HttpClient);
+        const yearService = inject(YearService);
+
         this.year = yearService.year;
         let allData = http.get<{ feedback: any; schedule: any; speakers: any }>(
             `https://devfestmn.firebaseio.com/devfest${yearService.year}.json`

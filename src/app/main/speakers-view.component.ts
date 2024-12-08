@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { DataService } from '../shared/data.service';
@@ -18,11 +18,16 @@ import { SpeakerFullComponent } from './speaker-full.component';
     imports: [SpeakerFullComponent, AsyncPipe]
 })
 export class SpeakersViewComponent {
+    yearService = inject(YearService);
+
     speaker;
     speakerId;
     year;
 
-    constructor(route: ActivatedRoute, ds: DataService, public yearService: YearService) {
+    constructor() {
+        const route = inject(ActivatedRoute);
+        const ds = inject(DataService);
+
 
         this.speaker = route.params.pipe(switchMap(params => {
             return ds.getSpeakers(this.yearService.year).pipe(map(list => list.find(item => item.$key === params['id'])));

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ActivatedRoute, RouterOutlet } from '@angular/router';
 import { YearService } from '../year.service';
 
@@ -9,7 +9,10 @@ import { YearService } from '../year.service';
     imports: [RouterOutlet],
 })
 export class YearSwitcherComponent {
-    constructor(route: ActivatedRoute, yearService: YearService) {
+    constructor() {
+        const route = inject(ActivatedRoute);
+        const yearService = inject(YearService);
+
         if (route.snapshot.url.length > 0 && route.snapshot.url[0].path.match(/\d{4}/)) {
             yearService.setYear(route.snapshot.url[0].path);
         }

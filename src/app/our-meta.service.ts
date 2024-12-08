@@ -1,11 +1,14 @@
 import { Title, Meta } from '@angular/platform-browser';
 import { environment } from '../environments/environment';
-import { Inject, Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 
 @Injectable({ providedIn: 'root' })
 export class OurMeta {
-    constructor(public title: Title, public meta: Meta, @Inject(DOCUMENT) private doc) {}
+    title = inject(Title);
+    meta = inject(Meta);
+    private doc = inject(DOCUMENT);
+
 
     setTitle(title: string) {
         this.title.setTitle(`${title} | ${environment.siteName}`);

@@ -1,6 +1,6 @@
 import { of as observableOf, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
     AngularFireDatabase,
     AngularFireList,
@@ -69,7 +69,8 @@ export class FirebaseTypedService<T extends HasKey> {
 
 @Injectable()
 export class FirebaseService {
-    constructor(private db: AngularFireDatabase) {}
+    private db = inject(AngularFireDatabase);
+
 
     // Factory that returns little generic FirebaseTypedService
     attach<V extends HasKey>(endpoint: string, query?): FirebaseTypedService<V> {

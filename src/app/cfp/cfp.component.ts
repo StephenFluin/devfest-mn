@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { FormBuilder, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ThanksDialogComponent } from './thanks.dialog.component';
@@ -29,6 +29,12 @@ import { AsyncPipe, DatePipe } from '@angular/common';
 ]
 })
 export class CFPComponent {
+    private store = inject(AngularFirestore);
+    private fb = inject(FormBuilder);
+    private dialog = inject(MatDialog);
+    auth = inject(AuthService);
+    private yearService = inject(YearService);
+
     cfp = this.fb.group({
         name: ['', Validators.required],
         email: ['', Validators.required],
@@ -47,13 +53,9 @@ export class CFPComponent {
 
     priorSubmissionDate: string = null;
 
-    constructor(
-        private store: AngularFirestore,
-        private fb: FormBuilder,
-        private dialog: MatDialog,
-        public auth: AuthService,
-        private yearService: YearService
-    ) {
+    constructor() {
+        const auth = this.auth;
+
         auth.uid
             .pipe(
                 tap((x) => console.log('Id was', x)),

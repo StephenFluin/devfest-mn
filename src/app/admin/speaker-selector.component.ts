@@ -1,45 +1,53 @@
-import { Component, EventEmitter, Input, Output, OnChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, inject } from '@angular/core';
 
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 
 import { YearService } from '../year.service';
 import { AsyncPipe } from '@angular/common';
+import { Speaker } from '../shared/data.service';
 
 @Component({
     selector: 'speaker-selector',
-    template: `
-    @if (session.$key) {
-      <div style="display:flex; flex-wrap:wrap">
-        @for (speakerSnapshot of speakers | async; track speakerSnapshot) {
-          <div style="border:1px solid #CCC;padding:16px;">
-            <div>
-              {{speakerSnapshot.payload.val().name}}
-              <button type="button" (click)="addSpeakerToSession(speakerSnapshot.key)" color="primary">Add Speaker to Session</button>
+    template: ` @if (session.$key) {
+        <div style="display:flex; flex-wrap:wrap">
+            @for (speakerSnapshot of speakers | async; track speakerSnapshot) {
+            <div style="border:1px solid #CCC;padding:16px;">
+                <div>
+                    {{ speakerSnapshot.payload.val().name }}
+                    <button
+                        type="button"
+                        (click)="addSpeakerToSession(speakerSnapshot.key)"
+                        color="primary"
+                    >
+                        Add Speaker to Session
+                    </button>
+                </div>
             </div>
-          </div>
-        }
-      </div>
-    }
-    @if (!session.$key) {
-      <div>Save your new session before adding speakers</div>
-    }`,
-    imports: [
-    AsyncPipe
-]
+            }
+        </div>
+        } @if (!session.$key) {
+        <div>Save your new session before adding speakers</div>
+        }`,
+    imports: [AsyncPipe],
 })
 export class SpeakerSelectorComponent implements OnChanges {
+    db = inject(AngularFireDatabase);
+    yearService = inject(YearService);
+
+    speakers = this.db
+        .list<Speaker>(`devfest${this.yearService.year}/speakers`, (ref) =>
+            ref.orderByChild('name')
+        )
+        .snapshotChanges();
+
     @Input() session;
     @Output() addSpeaker = new EventEmitter<string>();
     @Output() removeSpeaker = new EventEmitter<string>();
 
-    public speakers;
     schedule;
-
-    constructor(public db: AngularFireDatabase, public yearService: YearService) {}
     ngOnChanges() {
         let path = `devfest${this.yearService.year}/speakers`;
         console.log('querying ', path);
-        this.speakers = this.db.list(path, ref => ref.orderByChild('name')).snapshotChanges();
         this.speakers.subscribe(console.log);
     }
 
@@ -52,7 +60,7 @@ export class SpeakerSelectorComponent implements OnChanges {
             () => {
                 console.log('Speaker added successfully');
             },
-            err => {
+            (err) => {
                 console.error('Error adding speaker to session', err);
             }
         );

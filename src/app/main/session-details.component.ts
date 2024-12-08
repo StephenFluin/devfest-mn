@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
@@ -25,6 +25,11 @@ import { AsyncPipe, KeyValuePipe } from '@angular/common';
 ]
 })
 export class SessionDetailsComponent {
+    private route = inject(ActivatedRoute);
+    ds = inject(DataService);
+    auth = inject(AuthService);
+    db = inject(AngularFireDatabase);
+
     @Input()
     session: Session;
 
@@ -36,12 +41,7 @@ export class SessionDetailsComponent {
         })
     );
 
-    constructor(
-        private route: ActivatedRoute,
-        public ds: DataService,
-        public auth: AuthService,
-        public db: AngularFireDatabase
-    ) {
+    constructor() {
         this.sessionAgendaRead = this.agendaInfo.pipe(
             switchMap((agendaData) => {
                 let { id, uid } = agendaData;

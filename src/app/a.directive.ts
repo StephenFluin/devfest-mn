@@ -1,11 +1,12 @@
-import { Directive, ElementRef } from '@angular/core';
+import { Directive, ElementRef, inject } from '@angular/core';
 
 @Directive({
     selector: 'a',
     standalone: true,
 })
 export class ADirective {
-    constructor(public ref: ElementRef) {}
+    ref = inject(ElementRef);
+
 
     ngAfterViewInit() {
         if (typeof window === 'undefined') return;

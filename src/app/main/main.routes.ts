@@ -1,28 +1,28 @@
 import { Routes } from '@angular/router';
-import { ScheduleComponent } from './schedule.component';
-import { SessionFeedbackComponent } from './session-feedback.component';
-import { SessionViewComponent } from './session-view.component';
-import { SessionsComponent } from './sessions.component';
-import { SpeakersViewComponent } from './speakers-view.component';
-import { SpeakersComponent } from './speakers.component';
+
+
+
+
+
+
 
 export const MainRoutes: Routes = [
-    { path: 'sessions', component: SessionsComponent, data: { title: 'Sessions', depth: 1 } },
-    { path: 'speakers', component: SpeakersComponent, data: { title: 'Speakers', depth: 1 } },
+    { path: 'sessions', loadComponent: () => import('./sessions.component').then(m => m.SessionsComponent), data: { title: 'Sessions', depth: 1 } },
+    { path: 'speakers', loadComponent: () => import('./speakers.component').then(m => m.SpeakersComponent), data: { title: 'Speakers', depth: 1 } },
     {
         path: 'speakers/:id/:seo',
-        component: SpeakersViewComponent,
+        loadComponent: () => import('./speakers-view.component').then(m => m.SpeakersViewComponent),
         data: { title: false, depth: 2 },
     },
-    { path: 'schedule', component: ScheduleComponent, data: { title: 'Schedule', depth: 1 } },
+    { path: 'schedule', loadComponent: () => import('./schedule.component').then(m => m.ScheduleComponent), data: { title: 'Schedule', depth: 1 } },
     {
         path: 'schedule/:id/feedback',
-        component: SessionFeedbackComponent,
+        loadComponent: () => import('./session-feedback.component').then(m => m.SessionFeedbackComponent),
         data: { title: 'Session Feedback', depth: 2 },
     },
     {
         path: 'schedule/:id/:seo',
-        component: SessionViewComponent,
+        loadComponent: () => import('./session-view.component').then(m => m.SessionViewComponent),
         data: { title: false, depth: 2 },
     },
 ];

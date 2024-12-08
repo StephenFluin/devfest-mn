@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
 import { DataService } from '../shared/data.service';
@@ -15,20 +15,18 @@ export interface Schedule {
 
 @Component({
     templateUrl: './sessions.component.html',
-    imports: [RouterLink, AsyncPipe]
+    imports: [RouterLink, AsyncPipe],
 })
 export class SessionsComponent {
-    sessions;
+    ds = inject(DataService);
+    router = inject(Router);
+    auth = inject(AuthService);
+    yearService = inject(YearService);
+
+    sessions = this.ds.getSchedule(this.yearService.year);
 
     thisSession = {};
     showDialog = false;
 
-    constructor(
-        public ds: DataService,
-        public router: Router,
-        public auth: AuthService,
-        public yearService: YearService
-    ) {
-        this.sessions = ds.getSchedule(yearService.year);
-    }
+    constructor() {}
 }

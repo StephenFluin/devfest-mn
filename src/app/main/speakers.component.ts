@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { YearService } from '../year.service';
 import { DataService } from '../shared/data.service';
@@ -10,24 +10,22 @@ import { AsyncPipe } from '@angular/common';
 @Component({
     templateUrl: './speakers.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [MatButtonModule, SpeakerContainerComponent, AsyncPipe]
+    imports: [MatButtonModule, SpeakerContainerComponent, AsyncPipe],
 })
 export class SpeakersComponent {
-    speakers;
+    ds = inject(DataService);
+    router = inject(Router);
+    auth = inject(AuthService);
+    yearService = inject(YearService);
+
+    speakers = this.ds.getSpeakers(this.yearService.year);
 
     thisSpeaker = {};
     showDialog = false;
 
     year: string;
 
-    constructor(
-        public ds: DataService,
-        public router: Router,
-        public auth: AuthService,
-        public yearService: YearService
-    ) {
-        this.speakers = ds.getSpeakers(yearService.year);
-    }
+    constructor() {}
 
     addSpeaker() {
         this.router.navigate(['/', 'admin', 'speakers', 'new', 'edit']);
