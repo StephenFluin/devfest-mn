@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, OnChanges, inject, input } from '@angular/core';
+import { Component, OnChanges, inject, input, output } from '@angular/core';
 
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 
@@ -41,8 +41,8 @@ export class SpeakerSelectorComponent implements OnChanges {
         .snapshotChanges();
 
     readonly session = input(undefined);
-    @Output() addSpeaker = new EventEmitter<string>();
-    @Output() removeSpeaker = new EventEmitter<string>();
+    readonly addSpeaker = output<string>();
+    readonly removeSpeaker = output<string>();
 
     schedule;
     ngOnChanges() {
