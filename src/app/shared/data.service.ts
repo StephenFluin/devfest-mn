@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
     AngularFireDatabase,
     AngularFireList,
@@ -47,10 +47,11 @@ export interface Feedback {
 
 @Injectable()
 export class DataService {
+    db = inject(AngularFireDatabase);
+    yearService = inject(YearService);
+
     private speakersByYear: { [key: string]: Observable<Speaker[]> } = {};
     private scheduleByYear: { [key: string]: Observable<Session[]> } = {};
-
-    constructor(public db: AngularFireDatabase, public yearService: YearService) {}
 
     getSpeakers(year: string) {
         if (this.speakersByYear[year]) {

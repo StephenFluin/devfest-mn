@@ -1,5 +1,5 @@
 import { of as observableOf, Observable } from 'rxjs';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { switchMap } from 'rxjs/operators';
@@ -35,14 +35,18 @@ import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
 ]
 })
 export class SessionEditComponent {
+    ds = inject(DataService);
+    route = inject(ActivatedRoute);
+    router = inject(Router);
+    yearService = inject(YearService);
+
     sessionData: Observable<Session>;
 
-    constructor(
-        public ds: DataService,
-        public route: ActivatedRoute,
-        public router: Router,
-        public yearService: YearService
-    ) {
+    constructor() {
+        const ds = this.ds;
+        const route = this.route;
+        const yearService = this.yearService;
+
         this.sessionData = route.params.pipe(
             switchMap((params) => {
                 if (params['id'] === 'new') {

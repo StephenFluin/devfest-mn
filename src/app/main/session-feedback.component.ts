@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { switchMap, map } from 'rxjs/operators';
 
@@ -18,14 +18,17 @@ import { UserFeedbackComponent } from './user-feedback.component';
     imports: [UserFeedbackComponent, AsyncPipe]
 })
 export class SessionFeedbackComponent {
+    ds = inject(DataService);
+    meta = inject(OurMeta);
+
     session;
 
-    constructor(
-        route: ActivatedRoute,
-        public ds: DataService,
-        public meta: OurMeta,
-        yearService: YearService
-    ) {
+    constructor() {
+        const route = inject(ActivatedRoute);
+        const ds = this.ds;
+        const meta = this.meta;
+        const yearService = inject(YearService);
+
         this.session = route.params.pipe(
             switchMap((params) => {
                 return ds

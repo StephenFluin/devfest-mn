@@ -1,5 +1,5 @@
 import { of as observableOf, Observable } from 'rxjs';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { switchMap, map } from 'rxjs/operators';
@@ -26,14 +26,17 @@ import { AsyncPipe } from '@angular/common';
 ]
 })
 export class SpeakerEditComponent {
+    ds = inject(DataService);
+    route = inject(ActivatedRoute);
+    router = inject(Router);
+    yearService = inject(YearService);
+
     speakerData: Observable<Speaker>;
 
-    constructor(
-        public ds: DataService,
-        public route: ActivatedRoute,
-        public router: Router,
-        public yearService: YearService
-    ) {
+    constructor() {
+        const ds = this.ds;
+        const route = this.route;
+
         this.speakerData = route.params.pipe(
             switchMap((params) => {
                 if (params['id'] === 'new') {

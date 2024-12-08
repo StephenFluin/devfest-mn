@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 
@@ -17,13 +17,20 @@ import { AsyncPipe } from '@angular/common';
 ]
 })
 export class AdminComponent {
+    db = inject(AngularFireDatabase);
+    auth = inject(AuthService);
+    yearService = inject(YearService);
+
     schedule: AngularFireList<any>;
     speakers: AngularFireList<any>;
 
     editSession = {};
     editSpeaker = {};
 
-    constructor(public db: AngularFireDatabase, public auth: AuthService, public yearService: YearService) {
+    constructor() {
+        const db = this.db;
+        const yearService = this.yearService;
+
         const PATH = `devfest${yearService.year}`;
         this.schedule = db.list(PATH + '/schedule');
         this.speakers = db.list(PATH + '/speakers');

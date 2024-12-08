@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 
@@ -14,7 +14,8 @@ import { MatButtonModule } from '@angular/material/button';
     imports: [MatButtonModule]
 })
 export class ThanksDialogComponent {
-    constructor(public dialogRef: MatDialogRef<ThanksDialogComponent>) { }
+    dialogRef = inject<MatDialogRef<ThanksDialogComponent>>(MatDialogRef);
+
 
     closeDialog() {
       this.dialogRef.close();

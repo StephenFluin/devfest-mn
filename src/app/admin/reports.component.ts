@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 
 import { DataService } from '../shared/data.service';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
@@ -60,12 +60,19 @@ import { AdminNavComponent } from './admin-nav.component';
 ]
 })
 export class ReportsComponent {
+    auth = inject(AuthService);
+    db = inject(AngularFireDatabase);
+    ds = inject(DataService);
+
     feedback: Observable<any>;
     sessions: Observable<
         { title: string; scoreSpeaker: number; scoreContent: number; scoreRecommendation: number; feedback?: any[] }[]
         >;
 
-    constructor(public auth: AuthService, public db: AngularFireDatabase, public ds: DataService, yearService: YearService) {
+    constructor() {
+        const ds = this.ds;
+        const yearService = inject(YearService);
+
         this.feedback = ds.getFeedback();
         this.sessions = combineLatest(this.feedback, ds.getSchedule(yearService.year)).pipe(
             tap(data => console.log(data)),

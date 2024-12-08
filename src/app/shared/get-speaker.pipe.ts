@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform, inject } from '@angular/core';
 import { DataService, Speaker } from './data.service';
 import { map } from 'rxjs/operators';
 import { YearService } from '../year.service';
@@ -15,7 +15,9 @@ import { NEVER, Observable } from 'rxjs';
     standalone: true,
 })
 export class GetSpeakerPipe implements PipeTransform {
-    constructor(private ds: DataService, private yearService: YearService) {}
+    private ds = inject(DataService);
+    private yearService = inject(YearService);
+
 
     transform(value: string): Observable<Speaker> {
         console.log('evaluating value of pipe');

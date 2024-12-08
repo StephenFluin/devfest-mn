@@ -1,4 +1,4 @@
-import { Component, Input, Sanitizer } from '@angular/core';
+import { Component, Input, Sanitizer, inject } from '@angular/core';
 import { Speaker } from '../shared/data.service';
 import { OurMeta } from '../our-meta.service';
 import { OnChanges } from '@angular/core';
@@ -16,12 +16,14 @@ import snarkdown from 'snarkdown';
     imports: [RouterLink, AsyncPipe, ADirective]
 })
 export class SpeakerFullComponent implements OnChanges {
+    auth = inject(AuthService);
+    meta = inject(OurMeta);
+    sanitizer = inject(DomSanitizer);
+
     @Input()
     speaker: Speaker;
     @Input()
     year;
-
-    constructor(public auth: AuthService, public meta: OurMeta, public sanitizer: DomSanitizer) {}
     ngOnChanges() {
         if (this.speaker) {
             const encodedName = encodeURIComponent(this.speaker.name);

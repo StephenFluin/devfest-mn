@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router, NavigationStart, NavigationEnd, RouterLink, RouterOutlet } from '@angular/router';
 import { trigger, transition, group, query, style, animate } from '@angular/animations';
 import { environment } from '../environments/environment';
@@ -54,7 +54,10 @@ export class AppComponent {
 
     widgetReady = false;
 
-    constructor(router: Router, meta: OurMeta) {
+    constructor() {
+        const router = inject(Router);
+        const meta = inject(OurMeta);
+
         router.events
             .pipe(filter((e) => e instanceof NavigationEnd))
             .subscribe((n: NavigationEnd) => {

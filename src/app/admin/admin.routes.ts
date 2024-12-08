@@ -1,13 +1,13 @@
 import { Routes } from '@angular/router';
-import { AdminHomeComponent } from './admin-home.component';
-import { AdminComponent } from './admin.component';
-import { EventsComponent } from './events.component';
-import { ManageCFPsComponent } from './manage-cfps.component';
-import { ReportsComponent } from './reports.component';
-import { SessionEditComponent } from './session-edit.component';
-import { SessionReportComponent } from './session-report.component';
-import { SpeakerEditComponent } from './speaker-edit.component';
-import { VolunteersComponent } from './volunteers.component';
+
+
+
+
+
+
+
+
+
 
 export const AdminRoutes: Routes = [
     {
@@ -17,17 +17,17 @@ export const AdminRoutes: Routes = [
         children: [
             {
                 path: '',
-                component: AdminComponent,
+                loadComponent: () => import('./admin.component').then(m => m.AdminComponent),
                 children: [
-                    { path: 'speakers/:id/edit', component: SpeakerEditComponent },
-                    { path: 'sessions/:id/edit', component: SessionEditComponent },
-                    { path: 'sessions/:id/edit/:time/:room', component: SessionEditComponent },
-                    { path: 'session-report', component: SessionReportComponent },
-                    { path: '', component: AdminHomeComponent },
-                    { path: 'reports', component: ReportsComponent },
-                    { path: 'volunteers', component: VolunteersComponent },
-                    { path: 'cfps', component: ManageCFPsComponent },
-                    { path: 'events', component: EventsComponent },
+                    { path: 'speakers/:id/edit', loadComponent: () => import('./speaker-edit.component').then(m => m.SpeakerEditComponent) },
+                    { path: 'sessions/:id/edit', loadComponent: () => import('./session-edit.component').then(m => m.SessionEditComponent) },
+                    { path: 'sessions/:id/edit/:time/:room', loadComponent: () => import('./session-edit.component').then(m => m.SessionEditComponent) },
+                    { path: 'session-report', loadComponent: () => import('./session-report.component').then(m => m.SessionReportComponent) },
+                    { path: '', loadComponent: () => import('./admin-home.component').then(m => m.AdminHomeComponent) },
+                    { path: 'reports', loadComponent: () => import('./reports.component').then(m => m.ReportsComponent) },
+                    { path: 'volunteers', loadComponent: () => import('./volunteers.component').then(m => m.VolunteersComponent) },
+                    { path: 'cfps', loadComponent: () => import('./manage-cfps.component').then(m => m.ManageCFPsComponent) },
+                    { path: 'events', loadComponent: () => import('./events.component').then(m => m.EventsComponent) },
                 ],
             },
         ],

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { AuthService } from '../realtime-data/auth.service';
 import { AsyncPipe } from '@angular/common';
 
@@ -20,7 +20,6 @@ import { AsyncPipe } from '@angular/common';
     imports: [AsyncPipe]
 })
 export class AdminHomeComponent {
-
-  constructor(public auth: AuthService) { }
+  auth = inject(AuthService);
 
 }

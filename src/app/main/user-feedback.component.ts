@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, computed, signal } from '@angular/core';
+import { Component, Input, OnChanges, computed, signal, inject } from '@angular/core';
 import { AngularFireDatabase, AngularFireObject } from '@angular/fire/compat/database';
 import { DataService, Session, Feedback } from '../shared/data.service';
 
@@ -16,6 +16,11 @@ import { AsyncPipe } from '@angular/common';
     imports: [StarBarComponent, MatButtonModule, AsyncPipe]
 })
 export class UserFeedbackComponent implements OnChanges {
+    db = inject(AngularFireDatabase);
+    ds = inject(DataService);
+    auth = inject(AuthService);
+    yearService = inject(YearService);
+
     @Input()
     session;
     feedback: Feedback = { $key: null, speaker: 0, content: 0, recommendation: 0, comment: ' ' };
@@ -28,12 +33,10 @@ export class UserFeedbackComponent implements OnChanges {
 
     newSession: Subject<Session> = new Subject();
 
-    constructor(
-        public db: AngularFireDatabase,
-        public ds: DataService,
-        public auth: AuthService,
-        public yearService: YearService
-    ) {
+    constructor() {
+        const db = this.db;
+        const yearService = this.yearService;
+
         let url = combineLatest(this.auth.uid, this.newSession).pipe(
             map((combinedData) => {
                 let [uid, session] = combinedData;

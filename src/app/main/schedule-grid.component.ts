@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { DataService } from '../shared/data.service';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { AuthService } from '../realtime-data/auth.service';
@@ -23,8 +23,9 @@ import { AsyncPipe, JsonPipe, KeyValuePipe } from '@angular/common';
 ]
 })
 export class ScheduleGridComponent {
+    ds = inject(DataService);
+    auth = inject(AuthService);
+
     @Input() data;
     @Input() forceMobile: boolean;
-
-    constructor(public ds: DataService, public auth: AuthService) {}
 }

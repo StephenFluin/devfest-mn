@@ -22,6 +22,8 @@ export interface Image {
 ]
 })
 export class UploaderComponent implements OnChanges {
+    db = inject(AngularFireDatabase);
+
     /**
      * The name of the folder for images
      * eg. posts/angular-is-awesome
@@ -33,9 +35,6 @@ export class UploaderComponent implements OnChanges {
     imageList: Observable<Image[]>;
 
     private storage = firebase.storage();
-
-
-    constructor(public db: AngularFireDatabase) {}
 
     ngOnChanges() {
         console.log('new values for folder');

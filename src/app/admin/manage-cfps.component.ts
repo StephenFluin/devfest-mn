@@ -1,4 +1,4 @@
-import { Component, Pipe, PipeTransform, forwardRef } from '@angular/core';
+import { Component, Pipe, PipeTransform, forwardRef, inject } from '@angular/core';
 import { YearService } from '../year.service';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { map } from 'rxjs/operators';
@@ -25,6 +25,10 @@ interface Proposal {
 ]
 })
 export class ManageCFPsComponent {
+    yearService = inject(YearService);
+    private store = inject(AngularFirestore);
+    db = inject(AngularFireDatabase);
+
     cfps = this.store.collection<Proposal>(`/years/${this.yearService.year}/proposals/`).snapshotChanges()
     .pipe(
         map(actions =>
@@ -36,7 +40,6 @@ export class ManageCFPsComponent {
         })
       )
     );
-    constructor(public yearService: YearService, private store: AngularFirestore, public db: AngularFireDatabase) {}
     reject(cfp) {
         confirm('you sure bout dat?');
         alert(`it would be so cool if this could email!`);

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 
 import { environment } from '../../environments/environment';
 import { YearService } from '../year.service';
@@ -18,7 +18,9 @@ export class HomeComponent {
         this.faqSelection = question;
     }
 
-    constructor(yearService: YearService) {
+    constructor() {
+        const yearService = inject(YearService);
+
         yearService.reset();
     }
 }

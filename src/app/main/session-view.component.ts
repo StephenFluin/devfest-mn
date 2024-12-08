@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { Observable } from 'rxjs';
@@ -18,15 +18,17 @@ import { SessionDetailsComponent } from './session-details.component';
     imports: [SessionDetailsComponent, AsyncPipe]
 })
 export class SessionViewComponent {
+    yearService = inject(YearService);
+
     session: Observable<Session>;
 
-    constructor(
-        route: ActivatedRoute,
-        ds: DataService,
-        meta: OurMeta,
-        public yearService: YearService,
-        sanitizer: DomSanitizer
-    ) {
+    constructor() {
+        const route = inject(ActivatedRoute);
+        const ds = inject(DataService);
+        const meta = inject(OurMeta);
+        const yearService = this.yearService;
+        const sanitizer = inject(DomSanitizer);
+
         this.session = route.params.pipe(
             switchMap((params) =>
                 ds.getSchedule(yearService.year).pipe(

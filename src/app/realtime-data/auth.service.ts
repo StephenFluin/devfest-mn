@@ -1,4 +1,4 @@
-import { Injectable, Inject, Injector } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { YearService } from '../year.service';
@@ -11,6 +11,9 @@ import { localstorageCache } from '../shared/localstorage-cache.operator';
 
 @Injectable()
 export class AuthService {
+    private auth = inject(AngularFireAuth);
+    private db = inject(AngularFireDatabase);
+
     isAdmin: Observable<boolean>;
     isVolunteer: Observable<boolean>;
     isAdminOrVolunteer: Observable<boolean>;
@@ -22,11 +25,9 @@ export class AuthService {
 
     state = this.auth.authState.pipe(shareReplay(1));
 
-    constructor(
-        private auth: AngularFireAuth,
-        private db: AngularFireDatabase,
-        yearService: YearService
-    ) {
+    constructor() {
+        const yearService = inject(YearService);
+
         this.uid = this.state.pipe(
             map((authState) => {
                 if (authState) {
