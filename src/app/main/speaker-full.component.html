@@ -1,10 +1,10 @@
-@if (speaker) {
+@if (speaker()) {
   <div style="text-align: left">
     <div class="callout">
-      {{ speaker.name }}
+      {{ speaker().name }}
       @if (auth.isAdmin | async) {
         <a
-          [routerLink]="['/', year, 'admin', 'speakers', speaker.$key, 'edit']"
+          [routerLink]="['/', year(), 'admin', 'speakers', speaker().$key, 'edit']"
           >
           <img src="/a/edit.svg" />
         </a>
@@ -13,22 +13,22 @@
     <div style="display: flex; align-items: center; justify-content: center">
       <div
         class=""
-        [style.background-image]="'url(' + speaker.imageUrl + ')'"
+        [style.background-image]="'url(' + speaker().imageUrl + ')'"
         style="background-size: cover; width: 125px; height: 125px; border-radius: 50%"
       ></div>
     </div>
-    <div>{{ speaker.company }}</div>
-    @if (speaker.twitter) {
+    <div>{{ speaker().company }}</div>
+    @if (speaker().twitter) {
       <div>
-        <a href="https://twitter.com/{{ speaker.twitter }}" target="_new"
-          >&#64;{{ speaker.twitter }}</a
+        <a href="https://twitter.com/{{ speaker().twitter }}" target="_new"
+          >&#64;{{ speaker().twitter }}</a
           >
         </div>
       }
-      @if (speaker.bio) {
+      @if (speaker().bio) {
         <div
           style="border: 1px solid #ccc; margin: 32px; padding: 32px"
-          [innerHTML]="speaker.renderedBio"
+          [innerHTML]="speaker().renderedBio"
         ></div>
       }
     </div>

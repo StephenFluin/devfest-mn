@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { DataService } from '../shared/data.service';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { AuthService } from '../realtime-data/auth.service';
@@ -26,6 +26,6 @@ export class ScheduleGridComponent {
     ds = inject(DataService);
     auth = inject(AuthService);
 
-    @Input() data;
-    @Input() forceMobile: boolean;
+    readonly data = input(undefined);
+    readonly forceMobile = input<boolean>(undefined);
 }

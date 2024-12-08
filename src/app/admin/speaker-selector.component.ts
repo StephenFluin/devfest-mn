@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnChanges, inject } from '@angular/core';
+import { Component, EventEmitter, Output, OnChanges, inject, input } from '@angular/core';
 
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 
@@ -8,7 +8,7 @@ import { Speaker } from '../shared/data.service';
 
 @Component({
     selector: 'speaker-selector',
-    template: ` @if (session.$key) {
+    template: ` @if (session().$key) {
         <div style="display:flex; flex-wrap:wrap">
             @for (speakerSnapshot of speakers | async; track speakerSnapshot) {
             <div style="border:1px solid #CCC;padding:16px;">
@@ -25,7 +25,7 @@ import { Speaker } from '../shared/data.service';
             </div>
             }
         </div>
-        } @if (!session.$key) {
+        } @if (!session().$key) {
         <div>Save your new session before adding speakers</div>
         }`,
     imports: [AsyncPipe],
@@ -40,7 +40,7 @@ export class SpeakerSelectorComponent implements OnChanges {
         )
         .snapshotChanges();
 
-    @Input() session;
+    readonly session = input(undefined);
     @Output() addSpeaker = new EventEmitter<string>();
     @Output() removeSpeaker = new EventEmitter<string>();
 
@@ -52,8 +52,9 @@ export class SpeakerSelectorComponent implements OnChanges {
     }
 
     addSpeakerToSession(speakerKey: string) {
-        console.log('Adding', speakerKey, 'to ', this.session);
-        let path = `devfest${this.yearService.year}/schedule/${this.session.$key}/speakers`;
+        const session = this.session();
+        console.log('Adding', speakerKey, 'to ', session);
+        let path = `devfest${this.yearService.year}/schedule/${session.$key}/speakers`;
         console.log('path is', path);
         const speakerList = this.db.list(path);
         speakerList.push(speakerKey).then(

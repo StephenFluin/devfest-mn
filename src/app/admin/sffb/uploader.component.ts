@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges , inject} from '@angular/core';
+import { Component, OnChanges, inject, input } from '@angular/core';
 import { AngularFireDatabase, AngularFireList } from '@angular/fire/compat/database';
 
 import { Observable } from 'rxjs';
@@ -28,8 +28,8 @@ export class UploaderComponent implements OnChanges {
      * The name of the folder for images
      * eg. posts/angular-is-awesome
      */
-    @Input() folder: string;
-    @Input() maxAge = 604800;
+    readonly folder = input<string>(undefined);
+    readonly maxAge = input(604800);
 
     fileList: AngularFireList<Image>;
     imageList: Observable<Image[]>;
@@ -39,8 +39,8 @@ export class UploaderComponent implements OnChanges {
     ngOnChanges() {
         console.log('new values for folder');
 
-        this.fileList = this.db.list<Image>(`/${this.folder}/images`);
-        console.log('Rendering all images in ', `/${this.folder}/images`);
+        this.fileList = this.db.list<Image>(`/${this.folder()}/images`);
+        console.log('Rendering all images in ', `/${this.folder()}/images`);
 
         this.imageList = this.fileList.snapshotChanges().pipe(
             map(itemSnapshotList =>
@@ -73,15 +73,15 @@ export class UploaderComponent implements OnChanges {
         for (const selectedFile of [(<HTMLInputElement>document.getElementById('file')).files[0]]) {
             console.log('Attempting to upload', selectedFile);
             // Make local copies of services because "this" will be clobbered
-            const folder = this.folder;
-            const path = `/${this.folder}/${selectedFile.name}`;
+            const folder = this.folder();
+            const path = `/${this.folder()}/${selectedFile.name}`;
             const iRef = storageRef.child(path);
             const db = this.db;
             // cache files for up to a week
             iRef
-                .put(selectedFile, { cacheControl: 'max-age=' + this.maxAge })
+                .put(selectedFile, { cacheControl: 'max-age=' + this.maxAge() })
                 .then(snapshot => {
-                    console.log('Uploaded a blob or file! Now storing the reference at', `/${this.folder}/images/`);
+                    console.log('Uploaded a blob or file! Now storing the reference at', `/${this.folder()}/images/`);
                     db.list(`/${folder}/images/`).push({ path: path, filename: selectedFile.name });
                     inputBox.value = null;
                 })
@@ -94,7 +94,7 @@ export class UploaderComponent implements OnChanges {
     delete(image: Image) {
         const storagePath = image.path;
         console.log('deleting image with data', image);
-        const referencePath = `${this.folder}/images/` + image.$key;
+        const referencePath = `${this.folder()}/images/` + image.$key;
 
         // Do these as two separate steps so you can still try delete ref if file no longer exists
 
@@ -122,10 +122,11 @@ export class UploaderComponent implements OnChanges {
 
     select(image: Image) {
         console.log('update speaker image, set Speaker ImageUrl or something....')
-        console.log(`${this.folder}`)
+        const folder = this.folder();
+        console.log(`${folder}`)
 
         const storageRef = this.storage.ref();
-        const path = `/${this.folder}/imageUrl`;
+        const path = `/${folder}/imageUrl`;
         const iRef = storageRef.child(path);
 
         console.log('Attempting to set image', path, image.downloadURL.valueOf());

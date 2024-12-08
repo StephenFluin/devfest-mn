@@ -1,4 +1,4 @@
-import { Component, Input, Sanitizer, inject } from '@angular/core';
+import { Component, Sanitizer, inject, input } from '@angular/core';
 import { Speaker } from '../shared/data.service';
 import { OurMeta } from '../our-meta.service';
 import { OnChanges } from '@angular/core';
@@ -20,17 +20,16 @@ export class SpeakerFullComponent implements OnChanges {
     meta = inject(OurMeta);
     sanitizer = inject(DomSanitizer);
 
-    @Input()
-    speaker: Speaker;
-    @Input()
-    year;
+    readonly speaker = input<Speaker>(undefined);
+    readonly year = input(undefined);
     ngOnChanges() {
-        if (this.speaker) {
-            const encodedName = encodeURIComponent(this.speaker.name);
-            this.meta.setTitle(this.speaker.name);
-            this.meta.setCanonical(`${this.year}/speakers/${this.speaker.$key}/${encodedName}`);
-            this.speaker.renderedBio = this.sanitizer.bypassSecurityTrustHtml(
-                snarkdown(this.speaker.bio || '')
+        const speaker = this.speaker();
+        if (speaker) {
+            const encodedName = encodeURIComponent(speaker.name);
+            this.meta.setTitle(speaker.name);
+            this.meta.setCanonical(`${this.year()}/speakers/${speaker.$key}/${encodedName}`);
+            speaker.renderedBio = this.sanitizer.bypassSecurityTrustHtml(
+                snarkdown(speaker.bio || '')
             );
         }
     }
