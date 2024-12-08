@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, input, signal } from '@angular/core';
+import { Component, input, signal, output } from '@angular/core';
 
 @Component({
     selector: 'star-bar',
@@ -28,7 +28,7 @@ import { Component, EventEmitter, Output, input, signal } from '@angular/core';
 export class StarBarComponent {
     readonly selected = input(0);
     internalSelected = signal(this.selected());
-    @Output() newSelection = new EventEmitter<number>();
+    readonly newSelection = output<number>();
 
     options = [1, 2, 3, 4, 5];
 
