@@ -28,10 +28,9 @@
                         "scripts": [],
                         "server": "src/main.server.ts",
                         "prerender": false,
-                        "ssr": {
-                            "entry": "server.ts"
-                        },
-                        "namedChunks": true
+                        "ssr": false,
+                        "namedChunks": true,
+                        "sourceMap": true
                     },
                     "configurations": {
                         "production": {
@@ -53,13 +52,11 @@
                                     "maximumError": "4kb"
                                 }
                             ],
-                            "outputHashing": "all",
-                            "namedChunks": true
+                            "outputHashing": "all"
                         },
                         "development": {
                             "optimization": false,
-                            "extractLicenses": false,
-                            "sourceMap": true
+                            "extractLicenses": false
                         }
                     },
                     "defaultConfiguration": "production"
