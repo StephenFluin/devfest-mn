@@ -37,8 +37,7 @@ import { NgIf } from '@angular/common';
             </div>
         </div>
     `,
-    standalone: true,
-    imports: [NgIf, RouterLink],
+    imports: [NgIf, RouterLink]
 })
 export class SpeakerContainerComponent {
     @Input() speaker;

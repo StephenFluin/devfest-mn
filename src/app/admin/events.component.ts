@@ -5,12 +5,11 @@ import { NgFor, AsyncPipe } from '@angular/common';
 
 @Component({
     templateUrl: 'events.component.html',
-    standalone: true,
     imports: [
         NgFor,
         FormsModule,
         AsyncPipe,
-    ],
+    ]
 })
 export class EventsComponent {
     events = observableOf([]);

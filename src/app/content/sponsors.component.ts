@@ -3,8 +3,7 @@ import { ADirective } from '../a.directive';
 
 @Component({
     templateUrl: './sponsor.component.html',
-    standalone: true,
-    imports: [ADirective],
+    imports: [ADirective]
 })
 export class SponsorsComponent  {
     constructor() { }

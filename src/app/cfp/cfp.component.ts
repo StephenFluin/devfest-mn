@@ -16,7 +16,6 @@ import { NgIf, AsyncPipe, DatePipe } from '@angular/common';
 @Component({
     selector: 'app-cfp',
     templateUrl: './cfp.component.html',
-    standalone: true,
     imports: [
         NgIf,
         FormsModule,
@@ -28,7 +27,7 @@ import { NgIf, AsyncPipe, DatePipe } from '@angular/common';
         MatButtonModule,
         AsyncPipe,
         DatePipe,
-    ],
+    ]
 })
 export class CFPComponent {
     cfp = this.fb.group({
