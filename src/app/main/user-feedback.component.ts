@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, computed, signal, inject } from '@angular/core';
+import { Component, OnChanges, computed, signal, inject, input } from '@angular/core';
 import { AngularFireDatabase, AngularFireObject } from '@angular/fire/compat/database';
 import { DataService, Session, Feedback } from '../shared/data.service';
 
@@ -21,8 +21,7 @@ export class UserFeedbackComponent implements OnChanges {
     auth = inject(AuthService);
     yearService = inject(YearService);
 
-    @Input()
-    session;
+    readonly session = input(undefined);
     feedback: Feedback = { $key: null, speaker: 0, content: 0, recommendation: 0, comment: ' ' };
     editableFeedback: AngularFireObject<any>;
     uid;
@@ -66,9 +65,10 @@ export class UserFeedbackComponent implements OnChanges {
     }
 
     ngOnChanges() {
-        if (this.session && this.count++ < 10) {
+        const session = this.session();
+        if (session && this.count++ < 10) {
             console.log('nexting newSession');
-            this.newSession.next(this.session);
+            this.newSession.next(session);
         }
     }
     saveSpeaker(val) {

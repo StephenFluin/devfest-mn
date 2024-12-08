@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
@@ -30,8 +30,7 @@ export class SessionDetailsComponent {
     auth = inject(AuthService);
     db = inject(AngularFireDatabase);
 
-    @Input()
-    session: Session;
+    readonly session = input<Session>(undefined);
 
     sessionAgenda: AngularFireObject<any>;
     sessionAgendaRead: Observable<any>;

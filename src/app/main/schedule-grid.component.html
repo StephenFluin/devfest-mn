@@ -1,46 +1,46 @@
-@if (data) {
+@if (data()) {
   <div>
     <!-- Show the big schedule table -->
-    <table class="schedule big" [style.display]="forceMobile ? 'none' : ''">
+    <table class="schedule big" [style.display]="forceMobile() ? 'none' : ''">
       <tr>
         <td></td>
-        @for (room of data.rooms; track room) {
+        @for (room of data().rooms; track room) {
           <td style="height: 55px; vertical-align: middle">
             <div>{{ room }}</div>
             <div style="font-size: 0.75em">{{ ds.getVenueLayout().floors[room] }}</div>
           </td>
         }
       </tr>
-      @for (time of data.startTimes; track time) {
+      @for (time of data().startTimes; track time) {
         <tr>
           <td style="width: 55px">{{ ds.customDateFormatter(time) }}</td>
           <!-- Show one event spanning all rooms -->
-          @if (!data.gridData[time].all) {
-            @for (room of data.rooms; track room) {
-              @if (data.gridData[time][room] && data.gridData[time][room].title) {
+          @if (!data().gridData[time].all) {
+            @for (room of data().rooms; track room) {
+              @if (data().gridData[time][room] && data().gridData[time][room].title) {
                 <td
-                  [rowSpan]="data.gridData[time][room].blocks"
-                  class="{{ data.gridData[time][room].track }} session"
+                  [rowSpan]="data().gridData[time][room].blocks"
+                  class="{{ data().gridData[time][room].track }} session"
                         [routerLink]="[
-                            data.gridData[time][room].$key,
-                            data.gridData[time][room].title | encodeURI
+                            data().gridData[time][room].$key,
+                            data().gridData[time][room].title | encodeURI
                         ]"
                   >
                   <a
                             [routerLink]="[
-                                data.gridData[time][room].$key,
-                                data.gridData[time][room].title | encodeURI
+                                data().gridData[time][room].$key,
+                                data().gridData[time][room].title | encodeURI
                             ]"
                     >
                     <div class="title">
-                      {{ data.gridData[time][room].title }}
+                      {{ data().gridData[time][room].title }}
                       @if (auth.isAdmin | async) {
                         <a
                                     [routerLink]="[
                                         '/',
                                         'admin',
                                         'sessions',
-                                        data.gridData[time][room].$key,
+                                        data().gridData[time][room].$key,
                                         'edit'
                                     ]"
                           ><img src="/a/edit.svg"
@@ -49,7 +49,7 @@
                     </div>
                     @for (
                       speaker of $any(
-                      data.gridData[time][room].speakers | keyvalue
+                      data().gridData[time][room].speakers | keyvalue
                       )
                       ; track
                       speaker) {
@@ -59,14 +59,14 @@
                       </div>
                     }
                   </a>
-                  @if (data.gridData[time][room].notes) {
+                  @if (data().gridData[time][room].notes) {
                     <div>
-                      <em>{{ data.gridData[time][room].notes }}</em>
+                      <em>{{ data().gridData[time][room].notes }}</em>
                     </div>
                   }
                 </td>
               }
-              @if (data.gridData[time][room] === 'placeholder') {
+              @if (data().gridData[time][room] === 'placeholder') {
                 <td>
                   @if (auth.isAdmin | async) {
                     <button
@@ -82,39 +82,39 @@
             }
           }
           <!-- Show one event per room -->
-          @if (data.gridData[time].all) {
+          @if (data().gridData[time].all) {
             <td
-              [colSpan]="data.rooms.length"
-              class="{{ data.gridData[time].all.track }} session"
+              [colSpan]="data().rooms.length"
+              class="{{ data().gridData[time].all.track }} session"
                     [routerLink]="[
-                        data.gridData[time]['all'].$key,
-                        data.gridData[time]['all'].title | encodeURI
+                        data().gridData[time]['all'].$key,
+                        data().gridData[time]['all'].title | encodeURI
                     ]"
               >
               <a
                         [routerLink]="[
-                            data.gridData[time]['all'].$key,
-                            data.gridData[time]['all'].title | encodeURI
+                            data().gridData[time]['all'].$key,
+                            data().gridData[time]['all'].title | encodeURI
                         ]"
                 >
                 <div class="title">
-                  {{ data.gridData[time]['all'].title }}
+                  {{ data().gridData[time]['all'].title }}
                   @if (auth.isAdmin | async) {
                     <a
                                 [routerLink]="[
                                     '/',
                                     'admin',
                                     'sessions',
-                                    data.gridData[time]['all'].$key,
+                                    data().gridData[time]['all'].$key,
                                     'edit'
                                 ]"
                       ><img src="/a/edit.svg"
                     /></a>
                   }
                 </div>
-                <div>{{ data.gridData[time]['all'].room }}</div>
+                <div>{{ data().gridData[time]['all'].room }}</div>
                 @for (
-                  speaker of $any(data.gridData[time].all.speakers | keyvalue)
+                  speaker of $any(data().gridData[time].all.speakers | keyvalue)
                   ; track
                   speaker) {
                   <div
@@ -129,40 +129,40 @@
       }
     </table>
     <!-- OR show the long schedule list -->
-    <div class="schedule small" [style.display]="forceMobile ? 'block' : ''">
-      @for (time of data.startTimes; track time) {
+    <div class="schedule small" [style.display]="forceMobile() ? 'block' : ''">
+      @for (time of data().startTimes; track time) {
         <div>
           <div class="time">{{ ds.customDateFormatter(time) }}</div>
           <!-- Show one event spanning all rooms -->
-          @if (!data.gridData[time].all) {
-            @for (room of data.rooms; track room) {
-              @if (data.gridData[time][room]) {
+          @if (!data().gridData[time].all) {
+            @for (room of data().rooms; track room) {
+              @if (data().gridData[time][room]) {
                 <a
-                  class="{{ data.gridData[time][room].track }} session"
+                  class="{{ data().gridData[time][room].track }} session"
                         [routerLink]="[
                             '/schedule',
-                            data.gridData[time][room].$key,
-                            data.gridData[time][room].title | encodeURI
+                            data().gridData[time][room].$key,
+                            data().gridData[time][room].title | encodeURI
                         ]"
                   >
                   <div class="title">
-                    {{ data.gridData[time][room].title }}
+                    {{ data().gridData[time][room].title }}
                     @if (auth.isAdmin | async) {
                       <a
                                 [routerLink]="[
                                     '/',
                                     'admin',
                                     'sessions',
-                                    data.gridData[time][room].$key,
+                                    data().gridData[time][room].$key,
                                     'edit'
                                 ]"
                         ><img src="/a/edit.svg"
                       /></a>
                     }
                   </div>
-                  <div>{{ data.gridData[time][room].room }}</div>
+                  <div>{{ data().gridData[time][room].room }}</div>
                   @for (
-                    speaker of $any(data.gridData[time][room].speakers | keyvalue)
+                    speaker of $any(data().gridData[time][room].speakers | keyvalue)
                     ; track
                     speaker) {
                     <div
@@ -170,14 +170,14 @@
                       {{(speaker.value | getSpeaker | async)?.['name']}}
                     </div>
                   }
-                  @if (data.gridData[time][room].blocks == 2) {
+                  @if (data().gridData[time][room].blocks == 2) {
                     <div>
                       <em>Note: This session is 2 hours long.</em>
                     </div>
                   }
-                  @if (data.gridData[time][room].notes) {
+                  @if (data().gridData[time][room].notes) {
                     <div>
-                      <em>{{ data.gridData[time][room].notes }}</em>
+                      <em>{{ data().gridData[time][room].notes }}</em>
                     </div>
                   }
                 </a>
@@ -185,32 +185,32 @@
             }
           }
           <!-- OR show one event per room -->
-          @if (data.gridData[time].all) {
+          @if (data().gridData[time].all) {
             <a
-              class="{{ data.gridData[time].all.track }} session"
+              class="{{ data().gridData[time].all.track }} session"
                     [routerLink]="[
                         '/schedule',
-                        data.gridData[time]['all'].$key,
-                        data.gridData[time]['all'].title | encodeURI
+                        data().gridData[time]['all'].$key,
+                        data().gridData[time]['all'].title | encodeURI
                     ]"
               >
               <div class="title">
-                {{ data.gridData[time]['all'].title }}
+                {{ data().gridData[time]['all'].title }}
                 @if (auth.isAdmin | async) {
                   <a
                             [routerLink]="[
                                 '/',
                                 'admin',
                                 'sessions',
-                                data.gridData[time]['all'].$key,
+                                data().gridData[time]['all'].$key,
                                 'edit'
                             ]"
                     ><img src="/a/edit.svg"
                   /></a>
                 }
               </div>
-              <div>{{ data.gridData[time]['all'].room }}</div>
-              @for (speaker of $any(data.gridData[time].all.speakers | keyvalue); track speaker) {
+              <div>{{ data().gridData[time]['all'].room }}</div>
+              @for (speaker of $any(data().gridData[time].all.speakers | keyvalue); track speaker) {
                 <div>
                   {{(speaker.value | getSpeaker | async)?.['name']}}
                 </div>
@@ -222,11 +222,11 @@
     </div>
     @if (auth.isAdmin | async) {
       <div>
-        @for (time of $any(data.gridData | keyvalue); track time) {
+        @for (time of $any(data().gridData | keyvalue); track time) {
           @if (time.value.undefined; as slot) {
             <div>
               <h3>Unassigned Session</h3>
-              <pre>{{ data.rooms | json }}</pre>
+              <pre>{{ data().rooms | json }}</pre>
               <div class="title">
                 {{ slot.title }}
                 <a [routerLink]="['/', 'admin', 'sessions', slot.$key, 'edit']"
