@@ -10,7 +10,7 @@ import { YearService } from '../year.service';
 import { AuthService } from '../realtime-data/auth.service';
 import { MatButtonModule } from '@angular/material/button';
 import { ScheduleGridComponent } from './schedule-grid.component';
-import { NgIf, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 
 export interface Schedule {
     startTimes: any[];
@@ -20,7 +20,7 @@ export interface Schedule {
 
 @Component({
     templateUrl: './schedule.component.html',
-    imports: [NgIf, ScheduleGridComponent, MatButtonModule, AsyncPipe]
+    imports: [ScheduleGridComponent, MatButtonModule, AsyncPipe]
 })
 export class ScheduleComponent {
     // Two versions of the same data, one filtered, one not

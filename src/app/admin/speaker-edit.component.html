@@ -1,26 +1,33 @@
 <style>
-    mat-form-field {
-        display:block;
-        margin:16px 0;
-    }
+  mat-form-field {
+  display:block;
+  margin:16px 0;
+}
 </style>
 
-<ng-container *ngIf="speakerData | async as speaker; else loading">
-    <h1>{{ (speaker.$key ? 'Edit' : 'New') }} Speaker</h1>
-    <form ngNoForm (submit)="save(speaker)">
-        <mat-form-field><input matInput [(ngModel)]="speaker.name" placeholder="Name" style="width: 100%"></mat-form-field>
-        <textarea [(ngModel)]="speaker.bio" placeholder="Bio" style="width: 100%; height: 5em;"></textarea>
-        <mat-checkbox [(ngModel)]="speaker.confirmed" [checked]=speaker.confirmed >Confirmed</mat-checkbox>
-        <mat-form-field><input matInput [(ngModel)]="speaker.company" placeholder="Company"></mat-form-field>
-        <mat-form-field><input matInput [(ngModel)]="speaker.twitter" placeholder="Twitter"><span matPrefix>&#64;</span></mat-form-field>
-        <mat-form-field><input matInput [(ngModel)]="speaker.imageUrl" placeholder="Image URL"></mat-form-field>
-        <mat-form-field><input matInput [(ngModel)]="speaker.website" placeholder="Website"></mat-form-field>
-        <button type="submit" *ngIf="speaker.$key" mat-raised-button>Save Speaker</button>
-        <button type="submit" *ngIf="!speaker.$key" mat-raised-button>Create Speaker</button>
-        <span *ngIf="speaker.$key" (click)="delete(speaker)" style="padding-left: 60px;">delete</span>
-    </form>
-    <sffb-uploader *ngIf="speaker.$key" [folder]="'devfest' + yearService.year + '/speakers/' + speaker.$key"></sffb-uploader>
-</ng-container>
-<ng-template #loading>
-    Loading speaker data...
-</ng-template>
+@if (speakerData | async; as speaker) {
+  <h1>{{ (speaker.$key ? 'Edit' : 'New') }} Speaker</h1>
+  <form ngNoForm (submit)="save(speaker)">
+    <mat-form-field><input matInput [(ngModel)]="speaker.name" placeholder="Name" style="width: 100%"></mat-form-field>
+    <textarea [(ngModel)]="speaker.bio" placeholder="Bio" style="width: 100%; height: 5em;"></textarea>
+    <mat-checkbox [(ngModel)]="speaker.confirmed" [checked]=speaker.confirmed >Confirmed</mat-checkbox>
+    <mat-form-field><input matInput [(ngModel)]="speaker.company" placeholder="Company"></mat-form-field>
+    <mat-form-field><input matInput [(ngModel)]="speaker.twitter" placeholder="Twitter"><span matPrefix>&#64;</span></mat-form-field>
+    <mat-form-field><input matInput [(ngModel)]="speaker.imageUrl" placeholder="Image URL"></mat-form-field>
+    <mat-form-field><input matInput [(ngModel)]="speaker.website" placeholder="Website"></mat-form-field>
+    @if (speaker.$key) {
+      <button type="submit" mat-raised-button>Save Speaker</button>
+    }
+    @if (!speaker.$key) {
+      <button type="submit" mat-raised-button>Create Speaker</button>
+    }
+    @if (speaker.$key) {
+      <span (click)="delete(speaker)" style="padding-left: 60px;">delete</span>
+    }
+  </form>
+  @if (speaker.$key) {
+    <sffb-uploader [folder]="'devfest' + yearService.year + '/speakers/' + speaker.$key"></sffb-uploader>
+  }
+} @else {
+  Loading speaker data...
+}

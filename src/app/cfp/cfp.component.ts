@@ -11,23 +11,22 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { RouterLink } from '@angular/router';
-import { NgIf, AsyncPipe, DatePipe } from '@angular/common';
+import { AsyncPipe, DatePipe } from '@angular/common';
 
 @Component({
     selector: 'app-cfp',
     templateUrl: './cfp.component.html',
     imports: [
-        NgIf,
-        FormsModule,
-        ReactiveFormsModule,
-        RouterLink,
-        MatFormFieldModule,
-        MatInputModule,
-        MatRadioModule,
-        MatButtonModule,
-        AsyncPipe,
-        DatePipe,
-    ]
+    FormsModule,
+    ReactiveFormsModule,
+    RouterLink,
+    MatFormFieldModule,
+    MatInputModule,
+    MatRadioModule,
+    MatButtonModule,
+    AsyncPipe,
+    DatePipe
+]
 })
 export class CFPComponent {
     cfp = this.fb.group({

@@ -8,12 +8,12 @@ import { YearService } from '../year.service';
 import { AuthService } from '../realtime-data/auth.service';
 import { MatButtonModule } from '@angular/material/button';
 import { StarBarComponent } from './star-bar.component';
-import { NgIf, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
     selector: 'user-feedback',
     templateUrl: 'user-feedback.component.html',
-    imports: [NgIf, StarBarComponent, MatButtonModule, AsyncPipe]
+    imports: [StarBarComponent, MatButtonModule, AsyncPipe]
 })
 export class UserFeedbackComponent implements OnChanges {
     @Input()

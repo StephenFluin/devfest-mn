@@ -4,7 +4,7 @@ import { AngularFireDatabase, AngularFireList } from '@angular/fire/compat/datab
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import firebase from 'firebase/compat/app';
-import { NgIf, NgFor, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import 'firebase/compat/storage';
 
 export interface Image {
@@ -18,10 +18,8 @@ export interface Image {
     selector: 'sffb-uploader',
     templateUrl: './uploader.component.html',
     imports: [
-        NgIf,
-        NgFor,
-        AsyncPipe,
-    ]
+    AsyncPipe
+]
 })
 export class UploaderComponent implements OnChanges {
     /**

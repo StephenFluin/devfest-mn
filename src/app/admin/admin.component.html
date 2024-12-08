@@ -1,20 +1,25 @@
 <div style="padding:32px;">
-    <h1>Admin DevFestMN</h1>
-    <div *ngIf="!(auth.uid | async)">
-        <button type="button" (click)="auth.login()">Login</button>
+  <h1>Admin DevFestMN</h1>
+  @if (!(auth.uid | async)) {
+    <div>
+      <button type="button" (click)="auth.login()">Login</button>
     </div>
-    <div *ngIf="auth.uid | async">
-        <span><strong>Signed In As:</strong> {{auth.name | async}} ({{auth.uid | async}})</span>
-        <br>
-        <span *ngIf="auth.isAdmin">You have awesome
+  }
+  @if (auth.uid | async) {
+    <div>
+      <span><strong>Signed In As:</strong> {{auth.name | async}} ({{auth.uid | async}})</span>
+      <br>
+        @if (auth.isAdmin) {
+          <span>You have awesome
             <strong>admin</strong> powers > <a (click)="auth.logout()" href="#"><strong>LOG OUT</strong></a></span>
+          }
+        </div>
+      }
 
-    </div>
-
-    <div class="button-container flex">
+      <div class="button-container flex">
         <a class="cta all-caps" routerLink="cfps">CFPs</a>
         <a class="cta all-caps" routerLink="reports">Reports</a>
-    </div>
+      </div>
 
-    <router-outlet></router-outlet>
-</div>
+      <router-outlet></router-outlet>
+    </div>

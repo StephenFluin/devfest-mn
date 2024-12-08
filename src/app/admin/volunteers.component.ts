@@ -3,7 +3,7 @@ import { AngularFireDatabase, AngularFireObject } from '@angular/fire/compat/dat
 import { map } from 'rxjs/operators';
 
 import { DataService } from '../shared/data.service';
-import { NgFor, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 
@@ -11,15 +11,17 @@ import { FormsModule } from '@angular/forms';
     template: `
     <h2>Manage Volunteers</h2>
     <div>
-        Add volunteer with ID: <input [(ngModel)]="id"><button type="button" (click)="set(id, true)">Add</button>
+      Add volunteer with ID: <input [(ngModel)]="id"><button type="button" (click)="set(id, true)">Add</button>
     </div>
-
-    <div *ngFor="let volunteer of volunteerList | async">
+    
+    @for (volunteer of volunteerList | async; track volunteer) {
+      <div>
         {{volunteer}} (<a href="#" (click)="set(volunteer, null)">x</a>)
-    </div>
-
+      </div>
+    }
+    
     `,
-    imports: [FormsModule, NgFor, AsyncPipe]
+    imports: [FormsModule, AsyncPipe]
 })
 export class VolunteersComponent {
     volunteers: AngularFireObject<any>;

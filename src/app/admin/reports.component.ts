@@ -7,50 +7,57 @@ import { Observable, combineLatest } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { YearService } from '../year.service';
 import { AuthService } from '../realtime-data/auth.service';
-import { NgIf, NgFor, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { AdminNavComponent } from './admin-nav.component';
 
 @Component({
     template: `
     <admin-nav></admin-nav>
-<div *ngIf="auth.isAdmin | async">
-    <h2>Speaker</h2>
-    <div *ngFor="let session of sessions | async">
-        <div><strong>{{ session.title}}</strong></div>
-        <div *ngIf="session.feedback">{{session.feedback.length}} Reviews
-            <div>Speaker: {{ session.scoreSpeaker }} /
-            Content: {{ session.scoreContent }} /
-            Recommendation: {{ session.scoreRecommendation }}</div>
-            <table border="1">
-                <tr><td>S</td><td>C</td><td>R</td></tr>
-                <tr *ngFor="let feedback of session.feedback">
-                    <td>{{feedback.speaker}}</td>
-                    <td>{{feedback.content}}</td>
-                    <td>{{feedback.recommendation}}</td>
-                </tr>
-            </table>
-        </div>
-        <br/>
-
-    </div>
-
-    <h2>Overall Feedback</h2>
-    <ol>
-        <div *ngFor="let session of sessions | async">
-            <div *ngFor="let feedback of session.feedback">
-
-                <li>{{feedback.speaker}} / {{feedback.content}} / {{feedback.recommendation}} - {{feedback.uid}}</li>
+    @if (auth.isAdmin | async) {
+      <div>
+        <h2>Speaker</h2>
+        @for (session of sessions | async; track session) {
+          <div>
+            <div><strong>{{ session.title}}</strong></div>
+            @if (session.feedback) {
+              <div>{{session.feedback.length}} Reviews
+                <div>Speaker: {{ session.scoreSpeaker }} /
+                  Content: {{ session.scoreContent }} /
+                Recommendation: {{ session.scoreRecommendation }}</div>
+                <table border="1">
+                  <tr><td>S</td><td>C</td><td>R</td></tr>
+                  @for (feedback of session.feedback; track feedback) {
+                    <tr>
+                      <td>{{feedback.speaker}}</td>
+                      <td>{{feedback.content}}</td>
+                      <td>{{feedback.recommendation}}</td>
+                    </tr>
+                  }
+                </table>
+              </div>
+            }
+            <br/>
+          </div>
+        }
+        <h2>Overall Feedback</h2>
+        <ol>
+          @for (session of sessions | async; track session) {
+            <div>
+              @for (feedback of session.feedback; track feedback) {
+                <div>
+                  <li>{{feedback.speaker}} / {{feedback.content}} / {{feedback.recommendation}} - {{feedback.uid}}</li>
+                </div>
+              }
             </div>
-        </div>
-    </ol>
-</div>
+          }
+        </ol>
+      </div>
+    }
     `,
     imports: [
-        AdminNavComponent,
-        NgIf,
-        NgFor,
-        AsyncPipe,
-    ]
+    AdminNavComponent,
+    AsyncPipe
+]
 })
 export class ReportsComponent {
     feedback: Observable<any>;
