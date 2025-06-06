@@ -1,5 +1,8 @@
 {
-  "projects": {
-    "default": "devfestmn-2024"
-  }
+    "projects": {
+        "default": "devfestmn-2025",
+        "2024": "devfestmn-2024"
+    },
+    "targets": {},
+    "etags": {}
 }
