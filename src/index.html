@@ -1,39 +1,75 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
+    <head>
+        <meta charset="utf-8" />
+        <title>DevFestMN 2025</title>
+        <base href="/" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"
+        />
+        <link rel="manifest" href="/a/webapp.manifest" />
+        <meta name="theme-color" content="#545d65" />
+        <link rel="icon" sizes="192x192" href="/a/icons/icon-192x192.png" />
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "Event",
+                "name": "DevFestMN 2025",
+                "startDate": "2025-10-25T09:00-05:00",
+                "endDate": "2025-10-25T17:00-05:00",
+                "eventStatus": "https://schema.org/EventScheduled",
+                "location": {
+                    "@type": "Place",
+                    "name": "University of Minnesota Health Sciences Education Center",
+                    "address": {
+                        "@type": "PostalAddress",
+                        "streetAddress": "526 Delaware St SE",
+                        "addressLocality": "Minneapolis",
+                        "postalCode": "55455",
+                        "addressRegion": "MN",
+                        "addressCountry": "US"
+                    }
+                },
+                "image": [],
+                "description": "DevFestMN is a premier event for developers, featuring talks, workshops, and networking opportunities.",
+                "organizer": {
+                    "@type": "Organization",
+                    "name": "GDG Twin Cities",
+                    "url": "https://gdg.community.dev/gdg-twin-cities/"
+                }
+            }
+        </script>
+    </head>
 
-<head>
-	<meta charset="utf-8">
-	<title>DevFestMN</title>
-	<base href="/">
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-	<link rel="manifest" href="/a/webapp.manifest">
-	<meta name="theme-color" content="#545d65">
-	<link rel="icon" sizes="192x192" href="/a/icons/icon-192x192.png">
-</head>
+    <body>
+        <app-root><div id="header-bar">DevFestMN</div></app-root>
 
-<body>
-	<app-root><div id="header-bar">DevFestMN</div></app-root>
+        <script>
+            (function (i, s, o, g, r, a, m) {
+                i['GoogleAnalyticsObject'] = r;
+                (i[r] =
+                    i[r] ||
+                    function () {
+                        (i[r].q = i[r].q || []).push(arguments);
+                    }),
+                    (i[r].l = 1 * new Date());
+                (a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]);
+                a.async = 1;
+                a.src = g;
+                m.parentNode.insertBefore(a, m);
+            })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
 
-	<script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+            ga('create', 'UA-46026381-2', 'auto');
+        </script>
 
-    ga('create', 'UA-46026381-2', 'auto');
-
-    </script>
-
-	<script src="./webfont.js"></script>
-	<script>
-		WebFont.load({
-		google: {
-		families: ['Montserrat', 'Material Icons']
-		}
-	});
-	</script>
-
-
-</body>
-
+        <script src="./webfont.js"></script>
+        <script>
+            WebFont.load({
+                google: {
+                    families: ['Montserrat', 'Material Icons'],
+                },
+            });
+        </script>
+    </body>
 </html>
