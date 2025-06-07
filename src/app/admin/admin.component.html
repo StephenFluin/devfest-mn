@@ -1,25 +1,27 @@
-<div style="padding:32px;">
-  <h1>Admin DevFestMN</h1>
-  @if (!(auth.uid | async)) {
+<div style="padding: 32px">
+    <h1>Admin DevFestMN</h1>
+    @if (!(auth.uid | async)) {
     <div>
-      <button type="button" (click)="auth.login()">Login</button>
+        <button type="button" (click)="auth.login()">Login</button>
     </div>
-  }
-  @if (auth.uid | async) {
+    } @if (auth.uid | async) {
     <div>
-      <span><strong>Signed In As:</strong> {{auth.name | async}} ({{auth.uid | async}})</span>
-      <br>
-        @if (auth.isAdmin) {
-          <span>You have awesome
-            <strong>admin</strong> powers > <a (click)="auth.logout()" href="#"><strong>LOG OUT</strong></a></span>
-          }
+        <span><strong>Signed In As:</strong> {{ auth.name | async }} ({{ auth.uid | async }})</span>
+        <br />
+        @if (auth.isAdmin | async) {
+        <span
+            >You have awesome <strong>admin</strong> powers >
+            <a (click)="auth.logout()" href="#"><strong>LOG OUT</strong></a></span
+        >
+        <div class="button-container flex">
+            <a class="cta all-caps" routerLink="cfps">CFPs</a>
+            <a class="cta all-caps" routerLink="reports">Reports</a>
         </div>
-      }
-
-      <div class="button-container flex">
-        <a class="cta all-caps" routerLink="cfps">CFPs</a>
-        <a class="cta all-caps" routerLink="reports">Reports</a>
-      </div>
-
-      <router-outlet></router-outlet>
+        } @else {
+        <p>Looks like you aren't quite an admin yet. Go ask for some more permissions.</p>
+        }
     </div>
+
+    <router-outlet></router-outlet>
+    }
+</div>

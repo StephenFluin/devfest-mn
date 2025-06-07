@@ -21,18 +21,17 @@ import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
 @Component({
     templateUrl: './session-edit.component.html',
     imports: [
-    MatFormFieldModule,
-    MatInputModule,
-    FormsModule,
-    MatAutocompleteModule,
-    MatOptionModule,
-    MatButtonModule,
-    SpeakerSelectorComponent,
-    AsyncPipe,
-    KeyValuePipe,
-    FireJoinPipe,
-    GetSpeakerPipe
-]
+        MatFormFieldModule,
+        MatInputModule,
+        FormsModule,
+        MatAutocompleteModule,
+        MatOptionModule,
+        MatButtonModule,
+        SpeakerSelectorComponent,
+        AsyncPipe,
+        KeyValuePipe,
+        GetSpeakerPipe,
+    ],
 })
 export class SessionEditComponent {
     ds = inject(DataService);

@@ -141,7 +141,7 @@ a:hover {
 }
 
 .event-hero-info a {
- color: #222;
+    color: #222;
 }
 
 .event-hero-info a:not(:last-child) {
@@ -172,7 +172,7 @@ section.section-background {
     color: white;
 }
 section.section-background h2 {
-    color:white;
+    color: white;
 }
 
 #home {
@@ -213,28 +213,21 @@ section.section-background h2 {
     border-radius: 8px;
 }
 
-
-
 .split-column {
     display: flex;
     flex-direction: row;
     align-items: center;
 }
 
-
-
 .split-column > * {
     width: 50%;
 }
-
 
 #what-to-expect img {
     width: 340px;
     height: auto;
     margin-right: 16px;
 }
-
-   
 
 .flex {
     display: flex;
@@ -252,7 +245,12 @@ header.page-header-banner {
 
 /* Headers */
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-family: 'Montserrat', sans-serif;
 }
 
@@ -282,7 +280,11 @@ h4 {
     margin: 8px 0;
     font-weight: bold;
     letter-spacing: 1px;
-    color: #333
+    color: #333;
+}
+
+p {
+    margin: 24px 0;
 }
 
 section h2 {
@@ -313,7 +315,6 @@ section p {
     max-width: 945px;
     margin: 24px auto;
 }
-
 
 /* Footer */
 
@@ -363,7 +364,8 @@ footer .blocks a {
 
 /* Buttons */
 
-.button, button {
+.button,
+button {
     font-size: 14px;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     text-align: center;
@@ -389,7 +391,7 @@ a.button:visited {
 }
 
 button.button.warn {
-    background-color: #E93151;
+    background-color: #e93151;
 }
 
 .button-container > * {
@@ -424,7 +426,7 @@ button.button.warn {
 .cta:hover {
     color: #fff;
     text-decoration: none;
-    background-color: #1696CB;
+    background-color: #1696cb;
 }
 
 .cta-stroke,
@@ -624,22 +626,22 @@ button.button.warn {
  */
 .schedule .Android {
     /* background-color: rgba(123, 192, 67, 1); */
-    background-color: #a4c639 ;
+    background-color: #a4c639;
 }
 .schedule .Web {
     /* background-color: #ffbf00; */
-    background-color: #3498db ;
+    background-color: #3498db;
 }
 .schedule .Design {
-    background-color: #e74c3c ;
+    background-color: #e74c3c;
 }
 .schedule .Cloud {
     /* background-color: #ee4035; */
-    background-color: #3498db ;
+    background-color: #3498db;
 }
 .schedule .AI {
     /* background-color: #ee35ee; */
-    background-color: #ff7675 ;
+    background-color: #ff7675;
 }
 .schedule .IoT {
     background-color: #6380ea;
@@ -652,7 +654,7 @@ button.button.warn {
 }
 .schedule .Keynote {
     /* background-color: #19a9e5; */
-    background-color: #f39c12 ;
+    background-color: #f39c12;
 }
 
 .schedule .lunch div {
@@ -698,7 +700,6 @@ button.button.warn {
     display: none;
 }
 
-
 /* Admin Pages */
 /* Admin CFP */
 
@@ -736,7 +737,7 @@ button.button.warn {
         width: 100%;
         height: auto;
     }
-    #what-to-expect img{
+    #what-to-expect img {
         width: 100%;
         height: auto;
         margin: 16px 0;
@@ -810,4 +811,3 @@ button.button.warn {
         display: none;
     }
 }
-

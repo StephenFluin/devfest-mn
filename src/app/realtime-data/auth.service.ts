@@ -1,8 +1,17 @@
 import { Injectable, Injector, inject } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { AngularFireDatabase } from '@angular/fire/compat/database';
+import {
+    Auth,
+    authState,
+    signInWithPopup,
+    GoogleAuthProvider,
+    signOut,
+    user,
+    getAuth,
+    User,
+} from '@angular/fire/auth';
+
 import { YearService } from '../year.service';
-import firebase from 'firebase/compat/app';
+import { Database, list, object, objectVal, ref } from '@angular/fire/database';
 import 'firebase/compat/auth';
 import { combineLatest, EMPTY as observableEmpty, Observable, of as observableOf } from 'rxjs';
 import { map, shareReplay, switchMap } from 'rxjs/operators';
@@ -11,8 +20,9 @@ import { localstorageCache } from '../shared/localstorage-cache.operator';
 
 @Injectable()
 export class AuthService {
-    private auth = inject(AngularFireAuth);
-    private db = inject(AngularFireDatabase);
+    private auth = inject(Auth);
+    provider = new GoogleAuthProvider();
+    private db = inject(Database);
 
     isAdmin: Observable<boolean>;
     isVolunteer: Observable<boolean>;
@@ -23,7 +33,7 @@ export class AuthService {
     agenda: Observable<any>;
     feedback: Observable<Feedback>;
 
-    state = this.auth.authState.pipe(shareReplay(1));
+    state = authState(this.auth).pipe(shareReplay(1));
 
     constructor() {
         const yearService = inject(YearService);
@@ -51,19 +61,16 @@ export class AuthService {
             switchMap((authState) => {
                 if (authState && authState.uid) {
                     let year = yearService.year;
-                    return this.db
-                        .list<any>(`devfest${year}/agendas/${authState.uid}`)
-                        .snapshotChanges()
-                        .pipe(
-                            map((actions) =>
-                                actions.map((a) => {
-                                    const value = a.payload.val();
-                                    const key = a.payload.key;
-                                    console.log('payload includes', a.payload);
-                                    return { key: key, ...value };
-                                })
-                            )
-                        );
+                    return list(ref(this.db, `devfest${year}/agendas/${authState.uid}`)).pipe(
+                        map((actions) =>
+                            actions.map((a) => {
+                                const value = a.snapshot.val();
+                                const key = a.snapshot.key;
+                                console.log('payload includes', a.snapshot.val());
+                                return { key: key, ...value };
+                            })
+                        )
+                    );
                 } else {
                     return observableEmpty;
                 }
@@ -76,7 +83,7 @@ export class AuthService {
                 if (!authState) {
                     return observableOf(false);
                 } else {
-                    return this.db.object('/admin/' + authState.uid).valueChanges();
+                    return objectVal(ref(this.db, '/admin/' + authState.uid));
                 }
             }),
             map((value) => !!value),
@@ -89,9 +96,7 @@ export class AuthService {
                     if (!authState) {
                         return observableOf(false);
                     } else {
-                        return this.db
-                            .object('devfest2017/volunteers/' + authState.uid)
-                            .valueChanges();
+                        return objectVal(ref(this.db, '/devfest2025/volunteers/' + authState.uid));
                     }
                 })
             )
@@ -100,7 +105,10 @@ export class AuthService {
         this.isAdminOrVolunteer = combineLatest(this.isAdmin, this.isVolunteer, (x, y) => x || y);
     }
     login() {
-        this.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+        signInWithPopup(this.auth, this.provider).then((result) => {
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            return credential;
+        });
     }
     logout() {
         this.auth.signOut();

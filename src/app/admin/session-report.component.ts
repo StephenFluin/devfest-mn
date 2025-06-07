@@ -8,9 +8,7 @@ import { AsyncPipe } from '@angular/common';
 
 @Component({
     templateUrl: 'session-report.component.html',
-    imports: [
-    AsyncPipe
-]
+    imports: [AsyncPipe],
 })
 export class SessionReportComponent {
     auth = inject(AuthService);
@@ -24,14 +22,14 @@ export class SessionReportComponent {
 
         this.year = yearService.year;
         let allData = http.get<{ feedback: any; schedule: any; speakers: any }>(
-            `https://devfestmn.firebaseio.com/devfest${yearService.year}.json`
+            `https://devfestmn-2025-default-rtdb.firebaseio.com/devfest${yearService.year}.json`
         );
 
-        let tenthsRound = x => Math.round(x * 10) / 10;
+        let tenthsRound = (x) => Math.round(x * 10) / 10;
 
         // Format the data like we want it
         this.sessions = allData.pipe(
-            map(data => {
+            map((data) => {
                 let feedback = data.feedback;
                 let collectedFeedback = {};
                 let sessions = data.schedule;
@@ -99,12 +97,17 @@ export class SessionReportComponent {
                         }
 
                         sessionData.content = tenthsRound(content / contentCount);
-                        sessionData.recommendation = tenthsRound(recommendation / recommendationCount);
+                        sessionData.recommendation = tenthsRound(
+                            recommendation / recommendationCount
+                        );
                         sessionData.speaker = tenthsRound(speaker / speakerCount);
 
                         sessionData.ratingsCount = count;
                         sessionData.totalScore =
-                            sessionData.content + sessionData.recommendation + sessionData.speaker + count / 5;
+                            sessionData.content +
+                            sessionData.recommendation +
+                            sessionData.speaker +
+                            count / 5;
                     }
 
                     result.push(sessionData);

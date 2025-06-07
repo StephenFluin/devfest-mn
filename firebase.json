@@ -1,29 +1,19 @@
 {
-    "database": {
-        "rules": "database.rules.json"
-    },
-    "hosting": {
-        "public": "dist/browser",
-        "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-        "rewrites": [
-            {
-                "source": "**",
-                "destination": "/index.html"
-            }
-        ],
-        "redirects": [
-            {
-                "source": "/survey",
-                "destination": "https://bit.ly/devfest2024-survey",
-                "type": 301
-            }
-        ]
-    },
-    "firestore": {
-        "rules": "firestore.rules",
-        "indexes": "firestore.indexes.json"
-    },
-    "storage": {
-        "rules": "storage.rules"
-    }
+  "hosting": {
+    "public": "dist/browser",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "database": {
+    "rules": "database.rules.json"
+  }
 }

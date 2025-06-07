@@ -8,10 +8,11 @@ import { ADirective } from '../a.directive';
 
 @Component({
     templateUrl: './home.component.html',
-    imports: [RouterLink, ADirective]
+    imports: [RouterLink, ADirective],
 })
 export class HomeComponent {
     environment = environment;
+    mode: 'dayof' | 'early' = 'early';
     faqSelection = 1;
 
     setFaqSelection(question) {

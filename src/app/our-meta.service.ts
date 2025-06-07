@@ -1,7 +1,7 @@
 import { Title, Meta } from '@angular/platform-browser';
 import { environment } from '../environments/environment';
-import { Injectable, inject } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
+import { Injectable, inject, DOCUMENT } from '@angular/core';
+
 
 @Injectable({ providedIn: 'root' })
 export class OurMeta {

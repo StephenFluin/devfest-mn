@@ -2,19 +2,15 @@ import { Component, inject } from '@angular/core';
 
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 
-import { AngularFireList } from '@angular/fire/compat/database/interfaces';
+import { AsyncPipe } from '@angular/common';
+import { AngularFireList } from '@angular/fire/compat/database';
+import { RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService } from '../realtime-data/auth.service';
 import { YearService } from '../year.service';
-import { RouterLink, RouterOutlet } from '@angular/router';
-import { AsyncPipe } from '@angular/common';
 
 @Component({
     templateUrl: './admin.component.html',
-    imports: [
-    RouterLink,
-    RouterOutlet,
-    AsyncPipe
-]
+    imports: [RouterLink, RouterOutlet, AsyncPipe],
 })
 export class AdminComponent {
     db = inject(AngularFireDatabase);
