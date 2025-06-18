@@ -147,14 +147,11 @@
 
     <section>
         <div>
-            <!-- <h2>Speakers</h2>
-        <p *ngIf="!environment.showSpeakers">
-          We can't wait to share the speaker line-up with you! Hang tight.
-          <a
-            href="https://docs.google.com/forms/d/e/1FAIpQLSeGU4anplbD0KGUKXinY94_mThgrHQHE-7B4rPDFg9Tv00fMQ/viewform"
-            >Apply to Speak</a
-            >
-          </p> -->
+            <h2>Speakers</h2>
+            <p *ngIf="!environment.showSpeakers">
+                We can't wait to share the speaker line-up with you! Hang tight.
+                <a routerLink="/speaker-cfp">Apply to Speak</a>
+            </p>
             <!-- <p *ngIf="environment.showSpeakers">
           We've begun announcing some of the event speakers. Check out the
           <a routerLink="/speakers">Speakers</a> page for more details.
@@ -239,12 +236,7 @@
             <h3>Let us know how you want to get involved!</h3>
             <div class="cta-block">
                 <a routerLink="/sponsors" class="cta all-caps">Sponsor</a>
-                <a
-                    href="https://docs.google.com/forms/u/0/d/1qlKF3ovQYs5SHgsWlIIf_YubYolAcBDVkxjDOJOfdBQ/edit"
-                    target="_blank"
-                    class="cta all-caps"
-                    >Speak</a
-                >
+                <a routerLink="/speaker-cfp" class="cta all-caps">Speak</a>
             </div>
         </div>
     </section>
@@ -297,21 +289,18 @@
                 <div>
                     <p>
                         The CFP is now open!
-                        <a
-                            href="https://docs.google.com/forms/d/e/1FAIpQLSeGU4anplbD0KGUKXinY94_mThgrHQHE-7B4rPDFg9Tv00fMQ/viewform"
-                            >Submit a talk</a
-                        >.
+                        <a routerLink="/speaker-cfp">Submit a talk</a>.
                     </p>
                 </div>
                 } @if (faqSelection == 2) {
                 <div>
                     <p>
-                        If you're interested in sponsoring you can email us directly at
-                        events&#64;gdgtc.com.
-                    </p>
-                    <p>
                         We offer a variety of sponsorship levels and love to work with companies to
                         find the right arrangement.
+                    </p>
+                    <p>
+                        If you're interested in sponsoring check out our
+                        <a routerLink="/sponsors">sponsor guide</a>.
                     </p>
                 </div>
                 } @if (faqSelection == 3) {
