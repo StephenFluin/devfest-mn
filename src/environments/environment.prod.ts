@@ -16,4 +16,5 @@ export const environment = {
     //'https://www.eventbrite.com/e/1082249821349?aff=oddtdtcreator',
     showSchedule: false,
     showSpeakers: false,
+    showSponsor: true,
 };

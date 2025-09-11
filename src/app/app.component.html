@@ -25,8 +25,9 @@
             <a [routerLink]="['speaker-cfp']">Be a Speaker</a>
             } @if (environment.showSpeakers) {
             <a [routerLink]="['/speakers']">Speakers</a>
+            } @if (environment.showSponsor) {
+            <a [routerLink]="['/sponsors']">Sponsor</a>
             }
-            <!-- <a routerLink="/sponsors">Sponsor</a> -->
         </div>
     </div>
     <div [@routeAnimation]="prepRouteState(routerOutlet)" class="routeContainer">

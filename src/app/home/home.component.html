@@ -148,10 +148,12 @@
     <section>
         <div>
             <h2>Speakers</h2>
-            <p *ngIf="!environment.showSpeakers">
+            @if(!environment.showSpeakers) {
+            <p>
                 We can't wait to share the speaker line-up with you! Hang tight.
                 <a routerLink="/speaker-cfp">Apply to Speak</a>
             </p>
+            }
             <!-- <p *ngIf="environment.showSpeakers">
           We've begun announcing some of the event speakers. Check out the
           <a routerLink="/speakers">Speakers</a> page for more details.
@@ -235,7 +237,9 @@
             <h2>Join Us</h2>
             <h3>Let us know how you want to get involved!</h3>
             <div class="cta-block">
+                @if(environment.showSponsor) {
                 <a routerLink="/sponsors" class="cta all-caps">Sponsor</a>
+                }
                 <a routerLink="/speaker-cfp" class="cta all-caps">Speak</a>
             </div>
         </div>
