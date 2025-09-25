@@ -39,7 +39,7 @@ export class HomeComponent {
         window.EBWidgets.createWidget({
             // Required
             widgetType: 'checkout',
-            eventId: '1684295616529',
+            eventId: environment.eventbriteEventId,
             iframeContainerId: 'eventbrite-widget-container-1684295616529',
 
             // Optional

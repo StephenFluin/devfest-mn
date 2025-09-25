@@ -17,4 +17,5 @@ export const environment = {
     showSchedule: false,
     showSpeakers: false,
     showSponsor: true,
+    eventbriteEventId: '1684295616529',
 };
