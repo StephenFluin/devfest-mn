@@ -12,8 +12,8 @@ export const environment = {
         appId: '1:870313152725:web:837dcb46f7f04730fc525c',
         measurementId: 'G-XNZWL27N39',
     },
-    showRegister: false,
-    //'https://www.eventbrite.com/e/1082249821349?aff=oddtdtcreator',
+    showRegister:
+        'https://www.eventbrite.com/e/devfestmn-2025-tickets-1684295616529?aff=oddtdtcreator',
     showSchedule: false,
     showSpeakers: false,
     showSponsor: true,
