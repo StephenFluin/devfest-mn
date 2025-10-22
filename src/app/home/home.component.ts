@@ -6,9 +6,12 @@ import { RouterLink } from '@angular/router';
 
 import { ADirective } from '../a.directive';
 
+import '../../eb-widget';
+
 declare global {
     interface Window {
         EBWidgets: any;
+        gtag: any;
     }
 }
 
@@ -27,24 +30,27 @@ export class HomeComponent {
 
     constructor() {
         const yearService = inject(YearService);
-
         yearService.reset();
     }
 
     ngAfterViewInit() {
-        var exampleCallback = function () {
-            console.log('Order complete!');
+        var purchaseFinished = function (orderData) {
+            window.gtag('event', 'purchase', {
+                transaction_id: orderData.orderId,
+                value: 25.0,
+                currency: 'USD',
+                event_label: 'Ticket Sale',
+            });
         };
 
         window.EBWidgets.createWidget({
-            // Required
             widgetType: 'checkout',
             eventId: environment.eventbriteEventId,
             iframeContainerId: 'eventbrite-widget-container-1684295616529',
 
             // Optional
-            iframeContainerHeight: 425, // Widget height in pixels. Defaults to a minimum of 425px if not provided
-            onOrderComplete: exampleCallback, // Method called when an order has successfully completed
+            iframeContainerHeight: 600, // Widget height in pixels. Defaults to a minimum of 425px if not provided
+            onOrderComplete: purchaseFinished, // Method called when an order has successfully completed
         });
         console.log('Created widget');
     }

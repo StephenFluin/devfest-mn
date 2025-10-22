@@ -26,10 +26,19 @@ declare global {
                 // animate the leave page away
                 group([
                     query(':leave', [
-                        animate('0.3s cubic-bezier(.35,0,.25,1)', style({ transform: 'translateX(-100%)' })),
+                        animate(
+                            '0.3s cubic-bezier(.35,0,.25,1)',
+                            style({ transform: 'translateX(-100%)' })
+                        ),
                     ]),
                     // and now reveal the enter
-                    query(':enter', animate('0.3s cubic-bezier(.35,0,.25,1)', style({ transform: 'translateX(0)' }))),
+                    query(
+                        ':enter',
+                        animate(
+                            '0.3s cubic-bezier(.35,0,.25,1)',
+                            style({ transform: 'translateX(0)' })
+                        )
+                    ),
                 ]),
             ]),
             transition('2 => 1', [
@@ -39,15 +48,24 @@ declare global {
                 // animate the leave page away
                 group([
                     query(':leave', [
-                        animate('0.3s cubic-bezier(.35,0,.25,1)', style({ transform: 'translateX(100%)' })),
+                        animate(
+                            '0.3s cubic-bezier(.35,0,.25,1)',
+                            style({ transform: 'translateX(100%)' })
+                        ),
                     ]),
                     // and now reveal the enter
-                    query(':enter', animate('0.3s cubic-bezier(.35,0,.25,1)', style({ transform: 'translateX(0)' }))),
+                    query(
+                        ':enter',
+                        animate(
+                            '0.3s cubic-bezier(.35,0,.25,1)',
+                            style({ transform: 'translateX(0)' })
+                        )
+                    ),
                 ]),
             ]),
         ]),
     ],
-    imports: [ADirective, RouterLink, RouterOutlet]
+    imports: [ADirective, RouterLink, RouterOutlet],
 })
 export class AppComponent {
     environment = environment;
@@ -104,18 +122,23 @@ export class AppComponent {
         this.lazyLoadEBWidget();
     }
     lazyLoadEBWidget() {
-        return import('../eb-widget').then(() => {
+        return import('../eb-widget3').then(() => {
             console.log('eb-widget loaded');
             console.log(window['EBWidgets']);
-            var exampleCallback = function () {
-                console.log('Order complete!');
+            const purchaseFinished = function (orderData) {
+                window.gtag('event', 'purchase', {
+                    transaction_id: orderData.orderId,
+                    value: 25.0,
+                    currency: 'USD',
+                    event_label: 'Ticket Sale',
+                });
             };
             window['EBWidgets'].createWidget({
                 widgetType: 'checkout',
                 eventId: '1082249821349',
                 modal: true,
                 modalTriggerElementId: 'global-ticket-button',
-                onOrderComplete: exampleCallback,
+                onOrderComplete: purchaseFinished,
             });
             this.widgetReady = true;
         });
