@@ -122,7 +122,7 @@ export class AppComponent {
         this.lazyLoadEBWidget();
     }
     lazyLoadEBWidget() {
-        return import('../eb-widget3').then(() => {
+        return import('../eb-widget').then(() => {
             console.log('eb-widget loaded');
             console.log(window['EBWidgets']);
             const purchaseFinished = function (orderData) {
