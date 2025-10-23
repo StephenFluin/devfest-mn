@@ -135,7 +135,7 @@ export class AppComponent {
             };
             window['EBWidgets'].createWidget({
                 widgetType: 'checkout',
-                eventId: '1082249821349',
+                eventId: environment.eventbriteEventId,
                 modal: true,
                 modalTriggerElementId: 'global-ticket-button',
                 onOrderComplete: purchaseFinished,
