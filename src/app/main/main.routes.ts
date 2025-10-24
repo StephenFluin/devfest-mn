@@ -38,6 +38,11 @@ export const MainRoutes: Routes = [
         loadComponent: () => import('../tickets/tickets.component').then((m) => m.TicketsComponent),
         data: { title: 'Tickets', depth: 1 },
     },
+    {
+        path: 'past',
+        loadComponent: () => import('../past/past.component').then((m) => m.PastComponent),
+        data: { title: 'Past DevFestMN Events', depth: 1 },
+    },
 ];
 
 export default MainRoutes;
