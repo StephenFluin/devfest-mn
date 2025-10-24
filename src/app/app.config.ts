@@ -1,7 +1,11 @@
 import { ApplicationConfig } from '@angular/core';
 import { importProvidersFrom } from '@angular/core';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { BrowserModule, provideClientHydration } from '@angular/platform-browser';
+import {
+    BrowserModule,
+    provideClientHydration,
+    withIncrementalHydration,
+} from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { UrlSegment, provideRouter } from '@angular/router';
 
@@ -24,7 +28,7 @@ export const appConfig: ApplicationConfig = {
                 loadChildren: () => import('./authenticated/authenticated.routes'),
             },
         ]),
-        provideClientHydration(),
+        provideClientHydration(withIncrementalHydration()),
     ],
 };
 

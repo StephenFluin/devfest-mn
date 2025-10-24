@@ -20,20 +20,31 @@
                 "build": {
                     "builder": "@angular/build:application",
                     "options": {
-                        "outputPath": "dist",
-                        "index": "src/index.html",
-                        "browser": "src/main.ts",
-                        "polyfills": ["zone.js"],
-                        "tsConfig": "tsconfig.app.json",
-                        "inlineStyleLanguage": "scss",
-                        "assets": ["src/favicon.ico", "src/a", "src/webfont.js"],
-                        "styles": ["src/styles.scss"],
-                        "scripts": [],
-                        "server": "src/main.server.ts",
-                        "prerender": false,
-                        "ssr": false,
-                        "namedChunks": true,
-                        "sourceMap": true
+                      "outputPath": "dist",
+                      "index": "src/index.html",
+                      "browser": "src/main.ts",
+                      "polyfills": [
+                        "zone.js"
+                      ],
+                      "tsConfig": "tsconfig.app.json",
+                      "inlineStyleLanguage": "scss",
+                      "assets": [
+                        "src/favicon.ico",
+                        "src/a",
+                        "src/webfont.js"
+                      ],
+                      "styles": [
+                        "src/styles.scss"
+                      ],
+                      "scripts": [],
+                      "server": "src/main.server.ts",
+                      "prerender": false,
+                      "ssr": {
+                        "entry": "src/server.ts"
+                      },
+                      "namedChunks": true,
+                      "sourceMap": true,
+                      "outputMode": "server"
                     },
                     "configurations": {
                         "production": {

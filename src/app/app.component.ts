@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, PLATFORM_ID } from '@angular/core';
 import { Router, NavigationStart, NavigationEnd, RouterLink, RouterOutlet } from '@angular/router';
 import { trigger, transition, group, query, style, animate } from '@angular/animations';
+import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../environments/environment';
 
 import { filter } from 'rxjs/operators';
@@ -70,6 +71,9 @@ declare global {
 })
 export class AppComponent {
     environment = environment;
+    private platformId = inject(PLATFORM_ID);
+    private isBrowser = isPlatformBrowser(this.platformId);
+    isSecure = this.isBrowser && window?.location?.protocol === 'https:';
 
     widgetReady = false;
 
@@ -117,12 +121,15 @@ export class AppComponent {
     }
 
     loadEBWidget() {
-        if (this.widgetReady) {
+        if (!this.isBrowser || this.widgetReady) {
             return;
         }
         this.lazyLoadEBWidget();
     }
     lazyLoadEBWidget() {
+        if (!this.isBrowser) {
+            return Promise.resolve();
+        }
         return import('../eb-widget').then(() => {
             console.log('eb-widget loaded');
             console.log(window['EBWidgets']);
@@ -140,9 +147,12 @@ export class AppComponent {
      * Let the user click before the widget is loaded, then click it for them
      */
     lazyClickEBWidget() {
+        if (!this.isBrowser) {
+            return;
+        }
         if (!this.widgetReady) {
             this.lazyLoadEBWidget().then(() => {
-                document.getElementById('global-ticket-button').click();
+                document.getElementById('global-ticket-button')?.click();
             });
         }
     }
