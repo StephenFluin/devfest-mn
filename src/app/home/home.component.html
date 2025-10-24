@@ -17,11 +17,7 @@
                     <span>December 6, 2025</span>
                 </a>
                 <!--<a href="https://www.google.com/maps/place/Schulze+Hall/@44.974195,-93.279928,17z/data=!3m1!4b1!4m2!3m1!1s0x52b332944d7d30f9:0x169d5a902717f38e?hl=en" -->
-                <a
-                    href="https://maps.app.goo.gl/w1nJNEmjhe3cvMKg7"
-                    target="_blank"
-                    class="icon-text-link"
-                >
+                <a [href]="environment.venueMapUrl" target="_blank" class="icon-text-link">
                     <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
                         <path
                             fill="#000000"
@@ -131,7 +127,7 @@
 
     <!-- <section>
       <div>
-        <h2>2019 Keynote</h2>
+        <h2>Keynote</h2>
         <div class="callout">
           <img src="/a/images/annycedavis-headshot.jpg" alt="annyce-davis" height="240px"/><br>
           <h3>Annyce Davis</h3>
@@ -148,39 +144,38 @@
     <section>
         <div>
             <h2>Speakers</h2>
-            @if(!environment.showSpeakers) {
+            @if(environment.showCFP) {
             <p>
-                We can't wait to share the speaker line-up with you! Hang tight.
+                We're currently welcoming speaker submission.
                 <a routerLink="/speaker-cfp">Apply to Speak</a>
             </p>
+            } @else if (environment.showSpeakers) {
+            <p>
+                We've begun announcing some of the event speakers. Check out the
+                <a routerLink="/speakers">Speakers</a> page for more details.
+            </p>
+            } @else {
+            <p>We can't wait to share the speaker line-up with you! Hang tight.</p>
             }
-            <!-- <p *ngIf="environment.showSpeakers">
-          We've begun announcing some of the event speakers. Check out the
-          <a routerLink="/speakers">Speakers</a> page for more details.
-        </p> -->
         </div>
     </section>
 
-    <!-- <section>
-    <div>
-      <h2>Our Focus Event</h2>
-      <p>
-        Our call for speakers is now open. Please submit your talk via the link below. We
-        can't wait to see hear from you!
-      </p>
-      <p>
-        <a routerLink="/cfp" class="cta all-caps" style="display: inline"
-          >Speak at DevFestMN 2019</a
-          >
-          <a
-            href="https://papercall.io/devfestmn2019"
-            class="cta all-caps"
-            style="display: inline"
-            >Speak at DevFestMN 2019</a
-            >
-          </p>
+    @if(environment.showCFP) {
+    <section>
+        <div>
+            <h2>Speakers Welcome!</h2>
+            <p>
+                Our call for speakers is now open. Please submit your talk via the link below. We
+                can't wait to see hear from you!
+            </p>
+            <p>
+                <a routerLink="/speaker-cfp" class="cta all-caps" style="display: inline"
+                    >Speak at DevFestMN</a
+                >
+            </p>
         </div>
-      </section> -->
+    </section>
+    }
 
     <section id="home-section-sponsors" class="section-background">
         <div>
@@ -199,7 +194,9 @@
                     </a>
                 </div>
             </div>
-            <p>Sponsorships are still available!</p>
+            @if(environment.showSponsor) {
+            <p>Sponsorships are still available! <a routerLink="/sponsors">Inquire Now</a></p>
+            }
 
             <!--
       <h3>Nougat Community Sponsors</h3>
@@ -225,8 +222,11 @@
             <div class="cta-block">
                 @if(environment.showSponsor) {
                 <a routerLink="/sponsors" class="cta all-caps">Sponsor</a>
-                }
+                } @if(environment.showCFP) {
                 <a routerLink="/speaker-cfp" class="cta all-caps">Speak</a>
+                } @if(environment.showRegister) {
+                <a routerLink="/tickets" class="cta all-caps">Register</a>
+                }
             </div>
         </div>
     </section>
@@ -278,8 +278,9 @@
                 @if (faqSelection == 1) {
                 <div>
                     <p>
-                        The CFP is now open!
-                        <a routerLink="/speaker-cfp">Submit a talk</a>.
+                        @if(environment.showCFP) { The CFP is now open!
+                        <a routerLink="/speaker-cfp">Submit a talk</a>. } @else { The call for
+                        speakers is now closed. Please try again next year. }
                     </p>
                 </div>
                 } @if (faqSelection == 2) {
@@ -333,13 +334,13 @@
     <section>
         <div>
             <h2>Map</h2>
-            <p>DevFestMN 2019 will be hosted at the University of St. Thomas in Minneapolis, MN.</p>
+            <p>
+                DevFestMN will be hosted at the University of Minnesota Health Sciences Education
+                Center in Minneapolis, MN.
+            </p>
             <div id="map">
-                <a
-                    href="https://www.google.com/maps/place/Schulze+Hall/@44.9743415,-93.2792796,17z/data=!4m5!3m4!1s0x52b332944d7d30f9:0x169d5a902717f38e!8m2!3d44.974157!4d-93.2777481"
-                    target="map"
-                >
-                    <img src="/a/images/map-ust-LR.png" />
+                <a [href]="environment.venueMapUrl" target="map">
+                    <img src="/a/images/map-umn.png" />
                 </a>
             </div>
         </div>

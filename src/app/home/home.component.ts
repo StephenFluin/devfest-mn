@@ -7,6 +7,7 @@ import { RouterLink } from '@angular/router';
 import { ADirective } from '../a.directive';
 
 import '../../eb-widget';
+import { trackTicketPurchase } from '../analytics.util';
 
 declare global {
     interface Window {
@@ -34,15 +35,6 @@ export class HomeComponent {
     }
 
     ngAfterViewInit() {
-        var purchaseFinished = function (orderData) {
-            window.gtag('event', 'purchase', {
-                transaction_id: orderData.orderId,
-                value: 25.0,
-                currency: 'USD',
-                event_label: 'Ticket Sale',
-            });
-        };
-
         window.EBWidgets.createWidget({
             widgetType: 'checkout',
             eventId: environment.eventbriteEventId,
@@ -50,7 +42,7 @@ export class HomeComponent {
 
             // Optional
             iframeContainerHeight: 600, // Widget height in pixels. Defaults to a minimum of 425px if not provided
-            onOrderComplete: purchaseFinished, // Method called when an order has successfully completed
+            onOrderComplete: trackTicketPurchase, // Method called when an order has successfully completed
         });
         console.log('Created widget');
     }

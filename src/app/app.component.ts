@@ -7,6 +7,7 @@ import { filter } from 'rxjs/operators';
 import { OurMeta } from './our-meta.service';
 
 import { ADirective } from './a.directive';
+import { trackTicketPurchase } from './analytics.util';
 
 declare global {
     interface Window {
@@ -125,20 +126,12 @@ export class AppComponent {
         return import('../eb-widget').then(() => {
             console.log('eb-widget loaded');
             console.log(window['EBWidgets']);
-            const purchaseFinished = function (orderData) {
-                window.gtag('event', 'purchase', {
-                    transaction_id: orderData.orderId,
-                    value: 25.0,
-                    currency: 'USD',
-                    event_label: 'Ticket Sale',
-                });
-            };
             window['EBWidgets'].createWidget({
                 widgetType: 'checkout',
                 eventId: environment.eventbriteEventId,
                 modal: true,
                 modalTriggerElementId: 'global-ticket-button',
-                onOrderComplete: purchaseFinished,
+                onOrderComplete: trackTicketPurchase,
             });
             this.widgetReady = true;
         });

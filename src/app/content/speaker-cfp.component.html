@@ -21,6 +21,7 @@
         <h1>Call for Speakers</h1>
     </header>
 
+    @if(environment.showCFP) {
     <section>
         <p>
             The DevFestMN 2025 Call for Speakers is officially open! If you are interested in
@@ -156,4 +157,10 @@
 
         <p>We look forward to seeing you at DevFestMN 2025!</p>
     </section>
+    } @else {
+    <p>
+        The speaker CFP is currently closed. If you have any questions, please contact us at
+        info&#64;devfest.mn.
+    </p>
+    }
 </div>
