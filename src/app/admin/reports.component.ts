@@ -5,59 +5,67 @@ import { AngularFireDatabase } from '@angular/fire/compat/database';
 
 import { Observable, combineLatest } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { YearService } from '../year.service';
 import { AuthService } from '../realtime-data/auth.service';
 import { AsyncPipe } from '@angular/common';
 import { AdminNavComponent } from './admin-nav.component';
+import { environment } from '../../environments/environment';
 
 @Component({
     template: `
-    <admin-nav></admin-nav>
-    @if (auth.isAdmin | async) {
-      <div>
-        <h2>Speaker</h2>
-        @for (session of sessions | async; track session) {
-          <div>
-            <div><strong>{{ session.title}}</strong></div>
-            @if (session.feedback) {
-              <div>{{session.feedback.length}} Reviews
-                <div>Speaker: {{ session.scoreSpeaker }} /
-                  Content: {{ session.scoreContent }} /
-                Recommendation: {{ session.scoreRecommendation }}</div>
-                <table border="1">
-                  <tr><td>S</td><td>C</td><td>R</td></tr>
-                  @for (feedback of session.feedback; track feedback) {
-                    <tr>
-                      <td>{{feedback.speaker}}</td>
-                      <td>{{feedback.content}}</td>
-                      <td>{{feedback.recommendation}}</td>
-                    </tr>
-                  }
-                </table>
-              </div>
-            }
-            <br/>
-          </div>
-        }
-        <h2>Overall Feedback</h2>
-        <ol>
-          @for (session of sessions | async; track session) {
+        <admin-nav></admin-nav>
+        @if (auth.isAdmin()) {
+        <div>
+            <h2>Speaker</h2>
+            @for (session of sessions | async; track session) {
             <div>
-              @for (feedback of session.feedback; track feedback) {
                 <div>
-                  <li>{{feedback.speaker}} / {{feedback.content}} / {{feedback.recommendation}} - {{feedback.uid}}</li>
+                    <strong>{{ session.title }}</strong>
                 </div>
-              }
+                @if (session.feedback) {
+                <div>
+                    {{ session.feedback.length }} Reviews
+                    <div>
+                        Speaker: {{ session.scoreSpeaker }} / Content: {{ session.scoreContent }} /
+                        Recommendation: {{ session.scoreRecommendation }}
+                    </div>
+                    <table border="1">
+                        <tr>
+                            <td>S</td>
+                            <td>C</td>
+                            <td>R</td>
+                        </tr>
+                        @for (feedback of session.feedback; track feedback) {
+                        <tr>
+                            <td>{{ feedback.speaker }}</td>
+                            <td>{{ feedback.content }}</td>
+                            <td>{{ feedback.recommendation }}</td>
+                        </tr>
+                        }
+                    </table>
+                </div>
+                }
+                <br />
             </div>
-          }
-        </ol>
-      </div>
-    }
+            }
+            <h2>Overall Feedback</h2>
+            <ol>
+                @for (session of sessions | async; track session) {
+                <div>
+                    @for (feedback of session.feedback; track feedback) {
+                    <div>
+                        <li>
+                            {{ feedback.speaker }} / {{ feedback.content }} /
+                            {{ feedback.recommendation }} - {{ feedback.uid }}
+                        </li>
+                    </div>
+                    }
+                </div>
+                }
+            </ol>
+        </div>
+        }
     `,
-    imports: [
-    AdminNavComponent,
-    AsyncPipe
-]
+    imports: [AdminNavComponent, AsyncPipe],
 })
 export class ReportsComponent {
     auth = inject(AuthService);
@@ -66,17 +74,22 @@ export class ReportsComponent {
 
     feedback: Observable<any>;
     sessions: Observable<
-        { title: string; scoreSpeaker: number; scoreContent: number; scoreRecommendation: number; feedback?: any[] }[]
-        >;
+        {
+            title: string;
+            scoreSpeaker: number;
+            scoreContent: number;
+            scoreRecommendation: number;
+            feedback?: any[];
+        }[]
+    >;
 
     constructor() {
         const ds = this.ds;
-        const yearService = inject(YearService);
 
         this.feedback = ds.getFeedback();
-        this.sessions = combineLatest(this.feedback, ds.getSchedule(yearService.year)).pipe(
-            tap(data => console.log(data)),
-            map(data => {
+        this.sessions = combineLatest(this.feedback, ds.getSchedule(environment.year)).pipe(
+            tap((data) => console.log(data)),
+            map((data) => {
                 let [feedback, originalSession] = data;
 
                 // clone the data
@@ -90,7 +103,7 @@ export class ReportsComponent {
                 for (let uid of Object.keys(feedback)) {
                     let user = feedback[uid];
                     for (let sessionKey of Object.keys(user)) {
-                        let session = sessions.find(item => item.$key === sessionKey);
+                        let session = sessions.find((item) => item.$key === sessionKey);
                         if (session) {
                             if (!session.feedback) {
                                 session.feedback = [];
@@ -107,7 +120,11 @@ export class ReportsComponent {
                     if (session.feedback) {
                         let length = session.feedback.length;
                         for (let feedbackResult of session.feedback) {
-                            if (feedbackResult.speaker === 0 || feedbackResult.content === 0 || feedbackResult.recommendation === 0) {
+                            if (
+                                feedbackResult.speaker === 0 ||
+                                feedbackResult.content === 0 ||
+                                feedbackResult.recommendation === 0
+                            ) {
                                 length--;
                             } else {
                                 session.scoreSpeaker += feedbackResult.speaker;
@@ -117,7 +134,8 @@ export class ReportsComponent {
                         }
                         session.scoreSpeaker = session.scoreSpeaker / session.feedback.length;
                         session.scoreContent = session.scoreContent / session.feedback.length;
-                        session.scoreRecommendation = session.scoreRecommendation / session.feedback.length;
+                        session.scoreRecommendation =
+                            session.scoreRecommendation / session.feedback.length;
                     }
                 }
 
@@ -131,7 +149,7 @@ export class ReportsComponent {
 
                 return sessions;
             }),
-            tap(data => console.log('processed data', data)),
+            tap((data) => console.log('processed data', data))
         );
     }
 }

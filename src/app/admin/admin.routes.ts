@@ -1,11 +1,27 @@
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { Routes } from '@angular/router';
+import { FirebaseService } from '../realtime-data/firebase.service';
+import { AuthService } from '../realtime-data/auth.service';
+import { getDatabase, provideDatabase } from '@angular/fire/database';
+import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
+import { environment } from '../../environments/environment';
+import { AngularFireModule } from '@angular/fire/compat';
+import { importProvidersFrom } from '@angular/core';
+import { DataService } from '../shared/data.service';
 
 export const AdminRoutes: Routes = [
     {
         path: '',
         pathMatch: 'prefix',
-        providers: [],
+        providers: [
+            // DataService,
+            // importProvidersFrom(AngularFireModule.initializeApp(environment.firebaseConfig)),
+            // provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
+            // provideDatabase(() => getDatabase()),
+            // provideAuth(() => getAuth()),
+            // AuthService,
+            // FirebaseService,
+        ],
         children: [
             {
                 path: '',

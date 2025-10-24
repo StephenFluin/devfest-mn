@@ -1,5 +1,5 @@
 export const environment = {
-    defaultYear: '2025',
+    year: '2025',
     siteName: 'DevFestMN',
     firebaseConfig: {
         apiKey: 'AIzaSyCof6ntfAVNvyLmcaPvCkJOtkLa3ARffxc',
@@ -13,7 +13,7 @@ export const environment = {
     },
     showRegister:
         'https://www.eventbrite.com/e/devfestmn-2025-tickets-1684295616529?aff=oddtdtcreator',
-    showSchedule: false,
+    showSchedule: true,
     showCFP: false,
     showSpeakers: false,
     showSponsor: true,

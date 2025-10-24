@@ -2,9 +2,9 @@ import { Component, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
-import { YearService } from '../year.service';
 import { AuthService } from '../realtime-data/auth.service';
 import { AsyncPipe } from '@angular/common';
+import { environment } from '../../environments/environment';
 
 @Component({
     templateUrl: 'session-report.component.html',
@@ -18,11 +18,10 @@ export class SessionReportComponent {
 
     constructor() {
         const http = inject(HttpClient);
-        const yearService = inject(YearService);
 
-        this.year = yearService.year;
+        this.year = environment.year;
         let allData = http.get<{ feedback: any; schedule: any; speakers: any }>(
-            `https://devfestmn-2025-default-rtdb.firebaseio.com/devfest${yearService.year}.json`
+            `https://devfestmn-2025-default-rtdb.firebaseio.com/devfest${environment.year}.json`
         );
 
         let tenthsRound = (x) => Math.round(x * 10) / 10;

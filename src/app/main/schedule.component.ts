@@ -4,13 +4,14 @@ import { ActivatedRoute } from '@angular/router';
 
 import { DataService } from '../shared/data.service';
 
-import { Observable, combineLatest } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
-import { YearService } from '../year.service';
+import { Observable, combineLatest, BehaviorSubject } from 'rxjs';
+import { map, shareReplay, startWith } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 import { AuthService } from '../realtime-data/auth.service';
 import { MatButtonModule } from '@angular/material/button';
 import { ScheduleGridComponent } from './schedule-grid.component';
 import { AsyncPipe } from '@angular/common';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 export interface Schedule {
     startTimes: any[];
@@ -20,14 +21,13 @@ export interface Schedule {
 
 @Component({
     templateUrl: './schedule.component.html',
-    imports: [ScheduleGridComponent, MatButtonModule, AsyncPipe]
+    imports: [ScheduleGridComponent, MatButtonModule, AsyncPipe],
 })
 export class ScheduleComponent {
     ds = inject(DataService);
-    auth = inject(AuthService);
     route = inject(ActivatedRoute);
+    authService = inject(AuthService);
     router = inject(Router);
-    yearService = inject(YearService);
 
     // Two versions of the same data, one filtered, one not
     allSessions: Observable<Schedule>;
@@ -38,14 +38,11 @@ export class ScheduleComponent {
 
     constructor() {
         const ds = this.ds;
-        const yearService = this.yearService;
-
-        this.filteredData = this.allSessions;
 
         /**
          * Session data should look like data[time][room] = session;
          */
-        this.allSessions = ds.getSchedule(yearService.year).pipe(
+        this.allSessions = ds.getSchedule(environment.year).pipe(
             map((list) => {
                 let data = {};
                 for (let session of list) {
@@ -105,17 +102,26 @@ export class ScheduleComponent {
                 let startTimes = Object.keys(data).sort();
                 return { startTimes: startTimes, gridData: data, rooms: ds.getVenueLayout().rooms };
             }),
+            startWith({ startTimes: [], gridData: {}, rooms: [] } as Schedule),
             shareReplay(1)
         );
 
         this.filteredData = this.allSessions;
 
-        // Intersect the user's agenda against the session list
-        this.populatedAgenda = combineLatest(this.allSessions, this.auth.agenda).pipe(
-            map(([allData, rawAgenda]) => {
-                return this.filterToMyAgenda(allData, rawAgenda);
-            })
-        );
+        // Intersect the user's agenda against the session list if user is authed
+        if (this.authService) {
+            this.populatedAgenda = combineLatest([
+                this.allSessions,
+                toObservable(this.authService.agenda),
+            ]).pipe(
+                map(([allData, rawAgenda]) => {
+                    return this.filterToMyAgenda(allData, rawAgenda);
+                }),
+                startWith({ startTimes: [], gridData: {}, rooms: [] } as Schedule)
+            );
+        } else {
+            this.populatedAgenda = this.allSessions;
+        }
     }
 
     /**

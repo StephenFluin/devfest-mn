@@ -23,17 +23,20 @@
                         "outputPath": "dist",
                         "index": "src/index.html",
                         "browser": "src/main.ts",
-                        "polyfills": ["zone.js"],
+                        "polyfills": [],
                         "tsConfig": "tsconfig.app.json",
                         "inlineStyleLanguage": "scss",
-                        "assets": ["src/favicon.ico", "src/a", "src/webfont.js"],
+                        "assets": ["src/favicon.ico", "src/a"],
                         "styles": ["src/styles.scss"],
                         "scripts": [],
                         "server": "src/main.server.ts",
                         "prerender": false,
-                        "ssr": false,
+                        "ssr": {
+                            "entry": "src/server.ts"
+                        },
                         "namedChunks": true,
-                        "sourceMap": true
+                        "sourceMap": true,
+                        "outputMode": "server"
                     },
                     "configurations": {
                         "production": {
@@ -81,7 +84,7 @@
                 "test": {
                     "builder": "@angular/build:karma",
                     "options": {
-                        "polyfills": ["zone.js", "zone.js/testing"],
+                        "polyfills": [],
                         "tsConfig": "tsconfig.spec.json",
                         "inlineStyleLanguage": "scss",
                         "assets": ["src/favicon.ico", "src/a"],

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { YearService } from '../year.service';
+import { environment } from '../../environments/environment';
 import { DataService } from '../shared/data.service';
 import { AuthService } from '../realtime-data/auth.service';
 import { SpeakerContainerComponent } from './speaker-container.component';
@@ -16,9 +16,8 @@ export class SpeakersComponent {
     ds = inject(DataService);
     router = inject(Router);
     auth = inject(AuthService);
-    yearService = inject(YearService);
 
-    speakers = this.ds.getSpeakers(this.yearService.year);
+    speakers = this.ds.getSpeakers(environment.year);
 
     thisSpeaker = {};
     showDialog = false;

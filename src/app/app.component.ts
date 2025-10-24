@@ -1,6 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, DOCUMENT, inject, PLATFORM_ID } from '@angular/core';
 import { Router, NavigationStart, NavigationEnd, RouterLink, RouterOutlet } from '@angular/router';
-import { trigger, transition, group, query, style, animate } from '@angular/animations';
+import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../environments/environment';
 
 import { filter } from 'rxjs/operators';
@@ -18,58 +18,14 @@ declare global {
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
-    animations: [
-        trigger('routeAnimation', [
-            transition('1 =>2', [
-                style({ height: '!' }),
-                query(':enter', style({ transform: 'translateX(100%)' })),
-                query(':enter, :leave', style({ position: 'absolute', top: 0, left: 0, right: 0 })),
-                // animate the leave page away
-                group([
-                    query(':leave', [
-                        animate(
-                            '0.3s cubic-bezier(.35,0,.25,1)',
-                            style({ transform: 'translateX(-100%)' })
-                        ),
-                    ]),
-                    // and now reveal the enter
-                    query(
-                        ':enter',
-                        animate(
-                            '0.3s cubic-bezier(.35,0,.25,1)',
-                            style({ transform: 'translateX(0)' })
-                        )
-                    ),
-                ]),
-            ]),
-            transition('2 => 1', [
-                style({ height: '!' }),
-                query(':enter', style({ transform: 'translateX(-100%)' })),
-                query(':enter, :leave', style({ position: 'absolute', top: 0, left: 0, right: 0 })),
-                // animate the leave page away
-                group([
-                    query(':leave', [
-                        animate(
-                            '0.3s cubic-bezier(.35,0,.25,1)',
-                            style({ transform: 'translateX(100%)' })
-                        ),
-                    ]),
-                    // and now reveal the enter
-                    query(
-                        ':enter',
-                        animate(
-                            '0.3s cubic-bezier(.35,0,.25,1)',
-                            style({ transform: 'translateX(0)' })
-                        )
-                    ),
-                ]),
-            ]),
-        ]),
-    ],
     imports: [ADirective, RouterLink, RouterOutlet],
 })
 export class AppComponent {
     environment = environment;
+    private document = inject(DOCUMENT);
+    private platformId = inject(PLATFORM_ID);
+    private isBrowser = isPlatformBrowser(this.platformId);
+    isSecure = this.isBrowser && window?.location?.protocol === 'https:';
 
     widgetReady = false;
 
@@ -99,6 +55,13 @@ export class AppComponent {
             .subscribe((n: NavigationStart) => {});
     }
 
+    ngOnInit() {
+        const link = this.document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = '/a/montserrat-latin-400-700.woff2';
+        this.document.head.appendChild(link);
+    }
+
     prepRouteState(outlet: any) {
         return outlet.activatedRouteData['depth'] || '0';
     }
@@ -117,12 +80,15 @@ export class AppComponent {
     }
 
     loadEBWidget() {
-        if (this.widgetReady) {
+        if (!this.isBrowser || this.widgetReady || !this.isSecure) {
             return;
         }
         this.lazyLoadEBWidget();
     }
     lazyLoadEBWidget() {
+        if (!this.isBrowser || !this.isSecure) {
+            return Promise.resolve();
+        }
         return import('../eb-widget').then(() => {
             console.log('eb-widget loaded');
             console.log(window['EBWidgets']);
@@ -140,9 +106,16 @@ export class AppComponent {
      * Let the user click before the widget is loaded, then click it for them
      */
     lazyClickEBWidget() {
-        if (!this.widgetReady) {
+        if (!this.isBrowser) {
+            return;
+        }
+        if (!this.isSecure) {
+            alert('Eventbrite widget requires a secure (https) connection to load.');
+            return;
+        }
+        if (!this.widgetReady && this.isSecure) {
             this.lazyLoadEBWidget().then(() => {
-                document.getElementById('global-ticket-button').click();
+                document.getElementById('global-ticket-button')?.click();
             });
         }
     }

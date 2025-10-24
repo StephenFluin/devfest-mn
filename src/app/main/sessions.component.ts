@@ -3,7 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 
 import { DataService } from '../shared/data.service';
 
-import { YearService } from '../year.service';
+import { environment } from '../../environments/environment';
 import { AuthService } from '../realtime-data/auth.service';
 import { AsyncPipe } from '@angular/common';
 
@@ -21,9 +21,8 @@ export class SessionsComponent {
     ds = inject(DataService);
     router = inject(Router);
     auth = inject(AuthService);
-    yearService = inject(YearService);
 
-    sessions = this.ds.getSchedule(this.yearService.year);
+    sessions = this.ds.getSchedule(environment.year);
 
     thisSession = {};
     showDialog = false;

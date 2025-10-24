@@ -1,26 +1,21 @@
-<h2>{{year}} Session Report</h2>
-@if (auth.isAdmin | async) {
-  <div>
+<h2>{{ year }} Session Report</h2>
+@if (auth.isAdmin()) {
+<div>
     @for (session of sessions | async; track session) {
-      <div style="margin-bottom:32px;margin-top:32px;">
+    <div style="margin-bottom: 32px; margin-top: 32px">
         @if (session.speakers && session.speakers.length > 0) {
-          <h3>{{session.name}}</h3>
-          @for (speaker of session.speakers; track speaker; let i = $index; let c = $count) {
-            <span>
-              {{speaker}}{{ i
-            < c - 1 ? ',' : ''}} </span>
-          }
-          <br/>
-          @if (session.ratingsCount > 0) {
-            <div>Total ratings: {{session.ratingsCount}}</div>
-            <div>How would you rate this speaker? {{session.speaker}} average</div>
-            <div>How would you rate the content? {{session.content}} average</div>
-            <div>Would you recommend this session? {{session.recommendation}} average</div>
-          } @else {
-            This session did not receive any feedback.
-          }
+        <h3>{{ session.name }}</h3>
+        @for (speaker of session.speakers; track speaker; let i = $index; let c = $count) {
+        <span> {{ speaker }}{{ i < c - 1 ? ',' : '' }} </span>
         }
-      </div>
+        <br />
+        @if (session.ratingsCount > 0) {
+        <div>Total ratings: {{ session.ratingsCount }}</div>
+        <div>How would you rate this speaker? {{ session.speaker }} average</div>
+        <div>How would you rate the content? {{ session.content }} average</div>
+        <div>Would you recommend this session? {{ session.recommendation }} average</div>
+        } @else { This session did not receive any feedback. } }
+    </div>
     }
-  </div>
+</div>
 }

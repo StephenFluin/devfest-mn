@@ -1,57 +1,53 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, computed, inject, input, Signal } from '@angular/core';
 
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
-import { AngularFireDatabase, AngularFireObject } from '@angular/fire/compat/database';
 import { Observable } from 'rxjs';
-import { switchMap, map } from 'rxjs/operators';
+import { switchMap, map, tap } from 'rxjs/operators';
 import { DataService, Session } from '../shared/data.service';
 import { AuthService } from '../realtime-data/auth.service';
 import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
 import { UserFeedbackComponent } from './user-feedback.component';
 import { SpeakerContainerComponent } from './speaker-container.component';
 import { AsyncPipe, KeyValuePipe } from '@angular/common';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
     selector: 'session-details',
     templateUrl: 'session-details.component.html',
     imports: [
-    RouterLink,
-    SpeakerContainerComponent,
-    UserFeedbackComponent,
-    AsyncPipe,
-    KeyValuePipe,
-    GetSpeakerPipe
-]
+        RouterLink,
+        SpeakerContainerComponent,
+        UserFeedbackComponent,
+        AsyncPipe,
+        KeyValuePipe,
+        GetSpeakerPipe,
+    ],
 })
 export class SessionDetailsComponent {
     private route = inject(ActivatedRoute);
     ds = inject(DataService);
     auth = inject(AuthService);
-    db = inject(AngularFireDatabase);
 
     readonly session = input<Session>(undefined);
 
-    sessionAgenda: AngularFireObject<any>;
-    sessionAgendaRead: Observable<any>;
-    agendaInfo = this.route.params.pipe(
-        switchMap((params) => {
-            return this.auth.uid.pipe(map((uid) => ({ id: params['id'], uid: uid })));
-        })
-    );
+    sessionAgenda: any;
+    sessionAgendaRead: Signal<boolean>;
+
+    routeParams = toSignal(this.route.params);
+    agendaInfo = computed(() => {
+        return { id: this.routeParams()['id'], uid: this.auth.uid() };
+    });
 
     constructor() {
-        this.sessionAgendaRead = this.agendaInfo.pipe(
-            switchMap((agendaData) => {
-                let { id, uid } = agendaData;
-                if (id && uid) {
-                    const agenda = this.ds.getAgenda(uid, id);
+        this.sessionAgendaRead = toSignal(
+            toObservable(this.agendaInfo).pipe(
+                switchMap((value) => this.ds.getAgenda(value.uid, value.id).valueChanges()),
+                map((wrapper) => wrapper?.value),
+                tap((agenda) => {
                     this.sessionAgenda = agenda;
-                    return agenda.valueChanges();
-                } else {
-                    return null;
-                }
-            })
+                })
+            )
         );
     }
 

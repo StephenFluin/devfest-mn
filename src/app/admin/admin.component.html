@@ -1,14 +1,14 @@
 <div style="padding: 32px">
     <h1>Admin DevFestMN</h1>
-    @if (!(auth.uid | async)) {
+    @if (!(auth.uid())) {
     <div>
         <button type="button" (click)="auth.login()">Login</button>
     </div>
-    } @if (auth.uid | async) {
+    } @if (auth.uid()) {
     <div>
-        <span><strong>Signed In As:</strong> {{ auth.name | async }} ({{ auth.uid | async }})</span>
+        <span><strong>Signed In As:</strong> {{ auth.name() }} ({{ auth.uid() }})</span>
         <br />
-        @if (auth.isAdmin | async) {
+        @if (auth.isAdmin()) {
         <span
             >You have awesome <strong>admin</strong> powers >
             <a (click)="auth.logout()" href="#"><strong>LOG OUT</strong></a></span

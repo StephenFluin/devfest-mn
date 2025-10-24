@@ -1,9 +1,9 @@
 import { Component, Pipe, PipeTransform, forwardRef, inject } from '@angular/core';
-import { YearService } from '../year.service';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { map } from 'rxjs/operators';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { AsyncPipe, TitleCasePipe, DatePipe, KeyValuePipe } from '@angular/common';
+import { environment } from '../../environments/environment';
 
 interface Proposal {
     name: string;
@@ -16,38 +16,33 @@ interface Proposal {
 
 @Component({
     templateUrl: './manage-cfps.component.html',
-    imports: [
-    AsyncPipe,
-    TitleCasePipe,
-    DatePipe,
-    KeyValuePipe,
-    forwardRef(() => IgnoreFields)
-]
+    imports: [AsyncPipe, TitleCasePipe, DatePipe, KeyValuePipe, forwardRef(() => IgnoreFields)],
 })
 export class ManageCFPsComponent {
-    yearService = inject(YearService);
+    environment = environment;
     private store = inject(AngularFirestore);
     db = inject(AngularFireDatabase);
 
-    cfps = this.store.collection<Proposal>(`/years/${this.yearService.year}/proposals/`).snapshotChanges()
-    .pipe(
-        map(actions =>
-
-        actions.map(a => {
-            const data = a.payload.doc.data();
-            const id = a.payload.doc.id;
-            return {id, ...data};
-        })
-      )
-    );
+    cfps = this.store
+        .collection<Proposal>(`/years/${environment.year}/proposals/`)
+        .snapshotChanges()
+        .pipe(
+            map((actions) =>
+                actions.map((a) => {
+                    const data = a.payload.doc.data();
+                    const id = a.payload.doc.id;
+                    return { id, ...data };
+                })
+            )
+        );
     reject(cfp) {
         confirm('you sure bout dat?');
         alert(`it would be so cool if this could email!`);
     }
     approve(cfp) {
         console.log(`attempting to approve`, cfp);
-        const speakers = this.db.list(`/devfest${this.yearService.year}/speakers/`);
-        const schedule = this.db.list(`/devfest${this.yearService.year}/schedule/`);
+        const speakers = this.db.list(`/devfest${environment.year}/speakers/`);
+        const schedule = this.db.list(`/devfest${environment.year}/schedule/`);
 
         const speakerEntry = {
             bio: cfp.bio,
@@ -67,24 +62,22 @@ export class ManageCFPsComponent {
             endTime: '2019-02-02T09:00:00-06:00',
             track: cfp.technology,
             difficulty: cfp.difficulty,
-            speakers: [
-                speakerKey,
-            ]
-        }
+            speakers: [speakerKey],
+        };
         const scheduleKey = schedule.push(scheduleEntry).key;
         console.log('session created with key', scheduleKey);
 
-        const originalCFP = this.store.doc<Proposal>(`/years/${this.yearService.year}/proposals/${cfp.id}`)
-        originalCFP.update({approved: true});
+        const originalCFP = this.store.doc<Proposal>(
+            `/years/${environment.year}/proposals/${cfp.id}`
+        );
+        originalCFP.update({ approved: true });
         alert('speaker and session created!');
-
-
     }
 }
 
 @Pipe({
     name: 'ignoreFields',
-    standalone: true
+    standalone: true,
 })
 export class IgnoreFields implements PipeTransform {
     transform(value: any[], ignored: string[]) {

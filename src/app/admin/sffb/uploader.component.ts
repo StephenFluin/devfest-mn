@@ -1,4 +1,4 @@
-import { Component, OnChanges, inject, input } from '@angular/core';
+import { ChangeDetectorRef, Component, OnChanges, inject, input } from '@angular/core';
 import { AngularFireDatabase, AngularFireList } from '@angular/fire/compat/database';
 
 import { Observable } from 'rxjs';
@@ -17,12 +17,12 @@ export interface Image {
 @Component({
     selector: 'sffb-uploader',
     templateUrl: './uploader.component.html',
-    imports: [
-    AsyncPipe
-]
+    imports: [AsyncPipe],
 })
 export class UploaderComponent implements OnChanges {
     db = inject(AngularFireDatabase);
+
+    cdr = inject(ChangeDetectorRef);
 
     /**
      * The name of the folder for images
@@ -43,15 +43,21 @@ export class UploaderComponent implements OnChanges {
         console.log('Rendering all images in ', `/${this.folder()}/images`);
 
         this.imageList = this.fileList.snapshotChanges().pipe(
-            map(itemSnapshotList =>
-                itemSnapshotList.map(item => {
+            map((itemSnapshotList) =>
+                itemSnapshotList.map((item) => {
                     const image = item.payload.val();
                     console.log(item, 'is in our list of images.');
-                    const pathReference = this.storage.ref( image.path);
-                    const result = { $key: item.key, path: image.path, downloadURL: null, filename: image.filename };
+                    const pathReference = this.storage.ref(image.path);
+                    const result = {
+                        $key: item.key,
+                        path: image.path,
+                        downloadURL: null,
+                        filename: image.filename,
+                    };
                     // This Promise must be wrapped in Promise.resolve because the thennable from
                     // firebase isn't monkeypatched by zones and therefore doesn't trigger CD
-                    result.downloadURL = Promise.resolve(pathReference.getDownloadURL());
+                    result.downloadURL = pathReference.getDownloadURL();
+                    this.cdr.markForCheck();
 
                     return result;
                 })
@@ -68,7 +74,6 @@ export class UploaderComponent implements OnChanges {
             return;
         }
 
-
         // This currently only grabs item 0, TODO refactor it to grab them all
         for (const selectedFile of [(<HTMLInputElement>document.getElementById('file')).files[0]]) {
             console.log('Attempting to upload', selectedFile);
@@ -78,14 +83,16 @@ export class UploaderComponent implements OnChanges {
             const iRef = storageRef.child(path);
             const db = this.db;
             // cache files for up to a week
-            iRef
-                .put(selectedFile, { cacheControl: 'max-age=' + this.maxAge() })
-                .then(snapshot => {
-                    console.log('Uploaded a blob or file! Now storing the reference at', `/${this.folder()}/images/`);
+            iRef.put(selectedFile, { cacheControl: 'max-age=' + this.maxAge() })
+                .then((snapshot) => {
+                    console.log(
+                        'Uploaded a blob or file! Now storing the reference at',
+                        `/${this.folder()}/images/`
+                    );
                     db.list(`/${folder}/images/`).push({ path: path, filename: selectedFile.name });
                     inputBox.value = null;
                 })
-                .catch(err => {
+                .catch((err) => {
                     console.error('Unable to upload file', err);
                 });
         }
@@ -99,13 +106,14 @@ export class UploaderComponent implements OnChanges {
         // Do these as two separate steps so you can still try delete ref if file no longer exists
 
         // Delete from Storage
-        this.storage.ref()
+        this.storage
+            .ref()
             .child(storagePath)
             .delete()
             .then(() => {
                 console.log('File deleted from storage successfully');
             })
-            .catch(error => {
+            .catch((error) => {
                 console.error('Error deleting stored file', storagePath);
             });
 
@@ -115,15 +123,15 @@ export class UploaderComponent implements OnChanges {
             .object(referencePath)
             .remove()
             .then(() => 'File reference deleted successfully from the database')
-            .catch(err => {
+            .catch((err) => {
                 console.error('File reference was not deleted successfully from the database', err);
             });
     }
 
     select(image: Image) {
-        console.log('update speaker image, set Speaker ImageUrl or something....')
+        console.log('update speaker image, set Speaker ImageUrl or something....');
         const folder = this.folder();
-        console.log(`${folder}`)
+        console.log(`${folder}`);
 
         const storageRef = this.storage.ref();
         const path = `/${folder}/imageUrl`;
@@ -133,6 +141,5 @@ export class UploaderComponent implements OnChanges {
         // cache files for up to a week
         // iRef.putString(image.downloadURL.valueOf() )
         // iRef.put(image.downloadURL.valueOf())
-     
     }
 }

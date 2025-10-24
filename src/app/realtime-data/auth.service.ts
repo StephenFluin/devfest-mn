@@ -1,116 +1,83 @@
-import { Injectable, Injector, inject } from '@angular/core';
-import {
-    Auth,
-    authState,
-    signInWithPopup,
-    GoogleAuthProvider,
-    signOut,
-    user,
-    getAuth,
-    User,
-} from '@angular/fire/auth';
+import { Injectable, inject, PLATFORM_ID, signal, computed, Signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Auth, authState, User, signInWithPopup, GoogleAuthProvider } from '@angular/fire/auth';
 
-import { YearService } from '../year.service';
-import { Database, list, object, objectVal, ref } from '@angular/fire/database';
-import 'firebase/compat/auth';
-import { combineLatest, EMPTY as observableEmpty, Observable, of as observableOf } from 'rxjs';
-import { map, shareReplay, switchMap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+import { Database, list, objectVal, ref } from '@angular/fire/database';
+import { map, switchMap } from 'rxjs/operators';
 import { Feedback } from '../shared/data.service';
-import { localstorageCache } from '../shared/localstorage-cache.operator';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-    private auth = inject(Auth);
+    auth = inject(Auth, { optional: true });
     provider = new GoogleAuthProvider();
-    private db = inject(Database);
+    db = inject(Database, { optional: true });
+    platformId = inject(PLATFORM_ID);
 
-    isAdmin: Observable<boolean>;
-    isVolunteer: Observable<boolean>;
-    isAdminOrVolunteer: Observable<boolean>;
-    uid: Observable<string>;
-    name: Observable<string>;
+    feedback = signal<Feedback | null>(null);
 
-    agenda: Observable<any>;
-    feedback: Observable<Feedback>;
+    authStateSignal = toSignal(authState(this.auth));
 
-    state = authState(this.auth).pipe(shareReplay(1));
+    state =
+        isPlatformBrowser(this.platformId) && this.auth ? this.authStateSignal : signal<User>(null);
 
-    constructor() {
-        const yearService = inject(YearService);
+    uid: Signal<string | null> = computed(() => this.state()?.uid);
+    name: Signal<string | null> = computed(
+        () => this.state()?.displayName || this.state()?.providerData[0]?.displayName
+    );
 
-        this.uid = this.state.pipe(
-            map((authState) => {
-                if (authState) {
-                    return authState.uid;
-                } else {
-                    return null;
-                }
-            })
-        );
-        this.name = this.state.pipe(
-            map((authState) => {
-                if (authState) {
-                    return authState.displayName || authState.providerData[0].displayName;
-                } else {
-                    return null;
-                }
-            })
-        );
-        /** Used to filter the agenda of a user on the schedule */
-        this.agenda = this.state.pipe(
-            switchMap((authState) => {
-                if (authState && authState.uid) {
-                    let year = yearService.year;
-                    return list(ref(this.db, `devfest${year}/agendas/${authState.uid}`)).pipe(
-                        map((actions) =>
-                            actions.map((a) => {
-                                const value = a.snapshot.val();
-                                const key = a.snapshot.key;
-                                console.log('payload includes', a.snapshot.val());
-                                return { key: key, ...value };
-                            })
-                        )
-                    );
-                } else {
-                    return observableEmpty;
-                }
-            }),
-            localstorageCache(`agendaCache${yearService.year}`)
-        );
-
-        this.isAdmin = this.state.pipe(
-            switchMap((authState) => {
-                if (!authState) {
-                    return observableOf(false);
-                } else {
-                    return objectVal(ref(this.db, '/admin/' + authState.uid));
-                }
-            }),
-            map((value) => !!value),
-            localstorageCache('isAdmin')
-        );
-
-        this.isVolunteer = this.state
-            .pipe(
-                switchMap((authState) => {
-                    if (!authState) {
-                        return observableOf(false);
-                    } else {
-                        return objectVal(ref(this.db, '/devfest2025/volunteers/' + authState.uid));
-                    }
+    agenda = toSignal(
+        toObservable(this.uid).pipe(
+            switchMap((uid) => list(ref(this.db, `devfest${environment.year}/agendas/${uid}`))),
+            map((actions) =>
+                actions.map((a) => {
+                    const value = a.snapshot.val();
+                    const key = a.snapshot.key;
+                    console.log('payload includes', a.snapshot.val());
+                    return { key: key, ...value };
                 })
             )
-            .pipe(map((volunteerObject) => volunteerObject && volunteerObject['$value'] === true));
+        )
+    );
 
-        this.isAdminOrVolunteer = combineLatest(this.isAdmin, this.isVolunteer, (x, y) => x || y);
+    isAdmin = this.checkKey(`/devfest${environment.year}/admin/`, this.uid);
+    isVolunteer = this.checkKey(`/devfest${environment.year}/volunteers/`, this.uid);
+
+    isAdminOrVolunteer = computed(() => this.isAdmin() || this.isVolunteer());
+
+    checkKey(key: string, uid: Signal<string>): Signal<boolean> {
+        return computed(() => {
+            if (!uid()) return false;
+            else console.log(uid());
+            const keyVal = objectVal(ref(this.db, key + uid()));
+            return !!keyVal;
+        });
+    }
+
+    constructor() {
+        console.log('Auth service loaded.');
     }
     login() {
-        signInWithPopup(this.auth, this.provider).then((result) => {
+        if (!isPlatformBrowser(this.platformId) || !this.auth) {
+            console.warn('Login attempted in SSR context');
+            return Promise.resolve(null);
+        }
+
+        return signInWithPopup(this.auth, this.provider).then((result) => {
             const credential = GoogleAuthProvider.credentialFromResult(result);
+            if (window && window.localStorage) {
+                window.localStorage['authentication'] = 'active';
+            }
             return credential;
         });
     }
     logout() {
+        if (!isPlatformBrowser(this.platformId) || !this.auth) {
+            console.warn('Logout attempted in SSR context');
+            return;
+        }
+
         this.auth.signOut();
     }
 }

@@ -1,7 +1,7 @@
 import { Pipe, PipeTransform, inject } from '@angular/core';
 import { DataService, Speaker } from './data.service';
 import { map } from 'rxjs/operators';
-import { YearService } from '../year.service';
+import { environment } from '../../environments/environment';
 import { NEVER, Observable } from 'rxjs';
 
 /**
@@ -16,13 +16,11 @@ import { NEVER, Observable } from 'rxjs';
 })
 export class GetSpeakerPipe implements PipeTransform {
     private ds = inject(DataService);
-    private yearService = inject(YearService);
-
 
     transform(value: string): Observable<Speaker> {
         console.log('evaluating value of pipe');
         if (value) {
-            let speakers = this.ds.getSpeakers(this.yearService.year);
+            let speakers = this.ds.getSpeakers(environment.year);
             return speakers.pipe(
                 map((list) => {
                     if (list) {
