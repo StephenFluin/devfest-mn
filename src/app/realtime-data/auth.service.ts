@@ -36,6 +36,7 @@ export class AuthService {
     state = authState(this.auth).pipe(shareReplay(1));
 
     constructor() {
+        console.log('Auth service loaded.');
         const yearService = inject(YearService);
 
         this.uid = this.state.pipe(

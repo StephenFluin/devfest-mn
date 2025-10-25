@@ -39,7 +39,7 @@ export class HomeComponent {
     }
 
     ngAfterViewInit() {
-        if (!this.isBrowser) {
+        if (!this.isBrowser || !this.isSecure) {
             return;
         }
 

@@ -1,6 +1,5 @@
 import { Component, inject, PLATFORM_ID } from '@angular/core';
 import { Router, NavigationStart, NavigationEnd, RouterLink, RouterOutlet } from '@angular/router';
-import { trigger, transition, group, query, style, animate } from '@angular/animations';
 import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../environments/environment';
 
@@ -19,54 +18,6 @@ declare global {
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
-    animations: [
-        trigger('routeAnimation', [
-            transition('1 =>2', [
-                style({ height: '!' }),
-                query(':enter', style({ transform: 'translateX(100%)' })),
-                query(':enter, :leave', style({ position: 'absolute', top: 0, left: 0, right: 0 })),
-                // animate the leave page away
-                group([
-                    query(':leave', [
-                        animate(
-                            '0.3s cubic-bezier(.35,0,.25,1)',
-                            style({ transform: 'translateX(-100%)' })
-                        ),
-                    ]),
-                    // and now reveal the enter
-                    query(
-                        ':enter',
-                        animate(
-                            '0.3s cubic-bezier(.35,0,.25,1)',
-                            style({ transform: 'translateX(0)' })
-                        )
-                    ),
-                ]),
-            ]),
-            transition('2 => 1', [
-                style({ height: '!' }),
-                query(':enter', style({ transform: 'translateX(-100%)' })),
-                query(':enter, :leave', style({ position: 'absolute', top: 0, left: 0, right: 0 })),
-                // animate the leave page away
-                group([
-                    query(':leave', [
-                        animate(
-                            '0.3s cubic-bezier(.35,0,.25,1)',
-                            style({ transform: 'translateX(100%)' })
-                        ),
-                    ]),
-                    // and now reveal the enter
-                    query(
-                        ':enter',
-                        animate(
-                            '0.3s cubic-bezier(.35,0,.25,1)',
-                            style({ transform: 'translateX(0)' })
-                        )
-                    ),
-                ]),
-            ]),
-        ]),
-    ],
     imports: [ADirective, RouterLink, RouterOutlet],
 })
 export class AppComponent {
@@ -121,13 +72,13 @@ export class AppComponent {
     }
 
     loadEBWidget() {
-        if (!this.isBrowser || this.widgetReady) {
+        if (!this.isBrowser || this.widgetReady || !this.isSecure) {
             return;
         }
         this.lazyLoadEBWidget();
     }
     lazyLoadEBWidget() {
-        if (!this.isBrowser) {
+        if (!this.isBrowser || !this.isSecure) {
             return Promise.resolve();
         }
         return import('../eb-widget').then(() => {
@@ -150,7 +101,11 @@ export class AppComponent {
         if (!this.isBrowser) {
             return;
         }
-        if (!this.widgetReady) {
+        if (!this.isSecure) {
+            alert('Eventbrite widget requires a secure (https) connection to load.');
+            return;
+        }
+        if (!this.widgetReady && this.isSecure) {
             this.lazyLoadEBWidget().then(() => {
                 document.getElementById('global-ticket-button')?.click();
             });
