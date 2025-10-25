@@ -1,39 +1,34 @@
 <section>
-  <div class="callout">Current Schedule</div>
-  <p class="schedule-announcement">
-    Schedule times and rooms will be updated often. <br />This page will be the most current and
-    accurate.
-  </p>
+    <div class="callout">Current Schedule</div>
+    <p class="schedule-announcement">
+        Schedule times and rooms will be updated often. <br />This page will be the most current and
+        accurate.
+    </p>
 
-  @if (auth.uid | async) {
-    <div
-      class="button-container"
-      style="margin: 40px 0; line-height: 40px"
-      >
-      <a
-        (click)="filteredData = populatedAgenda"
-        [class.cta-unselected]="filteredData != populatedAgenda"
-        class="cta"
-        style="cursor: pointer; display: inline; border: 1px solid #19a9e5"
-        >My Agenda</a
+    @if (authShim && authShim.authService && authShim.authService.uid | async) {
+    <div class="button-container" style="margin: 40px 0; line-height: 40px">
+        <a
+            (click)="filteredData = populatedAgenda"
+            [class.cta-unselected]="filteredData != populatedAgenda"
+            class="cta"
+            style="cursor: pointer; display: inline; border: 1px solid #19a9e5"
+            >My Agenda</a
         >
         <a
-          (click)="filteredData = allSessions"
-          [class.cta-unselected]="filteredData == populatedAgenda"
-          class="cta"
-          style="cursor: pointer; display: inline; border: 1px solid #19a9e5; white-space: nowrap"
-          >Full Schedule</a
-          >
-        </div>
-      }
-      <div></div>
-      <schedule-grid
+            (click)="filteredData = allSessions"
+            [class.cta-unselected]="filteredData == populatedAgenda"
+            class="cta"
+            style="cursor: pointer; display: inline; border: 1px solid #19a9e5; white-space: nowrap"
+            >Full Schedule</a
+        >
+    </div>
+    }
+    <div></div>
+    <schedule-grid
         [data]="filteredData | async"
         [forceMobile]="filteredData == populatedAgenda"
-      ></schedule-grid>
-      @if (auth.isAdmin | async) {
-        <button mat-raised-button color="primary" (click)="addSession()">
-          Add Session
-        </button>
-      }
-    </section>
+    ></schedule-grid>
+    @if (authShim && authShim.authService && authShim.authService.isAdmin | async) {
+    <button mat-raised-button color="primary" (click)="addSession()">Add Session</button>
+    }
+</section>

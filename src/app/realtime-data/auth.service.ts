@@ -1,24 +1,15 @@
-import { Injectable, Injector, inject } from '@angular/core';
-import {
-    Auth,
-    authState,
-    signInWithPopup,
-    GoogleAuthProvider,
-    signOut,
-    user,
-    getAuth,
-    User,
-} from '@angular/fire/auth';
+import { Injectable, inject } from '@angular/core';
+import { Auth, authState, signInWithPopup, GoogleAuthProvider } from '@angular/fire/auth';
 
 import { YearService } from '../year.service';
-import { Database, list, object, objectVal, ref } from '@angular/fire/database';
+import { Database, list, objectVal, ref } from '@angular/fire/database';
 import 'firebase/compat/auth';
 import { combineLatest, EMPTY as observableEmpty, Observable, of as observableOf } from 'rxjs';
 import { map, shareReplay, switchMap } from 'rxjs/operators';
 import { Feedback } from '../shared/data.service';
 import { localstorageCache } from '../shared/localstorage-cache.operator';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class AuthService {
     private auth = inject(Auth);
     provider = new GoogleAuthProvider();

@@ -11,6 +11,7 @@ import { AuthService } from '../realtime-data/auth.service';
 import { MatButtonModule } from '@angular/material/button';
 import { ScheduleGridComponent } from './schedule-grid.component';
 import { AsyncPipe } from '@angular/common';
+import { AuthenticationShimService } from '../authentication-shim.service';
 
 export interface Schedule {
     startTimes: any[];
@@ -20,11 +21,11 @@ export interface Schedule {
 
 @Component({
     templateUrl: './schedule.component.html',
-    imports: [ScheduleGridComponent, MatButtonModule, AsyncPipe]
+    imports: [ScheduleGridComponent, MatButtonModule, AsyncPipe],
 })
 export class ScheduleComponent {
     ds = inject(DataService);
-    auth = inject(AuthService);
+    authShim = inject(AuthenticationShimService);
     route = inject(ActivatedRoute);
     router = inject(Router);
     yearService = inject(YearService);
@@ -110,12 +111,19 @@ export class ScheduleComponent {
 
         this.filteredData = this.allSessions;
 
-        // Intersect the user's agenda against the session list
-        this.populatedAgenda = combineLatest(this.allSessions, this.auth.agenda).pipe(
-            map(([allData, rawAgenda]) => {
-                return this.filterToMyAgenda(allData, rawAgenda);
-            })
-        );
+        // Intersect the user's agenda against the session list if user is authed
+        if (this.authShim.authService) {
+            this.populatedAgenda = combineLatest(
+                this.allSessions,
+                this.authShim.authService.agenda
+            ).pipe(
+                map(([allData, rawAgenda]) => {
+                    return this.filterToMyAgenda(allData, rawAgenda);
+                })
+            );
+        } else {
+            this.populatedAgenda = this.allSessions;
+        }
     }
 
     /**
