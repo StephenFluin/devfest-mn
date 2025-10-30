@@ -43,16 +43,17 @@ export class AuthService {
         );
     });
 
-    isAdmin = this.checkKey(`/devfest${environment.year}/admin/` + this.uid());
-    isVolunteer = this.checkKey(`/devfest${environment.year}/volunteers/` + this.uid());
+    isAdmin = this.checkKey(`/devfest${environment.year}/admin/`, this.uid);
+    isVolunteer = this.checkKey(`/devfest${environment.year}/volunteers/`, this.uid);
 
     isAdminOrVolunteer = computed(() => this.isAdmin() || this.isVolunteer());
 
-    checkKey(key: string): Signal<boolean> {
+    checkKey(key: string, uid: Signal<string>): Signal<boolean> {
         return computed(() => {
-            if (!this.state()) return false;
-            const keyVal = objectVal(ref(this.db, key));
-            console.log('keyVal is', keyVal, 'for key', key);
+            if (!uid()) return false;
+            else console.log(uid());
+            const keyVal = objectVal(ref(this.db, key + uid()));
+            console.log('keyVal is', keyVal, 'for key', key + uid());
             return !!keyVal;
         });
     }

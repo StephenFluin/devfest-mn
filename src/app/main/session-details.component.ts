@@ -3,14 +3,14 @@ import { Component, computed, inject, input, Signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { Observable } from 'rxjs';
-import { switchMap, map } from 'rxjs/operators';
+import { switchMap, map, tap } from 'rxjs/operators';
 import { DataService, Session } from '../shared/data.service';
 import { AuthService } from '../realtime-data/auth.service';
 import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
 import { UserFeedbackComponent } from './user-feedback.component';
 import { SpeakerContainerComponent } from './speaker-container.component';
 import { AsyncPipe, KeyValuePipe } from '@angular/common';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
     selector: 'session-details',
@@ -40,16 +40,15 @@ export class SessionDetailsComponent {
     });
 
     constructor() {
-        this.sessionAgendaRead = computed(() => {
-            let { id, uid } = this.agendaInfo();
-            if (id && uid) {
-                const agenda = this.ds.getAgenda(uid, id);
-                this.sessionAgenda = agenda;
-                return toSignal(agenda.valueChanges())()?.value;
-            } else {
-                return false;
-            }
-        });
+        this.sessionAgendaRead = toSignal(
+            toObservable(this.agendaInfo).pipe(
+                switchMap((value) => this.ds.getAgenda(value.uid, value.id).valueChanges()),
+                map((wrapper) => wrapper.value),
+                tap((agenda) => {
+                    this.sessionAgenda = agenda;
+                })
+            )
+        );
     }
 
     addToAgenda() {
