@@ -8,7 +8,7 @@
 
 @if (sessionData | async; as session) {
   <h1>{{ session.$key ? 'Edit' : 'New' }} Session</h1>
-  <form ngNoForm (submit)="save(session)" autocomplete="off">
+  <form ngNoForm (submit)="save(session, $event)" autocomplete="off">
     <mat-form-field
       ><input matInput [(ngModel)]="session.title" placeholder="Title" style="width: 100%"
     /></mat-form-field>

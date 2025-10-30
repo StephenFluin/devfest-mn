@@ -21,6 +21,7 @@ export class SpeakersViewComponent {
     speaker;
     speakerId;
     year;
+    environment = environment;
 
     constructor() {
         const route = inject(ActivatedRoute);

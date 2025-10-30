@@ -55,8 +55,10 @@ export class SessionEditComponent {
         );
     }
 
-    save(session) {
-        event.preventDefault();
+    save(session, event?: Event) {
+        if (event) {
+            event.preventDefault();
+        }
         this.ds.save('schedule', session);
         this.router.navigate(['/', 'schedule']);
     }

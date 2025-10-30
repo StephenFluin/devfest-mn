@@ -96,9 +96,9 @@ export const MainRoutes: Routes = [
                     import('./main/session-view.component').then((m) => m.SessionViewComponent),
                 data: { title: false },
             },
+            { path: 'admin', loadChildren: () => AdminRoutes },
         ],
     },
-    { path: 'admin', loadChildren: () => AdminRoutes },
 ];
 
 export default MainRoutes;

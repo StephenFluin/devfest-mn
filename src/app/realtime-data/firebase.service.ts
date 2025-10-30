@@ -19,23 +19,22 @@ export class FirebaseTypedService<T extends HasKey> {
 
     constructor(private db: AngularFireDatabase) {}
 
-    get(key): Observable<{key: string, value:T}> {
+    get(key): Observable<{ key: string; value: T }> {
         if (key == 'new') {
             let empty: T;
-            return observableOf({key: '', value: empty});
+            return observableOf({ key: '', value: empty });
         }
         let observer: AngularFireObject<T> = this.db.object<T>(this.endpoint + key);
-        return observer.snapshotChanges()
-        .pipe(
-            map(action => ({key: action.key, value: action.payload.val()}))
-        );
+        return observer
+            .snapshotChanges()
+            .pipe(map((action) => ({ key: action.key, value: action.payload.val() })));
     }
     new(item: T): any {
         let result = this.firebaseList.push(item);
         console.log(result);
         result.then(
-            success => console.log('successfully added new item to ' + this.endpoint, success),
-            failure => console.log('failure', failure)
+            (success) => console.log('successfully added new item to ' + this.endpoint, success),
+            (failure) => console.log('failure', failure)
         );
         return result;
     }
@@ -70,7 +69,6 @@ export class FirebaseTypedService<T extends HasKey> {
 @Injectable()
 export class FirebaseService {
     private db = inject(AngularFireDatabase);
-
 
     // Factory that returns little generic FirebaseTypedService
     attach<V extends HasKey>(endpoint: string, query?): FirebaseTypedService<V> {

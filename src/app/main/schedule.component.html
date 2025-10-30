@@ -5,7 +5,7 @@
         accurate.
     </p>
 
-    @if (authShim && authShim.authService && authShim.authService.uid | async) {
+    @if (authService && authService.uid | async) {
     <div class="button-container" style="margin: 40px 0; line-height: 40px">
         <a
             (click)="filteredData = populatedAgenda"
@@ -28,10 +28,9 @@
         [data]="filteredData | async"
         [forceMobile]="filteredData == populatedAgenda"
     ></schedule-grid>
-    @if (authShim && authShim.authService && authShim.authService.isAdmin | async) {
+    @if (authService && authService.isAdmin | async) {
     <button mat-raised-button color="primary" (click)="addSession()">Add Session</button>
     } @else {
-    <p>No access: {{ authShim | json }}</p>
-    <p>No access: {{ authShim.authService | json }}</p>
+    <p>No access: {{ authService | json }}</p>
     }
 </section>

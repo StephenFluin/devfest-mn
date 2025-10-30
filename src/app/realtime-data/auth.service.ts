@@ -46,6 +46,7 @@ export class AuthService {
             return;
         }
 
+        // Defer Firebase API calls using defer operator to ensure they're in proper injection context
         this.uid = this.state.pipe(
             map((authState) => {
                 if (authState) {
