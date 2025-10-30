@@ -1,10 +1,21 @@
 import { Injectable, inject } from '@angular/core';
 import {
-    AngularFireDatabase,
-    AngularFireList,
-    AngularFireObject,
-    QueryFn,
-} from '@angular/fire/compat/database';
+    Database,
+    ref,
+    list,
+    object,
+    query,
+    orderByChild,
+    DataSnapshot,
+    push,
+    update,
+    remove,
+    set,
+    DatabaseReference,
+    listVal,
+    objectVal,
+} from '@angular/fire/database';
+
 import { Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { SafeHtml } from '@angular/platform-browser';
@@ -47,7 +58,7 @@ export interface Feedback {
 
 @Injectable()
 export class DataService {
-    db = inject(AngularFireDatabase);
+    db = inject(Database);
 
     private speakersByYear: { [key: string]: Observable<Speaker[]> } = {};
     private scheduleByYear: { [key: string]: Observable<Session[]> } = {};
@@ -57,27 +68,25 @@ export class DataService {
             return this.speakersByYear[year];
         }
 
-        this.speakersByYear[year] = this.listPath('speakers', (ref) =>
-            ref.orderByChild('name')
-        ).pipe(
+        this.speakersByYear[year] = this.listPath('speakers', [orderByChild('name')]).pipe(
             filter((x) => !!x),
             localstorageCache('speakerCache' + year)
         );
         return this.speakersByYear[year];
     }
     getSpeaker(speakerKey: string) {
-        return this.db
-            .object<Speaker>(`devfest${environment.year}/speakers/${speakerKey}/name`)
-            .valueChanges();
+        return objectVal<Speaker>(
+            ref(this.db, `devfest${environment.year}/speakers/${speakerKey}/name`)
+        );
     }
 
     getSchedule(year: string): Observable<Session[]> {
         if (this.scheduleByYear[year]) {
             return this.scheduleByYear[year];
         }
-        this.scheduleByYear[year] = this.listPath<Session>('schedule', (ref) =>
-            ref.orderByChild('title')
-        ).pipe(
+        this.scheduleByYear[year] = this.listPath<Session>('schedule', [
+            orderByChild('title'),
+        ]).pipe(
             filter((x) => !!x),
             localstorageCache('sessionsCache' + year)
         );
@@ -101,13 +110,25 @@ export class DataService {
         return this.listPath('feedback');
     }
     getVolunteers() {
-        return this.db.object(`devfest${environment.year}/volunteers`);
+        const dbRef = ref(this.db, `devfest${environment.year}/volunteers`);
+        return {
+            valueChanges: () => objectVal(dbRef),
+            update: (data: any) => update(dbRef, data),
+            set: (data: any) => set(dbRef, data),
+            remove: () => remove(dbRef),
+        };
     }
 
-    getAgenda(uid: string, session: string): AngularFireObject<any> {
+    getAgenda(uid: string, session: string) {
         const path = `devfest${environment.year}/agendas/${uid}/${session}/`;
         console.log('fetching agenda stored at', path);
-        return this.db.object(path);
+        const dbRef = ref(this.db, path);
+        return {
+            valueChanges: () => objectVal<null | { value: boolean }>(dbRef),
+            set: (data: any) => set(dbRef, data),
+            remove: () => remove(dbRef),
+            update: (data: any) => update(dbRef, data),
+        };
     }
 
     /**
@@ -141,28 +162,32 @@ export class DataService {
 
     save(path: 'schedule' | 'speakers', item) {
         console.log('Attempting to save', path, item);
-        let list = this.modifiableList(path);
+        const dbRef = ref(this.db, `devfest${environment.year}/${path}`);
         let result;
         if (item.$key) {
             let key = item.$key;
             delete item.$key;
-            result = list.update(key, item);
+            const itemRef = ref(this.db, `devfest${environment.year}/${path}/${key}`);
+            result = update(itemRef, item);
             item.$key = key;
         } else {
-            result = list.push(item);
+            result = push(dbRef, item);
         }
         return result;
     }
 
     delete(path: 'schedule' | 'speakers', item) {
         console.log('Attempting to delete', item, 'of type', path);
-        let list = this.modifiableList(path);
-        list.remove(item.$key);
+        const itemRef = ref(this.db, `devfest${environment.year}/${path}/${item.$key}`);
+        remove(itemRef);
     }
 
     deleteSpeakerFromSession(session: Session, speakerKey: string) {
-        const list = this.db.list(`devfest${environment.year}/schedule/${session.$key}/speakers`);
-        list.remove(speakerKey)
+        const speakerRef = ref(
+            this.db,
+            `devfest${environment.year}/schedule/${session.$key}/speakers/${speakerKey}`
+        );
+        remove(speakerRef)
             .then(() => {
                 console.log(`Speaker (${speakerKey} deleted from session (${session.$key}) .`);
             })
@@ -173,25 +198,21 @@ export class DataService {
 
     listPath<T>(
         type: 'schedule' | 'speakers' | 'feedback' | 'volunteers',
-        query?: QueryFn
+        queryConstraints?: any[]
     ): Observable<T[]> {
-        return this.modifiableList<T>(type, query)
-            .snapshotChanges()
-            .pipe(
-                map((actions) =>
-                    actions.map((action) => {
-                        let value = action.payload.val();
-                        value['$key'] = action.key;
-                        return value;
-                    })
-                )
-            );
+        const dbRef = ref(this.db, `devfest${environment.year}/${type}`);
+        const queryRef = queryConstraints ? query(dbRef, ...queryConstraints) : dbRef;
+
+        return listVal<T>(queryRef, { keyField: '$key' });
     }
 
     modifiableList<T>(
         type: 'schedule' | 'speakers' | 'feedback' | 'volunteers',
-        query?: QueryFn
-    ): AngularFireList<T> {
-        return this.db.list<T>(`devfest${environment.year}/${type}`, query);
+        queryConstraints?: any[]
+    ): DatabaseReference {
+        const dbRef = ref(this.db, `devfest${environment.year}/${type}`);
+        return queryConstraints
+            ? (query(dbRef, ...queryConstraints) as unknown as DatabaseReference)
+            : dbRef;
     }
 }

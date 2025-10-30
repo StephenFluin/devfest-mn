@@ -1,107 +1,133 @@
 <style>
-  mat-form-field {
-  display: block;
-  margin: 16px;
-}
+    mat-form-field {
+        display: block;
+        margin: 16px;
+    }
 
-form {
-max-width: 100%;
-width: 500px;
-margin: 0px auto;
-}
+    form {
+        max-width: 100%;
+        width: 500px;
+        margin: 0px auto;
+    }
 
-mat-radio-button {
-display: block;
-text-align: left;
-margin: 8px 0;
-}
+    mat-radio-button {
+        display: block;
+        text-align: left;
+        margin: 8px 0;
+    }
 
-.required {
-color: #f44336;
-}
+    .required {
+        color: #f44336;
+    }
 
-p {
-text-align: left;
-}
+    p {
+        text-align: left;
+    }
 </style>
 <section>
-  <h2>Call for Proposals</h2>
+    <h2>Call for Proposals</h2>
 
-  @if (auth.uid | async; as uid) {
+    @if (auth.uid(); as uid) {
     <form [formGroup]="cfp" (submit)="submit(cfp, uid)">
-      <p>Welcome {{auth.name | async}}! We're excited to hear what you want to share.</p>
-      <p>If you have any questions about our CFP, <a routerLink="/speaker-cfp">read about</a> what we're looking for and our process for picking sessions.</p>
-      <h3>About You</h3>
-      <mat-form-field>
-        <input matInput formControlName="name" placeholder="Name" autocomplete="name" required>
-      </mat-form-field>
-      <mat-form-field>
-        <input matInput formControlName="email" placeholder="Email" autocomplete="email" required>
-      </mat-form-field>
-      <mat-form-field>
-        <span matPrefix>&#64;</span>
-        <input matInput formControlName="twitter" placeholder="Twitter">
-      </mat-form-field>
-      <mat-form-field>
-        <input matInput formControlName="phone" type="tel" placeholder="Phone #" autocomplete="tel">
-      </mat-form-field>
-      <mat-form-field>
-        <input matInput formControlName="company" placeholder="Company / Organization">
-      </mat-form-field>
-      <mat-form-field>
-        <input matInput formControlName="technology" placeholder="Technology / Topic">
-      </mat-form-field>
-      <h3>Presentation Details</h3>
-      <p>Presentation Type *</p>
-      <mat-radio-group formControlName="type" placeholder="Type">
-        <mat-radio-button value="session">45 minute presentation</mat-radio-button>
-        <mat-radio-button value="lightning-talk">10 minute Lightning Talk</mat-radio-button>
-        <mat-radio-button value="workshop">90 minute Workshop</mat-radio-button>
-      </mat-radio-group>
-      <p>Presentation Difficulty *</p>
-      <mat-radio-group formControlName="difficulty" placeholder="Difficulty">
-        <mat-radio-button value="beginner">Beginner</mat-radio-button>
-        <mat-radio-button value="intermediate">Intermediate</mat-radio-button>
-        <mat-radio-button value="advanced">Advanced</mat-radio-button>
-      </mat-radio-group>
-      <mat-form-field>
-        <input matInput formControlName="title" placeholder="Presentation Title" required>
-      </mat-form-field>
-      <mat-form-field>
-        <textarea matInput formControlName="abstract" placeholder="Presentation Abstract" required></textarea>
-      </mat-form-field>
-      <mat-form-field>
-        <textarea matInput formControlName="bio" placeholder="Your Bio" required></textarea>
-      </mat-form-field>
-      <h3>Additional Details</h3>
-      <mat-form-field>
-        <textarea matInput formControlName="references" placeholder="Where have you spoken before?"></textarea>
-      </mat-form-field>
-      <p>How did you hear about this event?</p>
-      <mat-radio-group formControlName="referrer" placeholder>
-        <mat-radio-button value="past-devfest">Past DevFest Events</mat-radio-button>
-        <mat-radio-button value="gdgtc">GDG TC</mat-radio-button>
-        <mat-radio-button value="google">Google Promotion</mat-radio-button>
-        <mat-radio-button value="meetup">Meetup.com</mat-radio-button>
-        <mat-radio-button value="other">Other</mat-radio-button>
-      </mat-radio-group>
-      @if (priorSubmissionDate) {
-        <div>
-          Last submitted on {{priorSubmissionDate | date}}
-        </div>
-      }
-      <button type="submit" mat-raised-button color="primary">Submit</button>
+        <p>Welcome {{ auth.name() }}! We're excited to hear what you want to share.</p>
+        <p>
+            If you have any questions about our CFP,
+            <a routerLink="/speaker-cfp">read about</a> what we're looking for and our process for
+            picking sessions.
+        </p>
+        <h3>About You</h3>
+        <mat-form-field>
+            <input
+                matInput
+                formControlName="name"
+                placeholder="Name"
+                autocomplete="name"
+                required
+            />
+        </mat-form-field>
+        <mat-form-field>
+            <input
+                matInput
+                formControlName="email"
+                placeholder="Email"
+                autocomplete="email"
+                required
+            />
+        </mat-form-field>
+        <mat-form-field>
+            <span matPrefix>&#64;</span>
+            <input matInput formControlName="twitter" placeholder="Twitter" />
+        </mat-form-field>
+        <mat-form-field>
+            <input
+                matInput
+                formControlName="phone"
+                type="tel"
+                placeholder="Phone #"
+                autocomplete="tel"
+            />
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput formControlName="company" placeholder="Company / Organization" />
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput formControlName="technology" placeholder="Technology / Topic" />
+        </mat-form-field>
+        <h3>Presentation Details</h3>
+        <p>Presentation Type *</p>
+        <mat-radio-group formControlName="type" placeholder="Type">
+            <mat-radio-button value="session">45 minute presentation</mat-radio-button>
+            <mat-radio-button value="lightning-talk">10 minute Lightning Talk</mat-radio-button>
+            <mat-radio-button value="workshop">90 minute Workshop</mat-radio-button>
+        </mat-radio-group>
+        <p>Presentation Difficulty *</p>
+        <mat-radio-group formControlName="difficulty" placeholder="Difficulty">
+            <mat-radio-button value="beginner">Beginner</mat-radio-button>
+            <mat-radio-button value="intermediate">Intermediate</mat-radio-button>
+            <mat-radio-button value="advanced">Advanced</mat-radio-button>
+        </mat-radio-group>
+        <mat-form-field>
+            <input matInput formControlName="title" placeholder="Presentation Title" required />
+        </mat-form-field>
+        <mat-form-field>
+            <textarea
+                matInput
+                formControlName="abstract"
+                placeholder="Presentation Abstract"
+                required
+            ></textarea>
+        </mat-form-field>
+        <mat-form-field>
+            <textarea matInput formControlName="bio" placeholder="Your Bio" required></textarea>
+        </mat-form-field>
+        <h3>Additional Details</h3>
+        <mat-form-field>
+            <textarea
+                matInput
+                formControlName="references"
+                placeholder="Where have you spoken before?"
+            ></textarea>
+        </mat-form-field>
+        <p>How did you hear about this event?</p>
+        <mat-radio-group formControlName="referrer" placeholder>
+            <mat-radio-button value="past-devfest">Past DevFest Events</mat-radio-button>
+            <mat-radio-button value="gdgtc">GDG TC</mat-radio-button>
+            <mat-radio-button value="google">Google Promotion</mat-radio-button>
+            <mat-radio-button value="meetup">Meetup.com</mat-radio-button>
+            <mat-radio-button value="other">Other</mat-radio-button>
+        </mat-radio-group>
+        @if (priorSubmissionDate) {
+        <div>Last submitted on {{ priorSubmissionDate | date }}</div>
+        }
+        <button type="submit" mat-raised-button color="primary">Submit</button>
     </form>
-  } @else {
+    } @else {
     <p>You need to login to submit a CFP!</p>
     <button (click)="auth.login()">Login</button>
-  }
+    }
 
-  <ng-template #login>
-    <p>You need to login to submit a CFP!</p>
-    <button (click)="auth.login()">Login</button>
-
-  </ng-template>
-
-
+    <ng-template #login>
+        <p>You need to login to submit a CFP!</p>
+        <button (click)="auth.login()">Login</button>
+    </ng-template>
 </section>

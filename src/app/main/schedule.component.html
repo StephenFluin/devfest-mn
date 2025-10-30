@@ -5,7 +5,7 @@
         accurate.
     </p>
 
-    @if (authService && authService.uid | async) {
+    @if (authService.uid()) {
     <div class="button-container" style="margin: 40px 0; line-height: 40px">
         <a
             (click)="filteredData = populatedAgenda"
@@ -28,9 +28,8 @@
         [data]="filteredData | async"
         [forceMobile]="filteredData == populatedAgenda"
     ></schedule-grid>
-    @if (authService && authService.isAdmin | async) {
+    <p>Schedule raw data:{{ filteredData | async | json }}</p>
+    @if (authService.isAdmin()) {
     <button mat-raised-button color="primary" (click)="addSession()">Add Session</button>
-    } @else {
-    <p>No access: {{ authService | json }}</p>
     }
 </section>

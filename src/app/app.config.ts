@@ -1,4 +1,4 @@
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
 import { importProvidersFrom } from '@angular/core';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import {
@@ -14,5 +14,6 @@ export const appConfig: ApplicationConfig = {
         importProvidersFrom(BrowserModule, MatSnackBarModule),
         provideRouter(MainRoutes),
         provideClientHydration(withIncrementalHydration()),
+        provideZonelessChangeDetection(),
     ],
 };

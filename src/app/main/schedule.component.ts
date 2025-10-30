@@ -11,6 +11,7 @@ import { AuthService } from '../realtime-data/auth.service';
 import { MatButtonModule } from '@angular/material/button';
 import { ScheduleGridComponent } from './schedule-grid.component';
 import { AsyncPipe, JsonPipe } from '@angular/common';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 export interface Schedule {
     startTimes: any[];
@@ -110,7 +111,10 @@ export class ScheduleComponent {
 
         // Intersect the user's agenda against the session list if user is authed
         if (this.authService) {
-            this.populatedAgenda = combineLatest(this.allSessions, this.authService.agenda).pipe(
+            this.populatedAgenda = combineLatest(
+                this.allSessions,
+                toObservable(this.authService.agenda)
+            ).pipe(
                 map(([allData, rawAgenda]) => {
                     return this.filterToMyAgenda(allData, rawAgenda);
                 })

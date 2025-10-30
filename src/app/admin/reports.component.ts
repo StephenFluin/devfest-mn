@@ -13,7 +13,7 @@ import { environment } from '../../environments/environment';
 @Component({
     template: `
         <admin-nav></admin-nav>
-        @if (auth.isAdmin | async) {
+        @if (auth.isAdmin()) {
         <div>
             <h2>Speaker</h2>
             @for (session of sessions | async; track session) {

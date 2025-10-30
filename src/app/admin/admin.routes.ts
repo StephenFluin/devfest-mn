@@ -14,13 +14,13 @@ export const AdminRoutes: Routes = [
         path: '',
         pathMatch: 'prefix',
         providers: [
-            DataService,
-            importProvidersFrom(AngularFireModule.initializeApp(environment.firebaseConfig)),
-            provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
-            provideDatabase(() => getDatabase()),
-            provideAuth(() => getAuth()),
-            AuthService,
-            FirebaseService,
+            // DataService,
+            // importProvidersFrom(AngularFireModule.initializeApp(environment.firebaseConfig)),
+            // provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
+            // provideDatabase(() => getDatabase()),
+            // provideAuth(() => getAuth()),
+            // AuthService,
+            // FirebaseService,
         ],
         children: [
             {

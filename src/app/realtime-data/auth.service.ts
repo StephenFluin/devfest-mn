@@ -1,117 +1,64 @@
-import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID, signal, computed, Signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Auth, authState, signInWithPopup, GoogleAuthProvider } from '@angular/fire/auth';
+import { Auth, authState, User, signInWithPopup, GoogleAuthProvider } from '@angular/fire/auth';
 
 import { environment } from '../../environments/environment';
 import { Database, list, objectVal, ref } from '@angular/fire/database';
-import 'firebase/compat/auth';
-import { combineLatest, EMPTY as observableEmpty, Observable, of as observableOf } from 'rxjs';
-import { map, shareReplay, switchMap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { Feedback } from '../shared/data.service';
-import { localstorageCache } from '../shared/localstorage-cache.operator';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-    private auth = inject(Auth, { optional: true });
+    auth = inject(Auth, { optional: true });
     provider = new GoogleAuthProvider();
-    private db = inject(Database, { optional: true });
-    private platformId = inject(PLATFORM_ID);
+    db = inject(Database, { optional: true });
+    platformId = inject(PLATFORM_ID);
 
-    isAdmin: Observable<boolean>;
-    isVolunteer: Observable<boolean>;
-    isAdminOrVolunteer: Observable<boolean>;
-    uid: Observable<string>;
-    name: Observable<string>;
+    feedback = signal<Feedback | null>(null);
 
-    agenda: Observable<any>;
-    feedback: Observable<Feedback>;
+    authStateSignal = toSignal(authState(this.auth));
 
     state =
-        isPlatformBrowser(this.platformId) && this.auth
-            ? authState(this.auth).pipe(shareReplay(1))
-            : observableOf(null).pipe(shareReplay(1));
+        isPlatformBrowser(this.platformId) && this.auth ? this.authStateSignal : signal<User>(null);
+
+    uid: Signal<string | null> = computed(() => this.state()?.uid);
+    name: Signal<string | null> = computed(
+        () => this.state()?.displayName || this.state()?.providerData[0]?.displayName
+    );
+
+    agenda: Signal<any[] | null> = computed(() => {
+        if (!this.uid()) return null;
+        const agenda = toSignal(
+            list(ref(this.db, `devfest${environment.year}/agendas/${this.uid()}`)).pipe(
+                map((actions) =>
+                    actions.map((a) => {
+                        const value = a.snapshot.val();
+                        const key = a.snapshot.key;
+                        console.log('payload includes', a.snapshot.val());
+                        return { key: key, ...value };
+                    })
+                )
+            )
+        );
+    });
+
+    isAdmin = this.checkKey(`/devfest${environment.year}/admin/` + this.uid());
+    isVolunteer = this.checkKey(`/devfest${environment.year}/volunteers/` + this.uid());
+
+    isAdminOrVolunteer = computed(() => this.isAdmin() || this.isVolunteer());
+
+    checkKey(key: string): Signal<boolean> {
+        return computed(() => {
+            if (!this.state()) return false;
+            const keyVal = objectVal(ref(this.db, key));
+            console.log('keyVal is', keyVal, 'for key', key);
+            return !!keyVal;
+        });
+    }
 
     constructor() {
         console.log('Auth service loaded.');
-
-        // Return null observables for SSR context
-        if (!isPlatformBrowser(this.platformId) || !this.auth || !this.db) {
-            this.uid = observableOf(null);
-            this.name = observableOf(null);
-            this.agenda = observableOf([]);
-            this.isAdmin = observableOf(false);
-            this.isVolunteer = observableOf(false);
-            this.isAdminOrVolunteer = observableOf(false);
-            this.feedback = observableOf(null);
-            return;
-        }
-
-        // Defer Firebase API calls using defer operator to ensure they're in proper injection context
-        this.uid = this.state.pipe(
-            map((authState) => {
-                if (authState) {
-                    return authState.uid;
-                } else {
-                    return null;
-                }
-            })
-        );
-        this.name = this.state.pipe(
-            map((authState) => {
-                if (authState) {
-                    return authState.displayName || authState.providerData[0].displayName;
-                } else {
-                    return null;
-                }
-            })
-        );
-        /** Used to filter the agenda of a user on the schedule */
-        this.agenda = this.state.pipe(
-            switchMap((authState) => {
-                if (authState && authState.uid) {
-                    let year = environment.year;
-                    return list(ref(this.db, `devfest${year}/agendas/${authState.uid}`)).pipe(
-                        map((actions) =>
-                            actions.map((a) => {
-                                const value = a.snapshot.val();
-                                const key = a.snapshot.key;
-                                console.log('payload includes', a.snapshot.val());
-                                return { key: key, ...value };
-                            })
-                        )
-                    );
-                } else {
-                    return observableEmpty;
-                }
-            }),
-            localstorageCache(`agendaCache${environment.year}`)
-        );
-
-        this.isAdmin = this.state.pipe(
-            switchMap((authState) => {
-                if (!authState) {
-                    return observableOf(false);
-                } else {
-                    return objectVal(ref(this.db, '/admin/' + authState.uid));
-                }
-            }),
-            map((value) => !!value),
-            localstorageCache('isAdmin')
-        );
-
-        this.isVolunteer = this.state
-            .pipe(
-                switchMap((authState) => {
-                    if (!authState) {
-                        return observableOf(false);
-                    } else {
-                        return objectVal(ref(this.db, '/devfest2025/volunteers/' + authState.uid));
-                    }
-                })
-            )
-            .pipe(map((volunteerObject) => volunteerObject && volunteerObject['$value'] === true));
-
-        this.isAdminOrVolunteer = combineLatest(this.isAdmin, this.isVolunteer, (x, y) => x || y);
     }
     login() {
         if (!isPlatformBrowser(this.platformId) || !this.auth) {

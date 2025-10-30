@@ -36,7 +36,7 @@
                     >
                         <div class="title">
                             {{ data().gridData[time][room].title }}
-                            @if (auth.isAdmin | async) {
+                            @if (auth.isAdmin()) {
                             <a
                                 [routerLink]="[
                                     '/',
@@ -64,7 +64,7 @@
                 </td>
                 } @if (data().gridData[time][room] === 'placeholder') {
                 <td>
-                    @if (auth.isAdmin | async) {
+                    @if (auth.isAdmin()) {
                     <button
                         [routerLink]="['/', 'admin', 'sessions', 'new', 'edit', time, room]"
                         mat-raised-button
@@ -93,7 +93,7 @@
                     >
                         <div class="title">
                             {{ data().gridData[time]['all'].title }}
-                            @if (auth.isAdmin | async) {
+                            @if (auth.isAdmin()) {
                             <a
                                 [routerLink]="[
                                     '/',
@@ -138,7 +138,7 @@
             >
                 <div class="title">
                     {{ data().gridData[time][room].title }}
-                    @if (auth.isAdmin | async) {
+                    @if (auth.isAdmin()) {
                     <a
                         [routerLink]="[
                             '/',
@@ -180,7 +180,7 @@
             >
                 <div class="title">
                     {{ data().gridData[time]['all'].title }}
-                    @if (auth.isAdmin | async) {
+                    @if (auth.isAdmin()) {
                     <a
                         [routerLink]="[
                             '/',
@@ -205,7 +205,7 @@
         </div>
         }
     </div>
-    @if (auth.isAdmin | async) {
+    @if (auth.isAdmin()) {
     <div>
         @for (time of $any(data().gridData | keyvalue); track time) { @if (time.value.undefined; as
         slot) {

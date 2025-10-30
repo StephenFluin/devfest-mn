@@ -1,5 +1,4 @@
 import { Component, inject } from '@angular/core';
-import { AngularFireDatabase, AngularFireObject } from '@angular/fire/compat/database';
 import { map } from 'rxjs/operators';
 
 import { DataService } from '../shared/data.service';
@@ -26,9 +25,10 @@ import { FormsModule } from '@angular/forms';
 })
 export class VolunteersComponent {
     ds = inject(DataService);
-    volunteers: AngularFireObject<any> = this.ds.getVolunteers();
+    volunteers = this.ds.getVolunteers();
     volunteerList = this.volunteers.valueChanges().pipe(
-        map((map) => {
+        map((map: any) => {
+            if (!map) return [];
             let list = Object.keys(map);
             list = list.filter((x) => x != '$key' && x != '$exists');
             return list;

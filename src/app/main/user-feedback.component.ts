@@ -1,4 +1,4 @@
-import { Component, OnChanges, computed, signal, inject, input } from '@angular/core';
+import { Component, OnChanges, computed, signal, inject, input, Signal } from '@angular/core';
 import { AngularFireDatabase, AngularFireObject } from '@angular/fire/compat/database';
 import { DataService, Session, Feedback } from '../shared/data.service';
 
@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { StarBarComponent } from './star-bar.component';
 import { AsyncPipe } from '@angular/common';
 import { environment } from '../../environments/environment';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
     selector: 'user-feedback',
@@ -21,8 +22,8 @@ export class UserFeedbackComponent implements OnChanges {
     auth = inject(AuthService);
 
     readonly session = input(undefined);
-    feedback: Feedback = { $key: null, speaker: 0, content: 0, recommendation: 0, comment: ' ' };
-    editableFeedback: AngularFireObject<any>;
+    feedback: Signal<Feedback>;
+    editableFeedback: Signal<AngularFireObject<Feedback> | null>;
     uid;
     count = 0;
     saved = signal(false);
@@ -34,31 +35,34 @@ export class UserFeedbackComponent implements OnChanges {
     constructor() {
         const db = this.db;
 
-        let url = combineLatest(this.auth.uid, this.newSession).pipe(
-            map((combinedData) => {
-                let [uid, session] = combinedData;
-                if (uid && session && session.$key) {
-                    return `/devfest${environment.year}/feedback/${uid}/${session.$key}/`;
-                } else {
-                    return null;
-                }
-            })
-        );
-
-        url.pipe(
-            tap((path) => {
-                console.log('fetching data for', path);
-            }),
-            switchMap((path) => (path ? db.object<Feedback>(path).valueChanges() : empty())),
-            filter((x) => !!x)
-        ).subscribe((feedback) => {
-            this.feedback = feedback;
+        let url = computed(() => {
+            const uid = this.auth.uid();
+            const session = toSignal(this.newSession);
+            if (uid && session() && session().$key) {
+                return `/devfest${environment.year}/feedback/${uid}/${session().$key}/`;
+            } else {
+                return null;
+            }
         });
 
-        url.subscribe((path) => {
-            if (path) {
-                this.editableFeedback = db.object(path);
+        this.feedback = computed(() => {
+            if (!url()) {
+                return {
+                    $key: null,
+                    speaker: 0,
+                    content: 0,
+                    recommendation: 0,
+                    comment: ' ',
+                };
             }
+
+            return toSignal(this.db.object<Feedback>(url()).valueChanges())();
+        });
+        this.editableFeedback = computed(() => {
+            if (url()) {
+                return db.object(url());
+            }
+            return null;
         });
     }
 
@@ -70,30 +74,32 @@ export class UserFeedbackComponent implements OnChanges {
         }
     }
     saveSpeaker(val) {
-        this.feedback.speaker = val;
+        this.feedback().speaker = val;
         this.save();
     }
     saveContent(val) {
-        this.feedback.content = val;
+        this.feedback().content = val;
         this.save();
     }
     saveRecommendation(val) {
-        this.feedback.recommendation = val;
+        this.feedback().recommendation = val;
         this.save();
     }
     saveComment(val) {
-        this.feedback.comment = val;
+        this.feedback().comment = val;
         this.save();
     }
     save() {
-        if (this.editableFeedback) {
-            delete this.feedback.$key;
-            this.editableFeedback.set(this.feedback).then((result) => {
-                this.saved.set(true);
-                setTimeout(() => {
-                    this.saved.set(false);
-                }, 2000);
-            });
+        if (this.editableFeedback()) {
+            delete this.feedback().$key;
+            this.editableFeedback()
+                .set(this.feedback())
+                .then((result) => {
+                    this.saved.set(true);
+                    setTimeout(() => {
+                        this.saved.set(false);
+                    }, 2000);
+                });
         } else {
         }
     }

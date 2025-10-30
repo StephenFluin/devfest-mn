@@ -37,8 +37,7 @@
         "rxjs": "^7.8.1",
         "snarkdown": "^2.0.0",
         "tslib": "^2.0.0",
-        "typescript": "5.8.3",
-        "zone.js": "~0.15.1"
+        "typescript": "5.8.3"
     },
     "devDependencies": {
         "@angular/build": "^20.3.6",
