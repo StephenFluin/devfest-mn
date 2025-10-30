@@ -10,7 +10,7 @@ import { YearService } from '../year.service';
 import { AuthService } from '../realtime-data/auth.service';
 import { MatButtonModule } from '@angular/material/button';
 import { ScheduleGridComponent } from './schedule-grid.component';
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, JsonPipe } from '@angular/common';
 import { AuthenticationShimService } from '../authentication-shim.service';
 
 export interface Schedule {
@@ -21,7 +21,7 @@ export interface Schedule {
 
 @Component({
     templateUrl: './schedule.component.html',
-    imports: [ScheduleGridComponent, MatButtonModule, AsyncPipe],
+    imports: [ScheduleGridComponent, MatButtonModule, AsyncPipe, JsonPipe],
 })
 export class ScheduleComponent {
     ds = inject(DataService);

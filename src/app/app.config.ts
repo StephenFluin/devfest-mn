@@ -7,7 +7,7 @@ import {
     withIncrementalHydration,
 } from '@angular/platform-browser';
 import { UrlSegment, provideRouter } from '@angular/router';
-import MainRoutes from './main/main.routes';
+import MainRoutes from './app.routes';
 
 export const appConfig: ApplicationConfig = {
     providers: [
