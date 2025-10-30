@@ -2,7 +2,7 @@ import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Auth, authState, signInWithPopup, GoogleAuthProvider } from '@angular/fire/auth';
 
-import { YearService } from '../year.service';
+import { environment } from '../../environments/environment';
 import { Database, list, objectVal, ref } from '@angular/fire/database';
 import 'firebase/compat/auth';
 import { combineLatest, EMPTY as observableEmpty, Observable, of as observableOf } from 'rxjs';
@@ -33,7 +33,6 @@ export class AuthService {
 
     constructor() {
         console.log('Auth service loaded.');
-        const yearService = inject(YearService);
 
         // Return null observables for SSR context
         if (!isPlatformBrowser(this.platformId) || !this.auth || !this.db) {
@@ -69,7 +68,7 @@ export class AuthService {
         this.agenda = this.state.pipe(
             switchMap((authState) => {
                 if (authState && authState.uid) {
-                    let year = yearService.year;
+                    let year = environment.year;
                     return list(ref(this.db, `devfest${year}/agendas/${authState.uid}`)).pipe(
                         map((actions) =>
                             actions.map((a) => {
@@ -84,7 +83,7 @@ export class AuthService {
                     return observableEmpty;
                 }
             }),
-            localstorageCache(`agendaCache${yearService.year}`)
+            localstorageCache(`agendaCache${environment.year}`)
         );
 
         this.isAdmin = this.state.pipe(

@@ -4,22 +4,21 @@ import { DataService, Session, Feedback } from '../shared/data.service';
 
 import { Subject, combineLatest, empty } from 'rxjs';
 import { map, switchMap, tap, filter } from 'rxjs/operators';
-import { YearService } from '../year.service';
 import { AuthService } from '../realtime-data/auth.service';
 import { MatButtonModule } from '@angular/material/button';
 import { StarBarComponent } from './star-bar.component';
 import { AsyncPipe } from '@angular/common';
+import { environment } from '../../environments/environment';
 
 @Component({
     selector: 'user-feedback',
     templateUrl: 'user-feedback.component.html',
-    imports: [StarBarComponent, MatButtonModule, AsyncPipe]
+    imports: [StarBarComponent, MatButtonModule, AsyncPipe],
 })
 export class UserFeedbackComponent implements OnChanges {
     db = inject(AngularFireDatabase);
     ds = inject(DataService);
     auth = inject(AuthService);
-    yearService = inject(YearService);
 
     readonly session = input(undefined);
     feedback: Feedback = { $key: null, speaker: 0, content: 0, recommendation: 0, comment: ' ' };
@@ -34,13 +33,12 @@ export class UserFeedbackComponent implements OnChanges {
 
     constructor() {
         const db = this.db;
-        const yearService = this.yearService;
 
         let url = combineLatest(this.auth.uid, this.newSession).pipe(
             map((combinedData) => {
                 let [uid, session] = combinedData;
                 if (uid && session && session.$key) {
-                    return `/devfest${yearService.year}/feedback/${uid}/${session.$key}/`;
+                    return `/devfest${environment.year}/feedback/${uid}/${session.$key}/`;
                 } else {
                     return null;
                 }

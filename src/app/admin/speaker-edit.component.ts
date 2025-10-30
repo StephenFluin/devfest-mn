@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { switchMap, map } from 'rxjs/operators';
 import { DataService, Speaker } from '../shared/data.service';
-import { YearService } from '../year.service';
 import { UploaderComponent } from './sffb/uploader.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -12,24 +11,25 @@ import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { AsyncPipe } from '@angular/common';
+import { environment } from '../../environments/environment';
 
 @Component({
     templateUrl: './speaker-edit.component.html',
     imports: [
-    MatFormFieldModule,
-    MatInputModule,
-    FormsModule,
-    MatCheckboxModule,
-    MatButtonModule,
-    UploaderComponent,
-    AsyncPipe
-]
+        MatFormFieldModule,
+        MatInputModule,
+        FormsModule,
+        MatCheckboxModule,
+        MatButtonModule,
+        UploaderComponent,
+        AsyncPipe,
+    ],
 })
 export class SpeakerEditComponent {
     ds = inject(DataService);
     route = inject(ActivatedRoute);
     router = inject(Router);
-    yearService = inject(YearService);
+    environment = environment;
 
     speakerData: Observable<Speaker>;
 
@@ -43,7 +43,7 @@ export class SpeakerEditComponent {
                     return observableOf({});
                 }
                 return ds
-                    .getSpeakers(this.yearService.year)
+                    .getSpeakers(environment.year)
                     .pipe(map((list) => list.find((item) => item.$key === params['id'])));
             })
         );
@@ -53,7 +53,7 @@ export class SpeakerEditComponent {
         console.log('Saving speaker', speaker);
         event.preventDefault();
         this.ds.save('speakers', speaker);
-        console.log('rerouting to', this.yearService.year);
+        console.log('rerouting to', environment.year);
         this.router.navigate(['/', 'speakers']);
     }
 

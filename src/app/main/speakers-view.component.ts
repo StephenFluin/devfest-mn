@@ -5,21 +5,19 @@ import { DataService } from '../shared/data.service';
 
 import { switchMap, map } from 'rxjs/operators';
 
-import { YearService } from '../year.service';
 import { AsyncPipe } from '@angular/common';
 import { SpeakerFullComponent } from './speaker-full.component';
+import { environment } from '../../environments/environment';
 
 @Component({
     template: `
-    <section>
-            <speaker-full [speaker]="speaker | async" [year]="yearService.year"></speaker-full>
-    </section>
+        <section>
+            <speaker-full [speaker]="speaker | async" [year]="environment.year"></speaker-full>
+        </section>
     `,
-    imports: [SpeakerFullComponent, AsyncPipe]
+    imports: [SpeakerFullComponent, AsyncPipe],
 })
 export class SpeakersViewComponent {
-    yearService = inject(YearService);
-
     speaker;
     speakerId;
     year;
@@ -28,10 +26,12 @@ export class SpeakersViewComponent {
         const route = inject(ActivatedRoute);
         const ds = inject(DataService);
 
-
-        this.speaker = route.params.pipe(switchMap(params => {
-            return ds.getSpeakers(this.yearService.year).pipe(map(list => list.find(item => item.$key === params['id'])));
-        }));
+        this.speaker = route.params.pipe(
+            switchMap((params) => {
+                return ds
+                    .getSpeakers(environment.year)
+                    .pipe(map((list) => list.find((item) => item.$key === params['id'])));
+            })
+        );
     }
-
 }

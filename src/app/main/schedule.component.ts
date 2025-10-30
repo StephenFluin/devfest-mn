@@ -6,7 +6,7 @@ import { DataService } from '../shared/data.service';
 
 import { Observable, combineLatest } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
-import { YearService } from '../year.service';
+import { environment } from '../../environments/environment';
 import { AuthService } from '../realtime-data/auth.service';
 import { MatButtonModule } from '@angular/material/button';
 import { ScheduleGridComponent } from './schedule-grid.component';
@@ -28,7 +28,6 @@ export class ScheduleComponent {
     authShim = inject(AuthenticationShimService);
     route = inject(ActivatedRoute);
     router = inject(Router);
-    yearService = inject(YearService);
 
     // Two versions of the same data, one filtered, one not
     allSessions: Observable<Schedule>;
@@ -39,14 +38,13 @@ export class ScheduleComponent {
 
     constructor() {
         const ds = this.ds;
-        const yearService = this.yearService;
 
         this.filteredData = this.allSessions;
 
         /**
          * Session data should look like data[time][room] = session;
          */
-        this.allSessions = ds.getSchedule(yearService.year).pipe(
+        this.allSessions = ds.getSchedule(environment.year).pipe(
             map((list) => {
                 let data = {};
                 for (let session of list) {

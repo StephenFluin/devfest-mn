@@ -2,7 +2,6 @@ import { Component, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 import { environment } from '../../environments/environment';
-import { YearService } from '../year.service';
 import { RouterLink } from '@angular/router';
 
 import { ADirective } from '../a.directive';
@@ -31,11 +30,6 @@ export class HomeComponent {
 
     setFaqSelection(question) {
         this.faqSelection = question;
-    }
-
-    constructor() {
-        const yearService = inject(YearService);
-        yearService.reset();
     }
 
     ngAfterViewInit() {

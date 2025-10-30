@@ -7,31 +7,28 @@ import { map, switchMap } from 'rxjs/operators';
 import snarkdown from 'snarkdown';
 
 import { DataService, Session } from '../shared/data.service';
-import { YearService } from '../year.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { OurMeta } from '../our-meta.service';
 import { AsyncPipe } from '@angular/common';
 import { SessionDetailsComponent } from './session-details.component';
+import { environment } from '../../environments/environment';
 
 @Component({
     templateUrl: './session-view.component.html',
-    imports: [SessionDetailsComponent, AsyncPipe]
+    imports: [SessionDetailsComponent, AsyncPipe],
 })
 export class SessionViewComponent {
-    yearService = inject(YearService);
-
     session: Observable<Session>;
 
     constructor() {
         const route = inject(ActivatedRoute);
         const ds = inject(DataService);
         const meta = inject(OurMeta);
-        const yearService = this.yearService;
         const sanitizer = inject(DomSanitizer);
 
         this.session = route.params.pipe(
             switchMap((params) =>
-                ds.getSchedule(yearService.year).pipe(
+                ds.getSchedule(environment.year).pipe(
                     map((list) => list.find((item) => item.$key === params['id'])),
                     map((item) => {
                         if (!item) {

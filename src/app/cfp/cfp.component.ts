@@ -3,7 +3,6 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { FormBuilder, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ThanksDialogComponent } from './thanks.dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { YearService } from '../year.service';
 import { tap, switchMap, take, filter } from 'rxjs/operators';
 import { AuthService } from '../realtime-data/auth.service';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,28 +11,28 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { RouterLink } from '@angular/router';
 import { AsyncPipe, DatePipe } from '@angular/common';
+import { environment } from '../../environments/environment';
 
 @Component({
     selector: 'app-cfp',
     templateUrl: './cfp.component.html',
     imports: [
-    FormsModule,
-    ReactiveFormsModule,
-    RouterLink,
-    MatFormFieldModule,
-    MatInputModule,
-    MatRadioModule,
-    MatButtonModule,
-    AsyncPipe,
-    DatePipe
-]
+        FormsModule,
+        ReactiveFormsModule,
+        RouterLink,
+        MatFormFieldModule,
+        MatInputModule,
+        MatRadioModule,
+        MatButtonModule,
+        AsyncPipe,
+        DatePipe,
+    ],
 })
 export class CFPComponent {
     private store = inject(AngularFirestore);
     private fb = inject(FormBuilder);
     private dialog = inject(MatDialog);
     auth = inject(AuthService);
-    private yearService = inject(YearService);
 
     cfp = this.fb.group({
         name: ['', Validators.required],
@@ -60,7 +59,7 @@ export class CFPComponent {
             .pipe(
                 tap((x) => console.log('Id was', x)),
                 switchMap((uid) =>
-                    this.store.doc(`years/${this.yearService.year}/proposals/${uid}`).valueChanges()
+                    this.store.doc(`years/${environment.year}/proposals/${uid}`).valueChanges()
                 ),
                 take(1),
                 filter((x) => !!x)
@@ -73,7 +72,7 @@ export class CFPComponent {
 
     submit(group, uid: string) {
         if (group.valid) {
-            const proposal = this.store.doc(`years/${this.yearService.year}/proposals/${uid}`);
+            const proposal = this.store.doc(`years/${environment.year}/proposals/${uid}`);
             proposal.set({ ...group.value, date: new Date().toISOString() });
             this.dialog.open(ThanksDialogComponent);
         }

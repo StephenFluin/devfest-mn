@@ -6,8 +6,6 @@ import { switchMap } from 'rxjs/operators';
 import { map } from 'rxjs/operators';
 
 import { DataService, Session } from '../shared/data.service';
-import { YearService } from '../year.service';
-import { FireJoinPipe } from '../realtime-data/fire-join.pipe';
 import { SpeakerSelectorComponent } from './speaker-selector.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatOptionModule } from '@angular/material/core';
@@ -17,6 +15,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { AsyncPipe, KeyValuePipe } from '@angular/common';
 import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
+import { environment } from '../../environments/environment';
 
 @Component({
     templateUrl: './session-edit.component.html',
@@ -37,14 +36,12 @@ export class SessionEditComponent {
     ds = inject(DataService);
     route = inject(ActivatedRoute);
     router = inject(Router);
-    yearService = inject(YearService);
 
     sessionData: Observable<Session>;
 
     constructor() {
         const ds = this.ds;
         const route = this.route;
-        const yearService = this.yearService;
 
         this.sessionData = route.params.pipe(
             switchMap((params) => {
@@ -52,7 +49,7 @@ export class SessionEditComponent {
                     return observableOf({ startTime: params['time'], room: params['room'] });
                 }
                 return ds
-                    .getSchedule(yearService.year)
+                    .getSchedule(environment.year)
                     .pipe(map((list) => list.find((item) => item.$key === params['id'])));
             })
         );

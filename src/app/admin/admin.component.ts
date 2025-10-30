@@ -6,7 +6,7 @@ import { AsyncPipe } from '@angular/common';
 import { AngularFireList } from '@angular/fire/compat/database';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService } from '../realtime-data/auth.service';
-import { YearService } from '../year.service';
+import { environment } from '../../environments/environment';
 
 @Component({
     templateUrl: './admin.component.html',
@@ -15,7 +15,6 @@ import { YearService } from '../year.service';
 export class AdminComponent {
     db = inject(AngularFireDatabase);
     auth = inject(AuthService);
-    yearService = inject(YearService);
 
     schedule: AngularFireList<any>;
     speakers: AngularFireList<any>;
@@ -25,9 +24,8 @@ export class AdminComponent {
 
     constructor() {
         const db = this.db;
-        const yearService = this.yearService;
 
-        const PATH = `devfest${yearService.year}`;
+        const PATH = `devfest${environment.year}`;
         this.schedule = db.list(PATH + '/schedule');
         this.speakers = db.list(PATH + '/speakers');
     }

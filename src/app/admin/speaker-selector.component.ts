@@ -2,9 +2,9 @@ import { Component, OnChanges, inject, input, output } from '@angular/core';
 
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 
-import { YearService } from '../year.service';
 import { AsyncPipe } from '@angular/common';
 import { Speaker } from '../shared/data.service';
+import { environment } from '../../environments/environment';
 
 @Component({
     selector: 'speaker-selector',
@@ -32,12 +32,9 @@ import { Speaker } from '../shared/data.service';
 })
 export class SpeakerSelectorComponent implements OnChanges {
     db = inject(AngularFireDatabase);
-    yearService = inject(YearService);
 
     speakers = this.db
-        .list<Speaker>(`devfest${this.yearService.year}/speakers`, (ref) =>
-            ref.orderByChild('name')
-        )
+        .list<Speaker>(`devfest${environment.year}/speakers`, (ref) => ref.orderByChild('name'))
         .snapshotChanges();
 
     readonly session = input(undefined);
@@ -46,7 +43,7 @@ export class SpeakerSelectorComponent implements OnChanges {
 
     schedule;
     ngOnChanges() {
-        let path = `devfest${this.yearService.year}/speakers`;
+        let path = `devfest${environment.year}/speakers`;
         console.log('querying ', path);
         this.speakers.subscribe(console.log);
     }
@@ -54,7 +51,7 @@ export class SpeakerSelectorComponent implements OnChanges {
     addSpeakerToSession(speakerKey: string) {
         const session = this.session();
         console.log('Adding', speakerKey, 'to ', session);
-        let path = `devfest${this.yearService.year}/schedule/${session.$key}/speakers`;
+        let path = `devfest${environment.year}/schedule/${session.$key}/speakers`;
         console.log('path is', path);
         const speakerList = this.db.list(path);
         speakerList.push(speakerKey).then(

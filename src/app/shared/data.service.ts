@@ -8,7 +8,7 @@ import {
 import { Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { SafeHtml } from '@angular/platform-browser';
-import { YearService } from '../year.service';
+import { environment } from '../../environments/environment';
 import { localstorageCache } from './localstorage-cache.operator';
 
 export interface Session {
@@ -48,7 +48,6 @@ export interface Feedback {
 @Injectable()
 export class DataService {
     db = inject(AngularFireDatabase);
-    yearService = inject(YearService);
 
     private speakersByYear: { [key: string]: Observable<Speaker[]> } = {};
     private scheduleByYear: { [key: string]: Observable<Session[]> } = {};
@@ -68,7 +67,7 @@ export class DataService {
     }
     getSpeaker(speakerKey: string) {
         return this.db
-            .object<Speaker>(`devfest${this.yearService.year}/speakers/${speakerKey}/name`)
+            .object<Speaker>(`devfest${environment.year}/speakers/${speakerKey}/name`)
             .valueChanges();
     }
 
@@ -102,11 +101,11 @@ export class DataService {
         return this.listPath('feedback');
     }
     getVolunteers() {
-        return this.db.object(`devfest${this.yearService.year}/volunteers`);
+        return this.db.object(`devfest${environment.year}/volunteers`);
     }
 
     getAgenda(uid: string, session: string): AngularFireObject<any> {
-        const path = `devfest${this.yearService.year}/agendas/${uid}/${session}/`;
+        const path = `devfest${environment.year}/agendas/${uid}/${session}/`;
         console.log('fetching agenda stored at', path);
         return this.db.object(path);
     }
@@ -162,9 +161,7 @@ export class DataService {
     }
 
     deleteSpeakerFromSession(session: Session, speakerKey: string) {
-        const list = this.db.list(
-            `devfest${this.yearService.year}/schedule/${session.$key}/speakers`
-        );
+        const list = this.db.list(`devfest${environment.year}/schedule/${session.$key}/speakers`);
         list.remove(speakerKey)
             .then(() => {
                 console.log(`Speaker (${speakerKey} deleted from session (${session.$key}) .`);
@@ -195,6 +192,6 @@ export class DataService {
         type: 'schedule' | 'speakers' | 'feedback' | 'volunteers',
         query?: QueryFn
     ): AngularFireList<T> {
-        return this.db.list<T>(`devfest${this.yearService.year}/${type}`, query);
+        return this.db.list<T>(`devfest${environment.year}/${type}`, query);
     }
 }
