@@ -1,4 +1,9 @@
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
+@font-face {
+    font-family: 'Montserrat';
+    src: url('/a/montserrat-latin-400-700.woff2') format('woff2');
+    font-display: swap;
+}
 
 * {
     margin: 0;

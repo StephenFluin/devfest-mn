@@ -1,4 +1,4 @@
-import { Component, inject, PLATFORM_ID } from '@angular/core';
+import { Component, DOCUMENT, inject, PLATFORM_ID } from '@angular/core';
 import { Router, NavigationStart, NavigationEnd, RouterLink, RouterOutlet } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../environments/environment';
@@ -22,6 +22,7 @@ declare global {
 })
 export class AppComponent {
     environment = environment;
+    private document = inject(DOCUMENT);
     private platformId = inject(PLATFORM_ID);
     private isBrowser = isPlatformBrowser(this.platformId);
     isSecure = this.isBrowser && window?.location?.protocol === 'https:';
@@ -52,6 +53,13 @@ export class AppComponent {
         router.events
             .pipe(filter((e) => e instanceof NavigationStart))
             .subscribe((n: NavigationStart) => {});
+    }
+
+    ngOnInit() {
+        const link = this.document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = '/a/montserrat-latin-400-700.woff2';
+        this.document.head.appendChild(link);
     }
 
     prepRouteState(outlet: any) {
