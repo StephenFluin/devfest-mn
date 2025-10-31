@@ -21,6 +21,7 @@ import { filter, map } from 'rxjs/operators';
 import { SafeHtml } from '@angular/platform-browser';
 import { environment } from '../../environments/environment';
 import { localstorageCache } from './localstorage-cache.operator';
+import { TransferStateService } from './transfer-state.service';
 
 export interface Session {
     $key?: string;
@@ -59,6 +60,7 @@ export interface Feedback {
 @Injectable()
 export class DataService {
     db = inject(Database);
+    private transferStateService = inject(TransferStateService);
 
     private speakersByYear: { [key: string]: Observable<Speaker[]> } = {};
     private scheduleByYear: { [key: string]: Observable<Session[]> } = {};
@@ -68,10 +70,16 @@ export class DataService {
             return this.speakersByYear[year];
         }
 
-        this.speakersByYear[year] = this.listPath('speakers', [orderByChild('name')]).pipe(
+        const baseObservable = this.listPath('speakers', [orderByChild('name')]).pipe(
             filter((x) => !!x),
             localstorageCache('speakerCache' + year)
         );
+
+        this.speakersByYear[year] = this.transferStateService.cacheObservable(
+            `speakers-${year}`,
+            baseObservable
+        );
+
         return this.speakersByYear[year];
     }
     getSpeaker(speakerKey: string) {
@@ -84,12 +92,17 @@ export class DataService {
         if (this.scheduleByYear[year]) {
             return this.scheduleByYear[year];
         }
-        this.scheduleByYear[year] = this.listPath<Session>('schedule', [
-            orderByChild('title'),
-        ]).pipe(
+
+        const baseObservable = this.listPath<Session>('schedule', [orderByChild('title')]).pipe(
             filter((x) => !!x),
             localstorageCache('sessionsCache' + year)
         );
+
+        this.scheduleByYear[year] = this.transferStateService.cacheObservable(
+            `schedule-${year}`,
+            baseObservable
+        );
+
         return this.scheduleByYear[year];
     }
 
@@ -107,7 +120,8 @@ export class DataService {
     }
 
     getFeedback(): Observable<Feedback[]> {
-        return this.listPath('feedback');
+        const baseObservable = this.listPath<Feedback>('feedback');
+        return this.transferStateService.cacheObservable('feedback', baseObservable);
     }
     getVolunteers() {
         const dbRef = ref(this.db, `devfest${environment.year}/volunteers`);
