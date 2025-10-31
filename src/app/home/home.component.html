@@ -2,6 +2,7 @@
     <div id="hero-section">
         <img
             src="a/images/devfestmn.svg"
+            fetchpriority="high"
             style="width: 40%; max-width: 400px; min-width: 250px"
             alt="DevFestMN 2025"
         />
@@ -90,7 +91,7 @@
                 development. Intelligence.
             </p>
             <div class="split-column">
-                <img src="/a/images/background.jpg" />
+                <img src="/a/images/background.webp" alt="downtown view of Minneapolis" />
                 <div>
                     <p>
                         DevFestMN has been running since 2013. Over the years we've been thankful
@@ -318,18 +319,8 @@
     <section>
         <div>
             <h2>Tickets</h2>
-            <!-- <iframe
-                src="https://www.eventbrite.com/checkout-external?eid=1684295616529&amp;parent=https%3A%2F%2Fdevfest.mn%2F"
-                data-automation="checkout-widget-iframe-1684295616529"
-                allowtransparency="true"
-                frameborder="0"
-                scrolling="auto"
-                width="100%"
-                height="600"
-            ></iframe> -->
-            <div id="eventbrite-widget-container-1684295616529"></div>
-            @if(!isSecure) {
-            <p>Ticket window not loaded over http.</p>
+            @defer( on viewport) { <app-ticket-embed></app-ticket-embed> } @placeholder {
+            <p>Loading tickets...</p>
             }
         </div>
     </section>
@@ -343,8 +334,12 @@
                 Center in Minneapolis, MN.
             </p>
             <div id="map">
-                <a [href]="environment.venueMapUrl" target="map">
-                    <img src="/a/images/map-umn.png" />
+                <a
+                    [href]="environment.venueMapUrl"
+                    target="map"
+                    aria-label="Visit the map on Google Maps"
+                >
+                    <img src="/a/images/map-umn.webp" alt="Map of University of Minnesota Campus" />
                 </a>
             </div>
         </div>

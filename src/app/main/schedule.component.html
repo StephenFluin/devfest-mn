@@ -28,7 +28,6 @@
         [data]="filteredData | async"
         [forceMobile]="filteredData == populatedAgenda"
     ></schedule-grid>
-    <p>Schedule raw data:{{ filteredData | async | json }}</p>
     @if (authService.isAdmin()) {
     <button mat-raised-button color="primary" (click)="addSession()">Add Session</button>
     }

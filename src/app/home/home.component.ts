@@ -7,6 +7,7 @@ import { RouterLink } from '@angular/router';
 import { ADirective } from '../a.directive';
 
 import { trackTicketPurchase } from '../analytics.util';
+import { TicketEmbedComponent } from '../ticket-embed/ticket-embed.component';
 
 declare global {
     interface Window {
@@ -17,7 +18,7 @@ declare global {
 
 @Component({
     templateUrl: './home.component.html',
-    imports: [RouterLink, ADirective],
+    imports: [RouterLink, ADirective, TicketEmbedComponent],
     host: { ngSkipHydration: 'true' },
 })
 export class HomeComponent {
@@ -30,26 +31,6 @@ export class HomeComponent {
 
     setFaqSelection(question) {
         this.faqSelection = question;
-    }
-
-    ngAfterViewInit() {
-        if (!this.isBrowser || !this.isSecure) {
-            return;
-        }
-
-        // Dynamically import eb-widget only in browser
-        import('../../eb-widget').then(() => {
-            window.EBWidgets.createWidget({
-                widgetType: 'checkout',
-                eventId: environment.eventbriteEventId,
-                iframeContainerId: 'eventbrite-widget-container-1684295616529',
-
-                // Optional
-                iframeContainerHeight: 600, // Widget height in pixels. Defaults to a minimum of 425px if not provided
-                onOrderComplete: trackTicketPurchase, // Method called when an order has successfully completed
-            });
-            console.log('Created widget');
-        });
     }
 }
 

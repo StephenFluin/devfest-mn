@@ -94,7 +94,7 @@ a:hover {
     /* background: linear-gradient(0deg, rgba(34,193,195,.8) 0%, rgba(253,187,45,.5) 100%); */
     /* background-image: url(/a/images/background.jpg); */
     background-image: url(/a/images/hero-cover.jpg);
-    background-color: #19a9e5;
+    background-color: #0066cc;
     background-size: cover;
     width: 100%;
     display: flex;
@@ -168,7 +168,7 @@ section {
 }
 
 section.section-background {
-    background-color: #19a9e5;
+    background-color: #0066cc;
     color: white;
 }
 section.section-background h2 {
@@ -237,7 +237,7 @@ section.section-background h2 {
 
 header.page-header-banner {
     /* Replace later with hero image or background that matches style */
-    /* background-color: #19a9e5;
+    /* background-color: #0066cc;
     color: white; */
     padding: 18px 0;
     text-align: center;
@@ -289,14 +289,14 @@ p {
 
 section h2 {
     text-transform: uppercase;
-    color: #19a9e5;
+    color: #0066cc;
 }
 
 /* section h2:after {
     margin: 17px auto 0;
     width: 140px;
     height: 1px;
-    background: #19a9e5;
+    background: #0066cc;
     content: '';
     display: block;
 } */
@@ -322,7 +322,7 @@ footer {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #19a9e5;
+    background-color: #0066cc;
     padding: 32px;
     font-size: 14px;
     letter-spacing: 0.25px;
@@ -406,7 +406,7 @@ button.button.warn {
     margin-bottom: 1rem;
     border-radius: 25px;
     color: #fff;
-    background: #19a9e5;
+    background: #0066cc;
     font-size: 18px;
     font-family: Montserrat, sans-serif;
 }
@@ -432,7 +432,7 @@ button.button.warn {
 .cta-stroke,
 .cta-stroke:focus,
 .cta-stroke:hover {
-    color: #19a9e5;
+    color: #0066cc;
 }
 
 .cta-transparent {
@@ -462,15 +462,15 @@ button.button.warn {
 }
 
 .input-with-button button {
-    background-color: #19a9e5;
+    background-color: #0066cc;
     color: white;
     height: 40px;
     width: 100px;
     border-radius: 0 4px 4px 0;
     border-left: none;
-    border-right: 1px solid #19a9e5;
-    border-top: 1px solid #19a9e5;
-    border-bottom: 1px solid #19a9e5;
+    border-right: 1px solid #0066cc;
+    border-top: 1px solid #0066cc;
+    border-bottom: 1px solid #0066cc;
     margin: 0;
     cursor: pointer;
 }
@@ -653,7 +653,7 @@ button.button.warn {
     background-color: #656f78;
 }
 .schedule .Keynote {
-    /* background-color: #19a9e5; */
+    /* background-color: #0066cc; */
     background-color: #f39c12;
 }
 

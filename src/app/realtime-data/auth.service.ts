@@ -4,9 +4,9 @@ import { Auth, authState, User, signInWithPopup, GoogleAuthProvider } from '@ang
 
 import { environment } from '../../environments/environment';
 import { Database, list, objectVal, ref } from '@angular/fire/database';
-import { map } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { Feedback } from '../shared/data.service';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -27,21 +27,19 @@ export class AuthService {
         () => this.state()?.displayName || this.state()?.providerData[0]?.displayName
     );
 
-    agenda: Signal<any[] | null> = computed(() => {
-        if (!this.uid()) return null;
-        const agenda = toSignal(
-            list(ref(this.db, `devfest${environment.year}/agendas/${this.uid()}`)).pipe(
-                map((actions) =>
-                    actions.map((a) => {
-                        const value = a.snapshot.val();
-                        const key = a.snapshot.key;
-                        console.log('payload includes', a.snapshot.val());
-                        return { key: key, ...value };
-                    })
-                )
+    agenda = toSignal(
+        toObservable(this.uid).pipe(
+            switchMap((uid) => list(ref(this.db, `devfest${environment.year}/agendas/${uid}`))),
+            map((actions) =>
+                actions.map((a) => {
+                    const value = a.snapshot.val();
+                    const key = a.snapshot.key;
+                    console.log('payload includes', a.snapshot.val());
+                    return { key: key, ...value };
+                })
             )
-        );
-    });
+        )
+    );
 
     isAdmin = this.checkKey(`/devfest${environment.year}/admin/`, this.uid);
     isVolunteer = this.checkKey(`/devfest${environment.year}/volunteers/`, this.uid);
