@@ -96,11 +96,8 @@ a:hover {
 }
 
 #hero-section {
-    /* background: rgb(34,193,195); */
-    /* background: linear-gradient(0deg, rgba(34,193,195,.8) 0%, rgba(253,187,45,.5) 100%); */
-    /* background-image: url(/a/images/background.jpg); */
     background-image: url(/a/images/hero-cover.jpg);
-    background-color: #0066cc;
+    background-color: #46b4c0;
     background-size: cover;
     width: 100%;
     display: flex;
@@ -110,6 +107,7 @@ a:hover {
     padding: 16px;
     text-align: center;
     color: white;
+    aspect-ratio: 2.51;
 }
 
 .cta-block {
