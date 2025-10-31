@@ -16,7 +16,7 @@ import {
     objectVal,
 } from '@angular/fire/database';
 
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { SafeHtml } from '@angular/platform-browser';
 import { environment } from '../../environments/environment';
@@ -134,6 +134,14 @@ export class DataService {
     }
 
     getAgenda(uid: string, session: string) {
+        if (!uid || !session) {
+            return {
+                valueChanges: () => of(null),
+                set: (data: any) => Promise.resolve(),
+                remove: () => Promise.resolve(),
+                update: (data: any) => Promise.resolve(),
+            };
+        }
         const path = `devfest${environment.year}/agendas/${uid}/${session}/`;
         console.log('fetching agenda stored at', path);
         const dbRef = ref(this.db, path);

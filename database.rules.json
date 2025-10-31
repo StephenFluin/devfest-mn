@@ -33,6 +33,7 @@
                 }
             },
             "speakers": {
+                ".indexOn": "name",
                 ".write": "root.child('admin/'+auth.uid).exists()"
             },
             "agendas": {

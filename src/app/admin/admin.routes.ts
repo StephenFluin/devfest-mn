@@ -8,6 +8,7 @@ import { environment } from '../../environments/environment';
 import { AngularFireModule } from '@angular/fire/compat';
 import { importProvidersFrom } from '@angular/core';
 import { DataService } from '../shared/data.service';
+import { getStorage, provideStorage } from '@angular/fire/storage';
 
 export const AdminRoutes: Routes = [
     {
@@ -21,6 +22,7 @@ export const AdminRoutes: Routes = [
             // provideAuth(() => getAuth()),
             // AuthService,
             // FirebaseService,
+            provideStorage(() => getStorage()),
         ],
         children: [
             {
