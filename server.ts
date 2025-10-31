@@ -4,6 +4,7 @@ import {
     isMainModule,
     writeResponseToNodeResponse,
 } from '@angular/ssr/node';
+import compression from 'compression';
 import express from 'express';
 import { join } from 'node:path';
 
@@ -11,6 +12,21 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
+
+app.use(
+    compression({
+        filter: (req, res) => {
+            // Don't compress responses if the client doesn't support it
+            if (req.headers['x-no-compression']) {
+                return false;
+            }
+            // Use compression for all other requests
+            return compression.filter(req, res);
+        },
+        level: 6, // Compression level (1-9, where 9 is most compressed but slowest)
+        threshold: 1024, // Only compress responses larger than 1KB
+    })
+);
 
 /**
  * Example Express Rest API endpoints can be defined here.
