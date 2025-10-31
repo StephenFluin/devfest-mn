@@ -28,6 +28,11 @@ app.use(
     })
 );
 
+app.use((req, res, next) => {
+    res.set('X-Test-Header', 'Working');
+    next();
+});
+
 /**
  * Example Express Rest API endpoints can be defined here.
  * Uncomment and define endpoints as necessary.
