@@ -16,12 +16,12 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
     templateUrl: 'user-feedback.component.html',
     imports: [StarBarComponent, MatButtonModule, AsyncPipe],
 })
-export class UserFeedbackComponent implements OnChanges {
+export class UserFeedbackComponent {
     db = inject(AngularFireDatabase);
     ds = inject(DataService);
     auth = inject(AuthService);
 
-    readonly session = input(undefined);
+    readonly session = input<Session>(undefined);
     feedback: Signal<Feedback>;
     editableFeedback: Signal<AngularFireObject<Feedback> | null>;
     uid;
@@ -30,34 +30,25 @@ export class UserFeedbackComponent implements OnChanges {
     saveButtonText = computed(() => (this.saved() ? 'Saved!' : 'Save'));
     saveButtonDisabled = computed(() => this.saved());
 
-    newSession: Subject<Session> = new Subject();
-
     constructor() {
         const db = this.db;
 
         let url = computed(() => {
             const uid = this.auth.uid();
-            const session = toSignal(this.newSession);
-            if (uid && session() && session().$key) {
-                return `/devfest${environment.year}/feedback/${uid}/${session().$key}/`;
+
+            if (uid && this.session() && this.session().$key) {
+                return `/devfest${environment.year}/feedback/${uid}/${this.session().$key}/`;
             } else {
                 return null;
             }
         });
 
-        this.feedback = computed(() => {
-            if (!url()) {
-                return {
-                    $key: null,
-                    speaker: 0,
-                    content: 0,
-                    recommendation: 0,
-                    comment: ' ',
-                };
-            }
+        this.feedback = toSignal(
+            toObservable(url).pipe(
+                switchMap((path) => this.db.object<Feedback>(path).valueChanges())
+            )
+        );
 
-            return toSignal(this.db.object<Feedback>(url()).valueChanges())();
-        });
         this.editableFeedback = computed(() => {
             if (url()) {
                 return db.object(url());
@@ -66,13 +57,6 @@ export class UserFeedbackComponent implements OnChanges {
         });
     }
 
-    ngOnChanges() {
-        const session = this.session();
-        if (session && this.count++ < 10) {
-            console.log('nexting newSession');
-            this.newSession.next(session);
-        }
-    }
     saveSpeaker(val) {
         this.feedback().speaker = val;
         this.save();

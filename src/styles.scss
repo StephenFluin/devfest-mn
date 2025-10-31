@@ -611,8 +611,8 @@ button.button.warn {
     color: white;
     padding: 5px;
 }
-.schedule tr td:first-child,
-.schedule tr:first-child td,
+.schedule thead tr td:first-child,
+.schedule thead tr:first-child td,
 .schedule .time {
     background-color: #eee;
     color: black;

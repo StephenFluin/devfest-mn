@@ -53,7 +53,6 @@ export class AuthService {
             if (!uid()) return false;
             else console.log(uid());
             const keyVal = objectVal(ref(this.db, key + uid()));
-            console.log('keyVal is', keyVal, 'for key', key + uid());
             return !!keyVal;
         });
     }
