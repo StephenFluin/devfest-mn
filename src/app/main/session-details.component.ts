@@ -43,7 +43,7 @@ export class SessionDetailsComponent {
         this.sessionAgendaRead = toSignal(
             toObservable(this.agendaInfo).pipe(
                 switchMap((value) => this.ds.getAgenda(value.uid, value.id).valueChanges()),
-                map((wrapper) => wrapper.value),
+                map((wrapper) => wrapper?.value),
                 tap((agenda) => {
                     this.sessionAgenda = agenda;
                 })
