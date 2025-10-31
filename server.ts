@@ -1,6 +1,7 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { CommonEngine } from '@angular/ssr/node';
 import express from 'express';
+import compression from 'compression';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import bootstrap from './src/main.server';
@@ -13,6 +14,22 @@ export function app(): express.Express {
     const indexHtml = join(serverDistFolder, 'index.server.html');
 
     const commonEngine = new CommonEngine();
+
+    // Enable compression middleware
+    server.use(
+        compression({
+            filter: (req, res) => {
+                // Don't compress responses if the client doesn't support it
+                if (req.headers['x-no-compression']) {
+                    return false;
+                }
+                // Use compression for all other requests
+                return compression.filter(req, res);
+            },
+            level: 6, // Compression level (1-9, where 9 is most compressed but slowest)
+            threshold: 1024, // Only compress responses larger than 1KB
+        })
+    );
 
     server.set('view engine', 'html');
     server.set('views', browserDistFolder);
