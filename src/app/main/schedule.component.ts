@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 
@@ -11,7 +11,8 @@ import { AuthService } from '../realtime-data/auth.service';
 import { MatButtonModule } from '@angular/material/button';
 import { ScheduleGridComponent } from './schedule-grid.component';
 import { AsyncPipe } from '@angular/common';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { LdJsonService } from '../ld-json.service';
 
 export interface Schedule {
     startTimes: any[];
@@ -27,9 +28,12 @@ export class ScheduleComponent {
     ds = inject(DataService);
     route = inject(ActivatedRoute);
     authService = inject(AuthService);
+    ldJsonService = inject(LdJsonService);
     router = inject(Router);
 
-    // Two versions of the same data, one filtered, one not
+    // Three versions of the same data, one raw, one processed and one filtered, one not
+    sessions = this.ds.getSchedule(environment.year);
+    sessionSignal = toSignal(this.sessions);
     allSessions: Observable<Schedule>;
     populatedAgenda: Observable<any>;
 
@@ -37,12 +41,10 @@ export class ScheduleComponent {
     filteredData: Observable<any>;
 
     constructor() {
-        const ds = this.ds;
-
         /**
          * Session data should look like data[time][room] = session;
          */
-        this.allSessions = ds.getSchedule(environment.year).pipe(
+        this.allSessions = this.sessions.pipe(
             map((list) => {
                 let data = {};
                 for (let session of list) {
@@ -69,7 +71,7 @@ export class ScheduleComponent {
                         let slot = data[time];
                         // Holes can only exist if there isn't an "all" session
                         if (!slot.all) {
-                            for (let room of ds.getVenueLayout().rooms) {
+                            for (let room of this.ds.getVenueLayout().rooms) {
                                 if (!slot[room]) {
                                     // Found a hole in this room, checking previous time slot
                                     let previous =
@@ -100,7 +102,11 @@ export class ScheduleComponent {
                 }
 
                 let startTimes = Object.keys(data).sort();
-                return { startTimes: startTimes, gridData: data, rooms: ds.getVenueLayout().rooms };
+                return {
+                    startTimes: startTimes,
+                    gridData: data,
+                    rooms: this.ds.getVenueLayout().rooms,
+                };
             }),
             startWith({ startTimes: [], gridData: {}, rooms: [] } as Schedule),
             shareReplay(1)
@@ -122,6 +128,42 @@ export class ScheduleComponent {
         } else {
             this.populatedAgenda = this.allSessions;
         }
+        const agendaMetadata = {
+            '@context': 'https://schema.org',
+            '@type': 'ItemList',
+            name: 'DevFestMN 2025 Full Conference Schedule',
+            itemListElement: [],
+        };
+        effect(() => {
+            const sessionList = this.sessionSignal();
+            console.log(sessionList);
+            if (!sessionList || sessionList.length <= 0) return;
+            for (let session of sessionList) {
+                // Process each session into a ListItem and attach to itemListElement
+                agendaMetadata.itemListElement.push({
+                    '@type': 'ListItem',
+                    position: agendaMetadata.itemListElement.length + 1,
+                    item: {
+                        '@type': 'PublicationEvent',
+                        name: session.title,
+                        description: session.description,
+                        startDate: session.startTime,
+                        location: {
+                            '@type': 'Place',
+                            name: session.room,
+                        },
+                        performer: {
+                            '@type': 'Person',
+                            name: session.speakers
+                                ? session.speakers.map((s) => s.name).join(', ')
+                                : 'TBA',
+                        },
+                        mainEntityOfPage: 'https://devfestmn.com/',
+                    },
+                });
+            }
+            this.ldJsonService.setLdJson(agendaMetadata);
+        });
     }
 
     /**
