@@ -13,6 +13,12 @@ export class LdJsonService {
     }
 
     setLdJson(data: object): void {
+        // Remove any existing application/ld+json script tags
+        const existingScripts = this.doc.querySelectorAll('script[type="application/ld+json"]');
+        existingScripts.forEach((script) => {
+            this.renderer.removeChild(this.doc.head, script);
+        });
+
         const script = this.renderer.createElement('script');
 
         // 2. Set the type attribute
