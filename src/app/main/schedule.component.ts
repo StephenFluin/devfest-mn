@@ -136,8 +136,11 @@ export class ScheduleComponent {
         };
         effect(() => {
             const sessionList = this.sessionSignal();
-            console.log(sessionList);
+
             if (!sessionList || sessionList.length <= 0) return;
+            sessionList.sort((a, b) => {
+                return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+            });
             for (let session of sessionList) {
                 // Process each session into a ListItem and attach to itemListElement
                 agendaMetadata.itemListElement.push({
