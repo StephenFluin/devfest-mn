@@ -32,6 +32,11 @@ export const MainRoutes: Routes = [
         data: { title: 'Tickets' },
     },
     {
+        path: 'refunds',
+        loadComponent: () => import('./refunds/refunds.component').then((m) => m.RefundsComponent),
+        data: { title: 'Refunds' },
+    },
+    {
         path: 'past',
         loadComponent: () => import('./past/past.component').then((m) => m.PastComponent),
         data: { title: 'Past DevFestMN Events' },
