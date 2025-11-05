@@ -193,6 +193,13 @@ export class DataService {
             result = update(itemRef, item);
             item.$key = key;
         } else {
+            console.log('Pushing new item to', path, item);
+            // check item for any undefined properties and set them to null
+            Object.keys(item).forEach((prop) => {
+                if (item[prop] === undefined) {
+                    item[prop] = null;
+                }
+            });
             result = push(dbRef, item);
         }
         return result;
