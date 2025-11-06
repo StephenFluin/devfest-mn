@@ -1,20 +1,18 @@
-import { Component, OnChanges, computed, signal, inject, input, Signal } from '@angular/core';
+import { Component, computed, signal, inject, input, Signal } from '@angular/core';
 import { AngularFireDatabase, AngularFireObject } from '@angular/fire/compat/database';
 import { DataService, Session, Feedback } from '../shared/data.service';
 
-import { Subject, combineLatest, empty } from 'rxjs';
-import { map, switchMap, tap, filter } from 'rxjs/operators';
+import { switchMap } from 'rxjs/operators';
 import { AuthService } from '../realtime-data/auth.service';
 import { MatButtonModule } from '@angular/material/button';
 import { StarBarComponent } from './star-bar.component';
-import { AsyncPipe } from '@angular/common';
 import { environment } from '../../environments/environment';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
     selector: 'user-feedback',
     templateUrl: 'user-feedback.component.html',
-    imports: [StarBarComponent, MatButtonModule, AsyncPipe],
+    imports: [StarBarComponent, MatButtonModule],
 })
 export class UserFeedbackComponent {
     db = inject(AngularFireDatabase);
