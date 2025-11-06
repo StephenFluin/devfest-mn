@@ -30,3 +30,30 @@ Create a branch and push a pull request to GitHub. Once the PR has successfully 
 ## Deploying to live http://devfest.mn website
 
 Will happen automatically upon merge to main.
+
+## Photo Gallery
+
+Photos should be:
+
+-   Quality at 50%
+-   Resize images to fit within 1024x768 while maintaining aspect ratio
+
+```bash
+find ./src/a/images/gallery -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.gif" -o -name "*.webp" \) -exec sh -c '
+    echo "Processing: $1"
+    # Create backup with .original extension if it doesn'\''t exist
+    if [ ! -f "$1.original" ]; then
+        cp "$1" "$1.original"
+        echo "Created backup: $1.original"
+    fi
+
+    # Compress and resize the image
+    convert "$1" -quality 50 -resize "1024x768>" "$1.compressed"
+
+    # Replace original with compressed version
+    mv "$1.compressed" "$1"
+
+    echo "Compressed: $1"
+    echo "---"
+' _ {} \;
+```
