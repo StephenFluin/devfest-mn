@@ -59,6 +59,11 @@ export const MainRoutes: Routes = [
         data: { title: 'Speaker Call for Papers' },
     },
     {
+        path: 'gallery',
+        loadComponent: () => import('./gallery/gallery.component').then((m) => m.GalleryComponent),
+        data: { title: 'Photo Gallery' },
+    },
+    {
         path: '',
         pathMatch: 'prefix',
         providers: dataProviders,
