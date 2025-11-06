@@ -6,4 +6,5 @@ export const serverRoutes: ServerRoute[] = [
     { path: 'schedule', renderMode: RenderMode.Server },
     { path: '', renderMode: RenderMode.Prerender },
     { path: '**', renderMode: RenderMode.Server },
+    { path: 'tickets', renderMode: RenderMode.Client },
 ];

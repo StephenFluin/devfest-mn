@@ -6,7 +6,7 @@ declare global {
 export const trackTicketPurchase = function (orderData: any) {
     window.gtag('event', 'purchase', {
         transaction_id: orderData.orderId,
-        value: 25.0,
+        value: 50.0,
         currency: 'USD',
         event_label: 'Ticket Sale',
     });
