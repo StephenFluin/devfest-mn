@@ -39,7 +39,7 @@ Photos should be:
 -   Resize images to fit within 1024x768 while maintaining aspect ratio
 
 ```bash
-find ./src/a/images/gallery -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.gif" -o -name "*.webp" \) -exec sh -c '
+find ./src/a/images/gallery -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" \) -exec sh -c '
     echo "Processing: $1"
     # Create backup with .original extension if it doesn'\''t exist
     if [ ! -f "$1.original" ]; then

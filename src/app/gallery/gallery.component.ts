@@ -1,9 +1,14 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 interface Photo {
     url: string;
     year: string;
+}
+
+interface PhotosByYear {
+    year: number;
+    photos: string[];
 }
 
 @Component({
@@ -13,23 +18,46 @@ interface Photo {
         <div class="gallery-container">
             <h1>Photo Gallery</h1>
 
-            <div class="photo-grid">
-                <div
-                    class="photo-item"
-                    *ngFor="let photo of photos"
-                    (click)="openFullscreen(photo)"
-                >
-                    <img [src]="photo.url" alt="Gallery photo" class="thumbnail" />
-                </div>
+            <div class="year-sections">
+                @for (yearGroup of photosByYear; track yearGroup.year) {
+                    <div class="year-section">
+                        <h2 class="year-header">{{ yearGroup.year }}</h2>
+                        <div class="photo-grid">
+                            @for (photoUrl of yearGroup.photos; track photoUrl) {
+                                <div
+                                    class="photo-item"
+                                    (click)="openFullscreen(photoUrl, yearGroup.year)"
+                                >
+                                    <img 
+                                        loading="lazy"
+                                        [src]="photoUrl" 
+                                        alt="Gallery photo from {{ yearGroup.year }}" 
+                                        class="thumbnail" 
+                                    />
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
             </div>
 
             <!-- Fullscreen Modal -->
-            <div class="fullscreen-overlay" *ngIf="selectedPhoto" (click)="closeFullscreen()">
-                <div class="fullscreen-content" (click)="$event.stopPropagation()">
-                    <button class="close-button" (click)="closeFullscreen()">×</button>
-                    <img [src]="selectedPhoto.url" alt="Gallery photo" class="fullscreen-image" />
+            @if (selectedPhoto) {
+                <div class="fullscreen-overlay" (click)="closeFullscreen()">
+                    <div class="fullscreen-content" (click)="$event.stopPropagation()">
+                        <button class="close-button" (click)="closeFullscreen()">×</button>
+                        <img 
+                            loading="lazy"
+                            [src]="selectedPhoto.url" 
+                            alt="Gallery photo from {{ selectedPhoto.year }}" 
+                            class="fullscreen-image" 
+                        />
+                        <div class="photo-info">
+                            <h3>{{ selectedPhoto.year }}</h3>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            }
         </div>
     `,
     styles: `
@@ -45,10 +73,33 @@ interface Photo {
       color: #333;
     }
 
+    .year-sections {
+      display: flex;
+      flex-direction: column;
+      gap: 3rem;
+    }
+
+    .year-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .year-header {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 3px solid #4285f4;
+      display: inline-block;
+      align-self: flex-start;
+    }
+
     .photo-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 1.5rem;
     }
 
     .photo-item {
@@ -67,7 +118,7 @@ interface Photo {
 
     .thumbnail {
       width: 100%;
-      height: 200px;
+      height: 280px;
       object-fit: cover;
       display: block;
     }
@@ -161,8 +212,8 @@ interface Photo {
       }
       
       .photo-grid {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 0.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
       }
       
       .fullscreen-content {
@@ -178,8 +229,9 @@ interface Photo {
     }
   `,
 })
-export class GalleryComponent {
+export class GalleryComponent implements OnInit {
     selectedPhoto: Photo | null = null;
+    photosByYear: PhotosByYear[] = [];
 
     // Photos from the DevFest gallery organized by year
     photos: Photo[] = [
@@ -328,8 +380,32 @@ export class GalleryComponent {
         },
     ];
 
-    openFullscreen(photo: Photo): void {
-        this.selectedPhoto = photo;
+    ngOnInit(): void {
+        this.preprocessPhotos();
+    }
+
+    private preprocessPhotos(): void {
+        // Group photos by year
+        const photoGroups = this.photos.reduce((acc, photo) => {
+            const year = parseInt(photo.year);
+            if (!acc[year]) {
+                acc[year] = [];
+            }
+            acc[year].push(photo.url);
+            return acc;
+        }, {} as { [key: number]: string[] });
+
+        // Convert to array format and sort by highest year first
+        this.photosByYear = Object.entries(photoGroups)
+            .map(([year, photos]) => ({
+                year: parseInt(year),
+                photos: photos
+            }))
+            .sort((a, b) => b.year - a.year);
+    }
+
+    openFullscreen(photoUrl: string, year: number): void {
+        this.selectedPhoto = { url: photoUrl, year: year.toString() };
     }
 
     closeFullscreen(): void {
