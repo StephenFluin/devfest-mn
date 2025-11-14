@@ -183,20 +183,18 @@
         <div>
             <h2>2025 Sponsors</h2>
             <p>This event would not be possible without our awesome sponsors.</p>
-
+            @for(sponsorGroup of environment.sponsors; track sponsorGroup.type) {
             <div>
+                <h3>{{ sponsorGroup.type }} Sponsors</h3>
+                @for( sponsor of sponsorGroup.list; track sponsor.name) {
                 <div class="sponsor-bar">
-                    <a href="https://developers.google.com/">
-                        <img src="/a/images/sponsors/google.svg" alt="Google Logo" />
+                    <a href="{{ sponsor.url }}">
+                        <img src="{{ sponsor.logo }}" alt="{{ sponsor.name }} Logo" />
                     </a>
                 </div>
-                <div class="sponsor-bar">
-                    <a href="https://livefront.com">
-                        <img src="/a/images/sponsors/livefront.png" alt="LIVEFRONT Logo" />
-                    </a>
-                </div>
+                }
             </div>
-            @if(environment.showSponsor) {
+            } @if(environment.showSponsor) {
             <p>Sponsorships are still available! <a routerLink="/sponsors">Inquire Now</a></p>
             }
 

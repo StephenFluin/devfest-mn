@@ -19,4 +19,36 @@ export const environment = {
     showSponsor: true,
     eventbriteEventId: '1684295616529',
     venueMapUrl: 'https://maps.app.goo.gl/w1nJNEmjhe3cvMKg7',
+    sponsors: [
+        {
+            type: 'Premiere',
+            list: [
+                {
+                    name: 'Google',
+                    logo: '/a/images/sponsors/google.svg',
+                    url: 'https://cloud.google.com/',
+                },
+                {
+                    name: 'Livefront',
+                    logo: '/a/images/sponsors/livefront.svg',
+                    url: 'https://www.livefront.com/',
+                },
+            ],
+        },
+        {
+            type: 'Community',
+            list: [
+                {
+                    name: 'SomeConf',
+                    logo: '/a/images/sponsors/someconf.png',
+                    url: 'https://someconf.com/?apply_somecoupon=devfest2025',
+                },
+                {
+                    name: 'ImpactPharm',
+                    logo: '/a/images/sponsors/impactpharm.webp',
+                    url: 'http://impactpharm.app/',
+                },
+            ],
+        },
+    ],
 };
