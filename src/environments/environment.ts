@@ -15,7 +15,7 @@ export const environment = {
         'https://www.eventbrite.com/e/devfestmn-2025-tickets-1684295616529?aff=oddtdtcreator',
     showSchedule: true,
     showCFP: false,
-    showSpeakers: false,
+    showSpeakers: true,
     showSponsor: true,
     eventbriteEventId: '1684295616529',
     venueMapUrl: 'https://maps.app.goo.gl/w1nJNEmjhe3cvMKg7',

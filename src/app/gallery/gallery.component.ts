@@ -20,43 +20,40 @@ interface PhotosByYear {
 
             <div class="year-sections">
                 @for (yearGroup of photosByYear; track yearGroup.year) {
-                    <div class="year-section">
-                        <h2 class="year-header">{{ yearGroup.year }}</h2>
-                        <div class="photo-grid">
-                            @for (photoUrl of yearGroup.photos; track photoUrl) {
-                                <div
-                                    class="photo-item"
-                                    (click)="openFullscreen(photoUrl, yearGroup.year)"
-                                >
-                                    <img 
-                                        loading="lazy"
-                                        [src]="photoUrl" 
-                                        alt="Gallery photo from {{ yearGroup.year }}" 
-                                        class="thumbnail" 
-                                    />
-                                </div>
-                            }
+                <div class="year-section">
+                    <h2 class="year-header">{{ yearGroup.year }}</h2>
+                    <div class="photo-grid">
+                        @for (photoUrl of yearGroup.photos; track photoUrl) {
+                        <div class="photo-item" (click)="openFullscreen(photoUrl, yearGroup.year)">
+                            <img
+                                loading="lazy"
+                                [src]="photoUrl"
+                                alt="Gallery photo from {{ yearGroup.year }}"
+                                class="thumbnail"
+                            />
                         </div>
+                        }
                     </div>
+                </div>
                 }
             </div>
 
             <!-- Fullscreen Modal -->
             @if (selectedPhoto) {
-                <div class="fullscreen-overlay" (click)="closeFullscreen()">
-                    <div class="fullscreen-content" (click)="$event.stopPropagation()">
-                        <button class="close-button" (click)="closeFullscreen()">×</button>
-                        <img 
-                            loading="lazy"
-                            [src]="selectedPhoto.url" 
-                            alt="Gallery photo from {{ selectedPhoto.year }}" 
-                            class="fullscreen-image" 
-                        />
-                        <div class="photo-info">
-                            <h3>{{ selectedPhoto.year }}</h3>
-                        </div>
+            <div class="fullscreen-overlay" (click)="closeFullscreen()">
+                <div class="fullscreen-content" (click)="$event.stopPropagation()">
+                    <button class="close-button" (click)="closeFullscreen()">×</button>
+                    <img
+                        loading="lazy"
+                        [src]="selectedPhoto.url"
+                        alt="Gallery photo from {{ selectedPhoto.year }}"
+                        class="fullscreen-image"
+                    />
+                    <div class="photo-info">
+                        <h3>{{ selectedPhoto.year }}</h3>
                     </div>
                 </div>
+            </div>
             }
         </div>
     `,
@@ -399,7 +396,7 @@ export class GalleryComponent implements OnInit {
         this.photosByYear = Object.entries(photoGroups)
             .map(([year, photos]) => ({
                 year: parseInt(year),
-                photos: photos
+                photos: photos,
             }))
             .sort((a, b) => b.year - a.year);
     }
