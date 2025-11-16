@@ -1,13 +1,14 @@
 import { Component, computed, signal, inject, input, Signal } from '@angular/core';
-import { AngularFireDatabase, AngularFireObject } from '@angular/fire/compat/database';
+import { Database, ref, objectVal, set } from '@angular/fire/database';
 import { DataService, Session, Feedback } from '../shared/data.service';
 
-import { switchMap } from 'rxjs/operators';
+import { switchMap, map } from 'rxjs/operators';
 import { AuthService } from '../realtime-data/auth.service';
 import { MatButtonModule } from '@angular/material/button';
 import { StarBarComponent } from './star-bar.component';
 import { environment } from '../../environments/environment';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { Observable, of } from 'rxjs';
 
 @Component({
     selector: 'user-feedback',
@@ -15,13 +16,13 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
     imports: [StarBarComponent, MatButtonModule],
 })
 export class UserFeedbackComponent {
-    db = inject(AngularFireDatabase);
+    db = inject(Database);
     ds = inject(DataService);
     auth = inject(AuthService);
 
     readonly session = input<Session>(undefined);
     feedback: Signal<Feedback>;
-    editableFeedback: Signal<AngularFireObject<Feedback> | null>;
+    editableFeedbackPath: Signal<string | null>;
     uid;
     count = 0;
     saved = signal(false);
@@ -43,46 +44,58 @@ export class UserFeedbackComponent {
 
         this.feedback = toSignal(
             toObservable(url).pipe(
-                switchMap((path) => this.db.object<Feedback>(path).valueChanges())
-            )
+                switchMap((path) => {
+                    if (path) {
+                        return objectVal<Feedback>(ref(db, path));
+                    }
+                    return of({} as Feedback);
+                }),
+                map((feedback) => feedback || ({} as Feedback))
+            ),
+            { initialValue: {} as Feedback }
         );
 
-        this.editableFeedback = computed(() => {
-            if (url()) {
-                return db.object(url());
-            }
-            return null;
-        });
+        this.editableFeedbackPath = url;
     }
 
     saveSpeaker(val) {
-        this.feedback().speaker = val;
-        this.save();
+        const currentFeedback = (this.feedback() || {}) as Feedback;
+        currentFeedback.speaker = val;
+        this.saveWithData(currentFeedback);
     }
     saveContent(val) {
-        this.feedback().content = val;
-        this.save();
+        const currentFeedback = (this.feedback() || {}) as Feedback;
+        currentFeedback.content = val;
+        this.saveWithData(currentFeedback);
     }
     saveRecommendation(val) {
-        this.feedback().recommendation = val;
-        this.save();
+        const currentFeedback = (this.feedback() || {}) as Feedback;
+        currentFeedback.recommendation = val;
+        this.saveWithData(currentFeedback);
     }
     saveComment(val) {
-        this.feedback().comment = val;
-        this.save();
+        const currentFeedback = (this.feedback() || {}) as Feedback;
+        currentFeedback.comment = val;
+        this.saveWithData(currentFeedback);
     }
-    save() {
-        if (this.editableFeedback()) {
-            delete this.feedback().$key;
-            this.editableFeedback()
-                .set(this.feedback())
-                .then((result) => {
-                    this.saved.set(true);
-                    setTimeout(() => {
-                        this.saved.set(false);
-                    }, 2000);
-                });
-        } else {
+
+    saveWithData(feedbackData: Feedback) {
+        const path = this.editableFeedbackPath();
+        if (path) {
+            const dataToSave = { ...feedbackData };
+            delete dataToSave.$key;
+            const feedbackRef = ref(this.db, path);
+            set(feedbackRef, dataToSave).then((result) => {
+                this.saved.set(true);
+                setTimeout(() => {
+                    this.saved.set(false);
+                }, 2000);
+            });
         }
+    }
+
+    save() {
+        const feedbackData = (this.feedback() || {}) as Feedback;
+        this.saveWithData(feedbackData);
     }
 }

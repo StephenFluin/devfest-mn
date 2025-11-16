@@ -1,10 +1,18 @@
 import { Component, OnChanges, inject, input, output } from '@angular/core';
 
-import { AngularFireDatabase } from '@angular/fire/compat/database';
+import { Database, ref, query, orderByChild, push, onValue } from '@angular/fire/database';
+import { Observable } from 'rxjs';
 
 import { AsyncPipe } from '@angular/common';
 import { Speaker } from '../shared/data.service';
 import { environment } from '../../environments/environment';
+
+interface SpeakerSnapshot {
+    key: string;
+    payload: {
+        val: Speaker;
+    };
+}
 
 @Component({
     selector: 'speaker-selector',
@@ -13,7 +21,7 @@ import { environment } from '../../environments/environment';
             @for (speakerSnapshot of speakers | async; track speakerSnapshot) {
             <div style="border:1px solid #CCC;padding:16px;">
                 <div>
-                    {{ speakerSnapshot.payload.val().name }}
+                    {{ speakerSnapshot.payload.val.name }}
                     <button
                         type="button"
                         (click)="addSpeakerToSession(speakerSnapshot.key)"
@@ -31,11 +39,27 @@ import { environment } from '../../environments/environment';
     imports: [AsyncPipe],
 })
 export class SpeakerSelectorComponent implements OnChanges {
-    db = inject(AngularFireDatabase);
+    db = inject(Database);
 
-    speakers = this.db
-        .list<Speaker>(`devfest${environment.year}/speakers`, (ref) => ref.orderByChild('name'))
-        .snapshotChanges();
+    speakers: Observable<SpeakerSnapshot[]> = new Observable((observer) => {
+        const speakersRef = ref(this.db, `devfest${environment.year}/speakers`);
+        const speakersQuery = query(speakersRef, orderByChild('name'));
+
+        const unsubscribe = onValue(speakersQuery, (snapshot) => {
+            const speakers: SpeakerSnapshot[] = [];
+            snapshot.forEach((childSnapshot) => {
+                speakers.push({
+                    key: childSnapshot.key!,
+                    payload: {
+                        val: childSnapshot.val() as Speaker,
+                    },
+                });
+            });
+            observer.next(speakers);
+        });
+
+        return () => unsubscribe();
+    });
 
     readonly session = input(undefined);
     readonly addSpeaker = output<string>();
@@ -53,8 +77,8 @@ export class SpeakerSelectorComponent implements OnChanges {
         console.log('Adding', speakerKey, 'to ', session);
         let path = `devfest${environment.year}/schedule/${session.$key}/speakers`;
         console.log('path is', path);
-        const speakerList = this.db.list(path);
-        speakerList.push(speakerKey).then(
+        const speakersListRef = ref(this.db, path);
+        push(speakersListRef, speakerKey).then(
             () => {
                 console.log('Speaker added successfully');
             },

@@ -1,4 +1,4 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component, effect, inject, afterNextRender } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 
@@ -134,39 +134,46 @@ export class ScheduleComponent {
             name: 'DevFestMN 2025 Full Conference Schedule',
             itemListElement: [],
         };
-        effect(() => {
-            const sessionList = this.sessionSignal();
+        effect(
+            () => {
+                const sessionList = this.sessionSignal();
 
-            if (!sessionList || sessionList.length <= 0) return;
-            sessionList.sort((a, b) => {
-                return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
-            });
-            for (let session of sessionList) {
-                // Process each session into a ListItem and attach to itemListElement
-                agendaMetadata.itemListElement.push({
-                    '@type': 'ListItem',
-                    position: agendaMetadata.itemListElement.length + 1,
-                    item: {
-                        '@type': 'PublicationEvent',
-                        name: session.title,
-                        description: session.description,
-                        startDate: session.startTime,
-                        location: {
-                            '@type': 'Place',
-                            name: session.room,
-                        },
-                        performer: {
-                            '@type': 'Person',
-                            name: session.speakers
-                                ? session.speakers.map((s) => s.name).join(', ')
-                                : 'TBA',
-                        },
-                        mainEntityOfPage: 'https://devfestmn.com/',
-                    },
+                if (!sessionList || sessionList.length <= 0) return;
+                sessionList.sort((a, b) => {
+                    return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
                 });
-            }
-            this.ldJsonService.setLdJson(agendaMetadata);
-        });
+                for (let session of sessionList) {
+                    // Process each session into a ListItem and attach to itemListElement
+                    agendaMetadata.itemListElement.push({
+                        '@type': 'ListItem',
+                        position: agendaMetadata.itemListElement.length + 1,
+                        item: {
+                            '@type': 'PublicationEvent',
+                            name: session.title,
+                            description: session.description,
+                            startDate: session.startTime,
+                            location: {
+                                '@type': 'Place',
+                                name: session.room,
+                            },
+                            performer: {
+                                '@type': 'Person',
+                                name: session.speakers
+                                    ? Array.isArray(session.speakers)
+                                        ? session.speakers.map((s) => s.name).join(', ')
+                                        : Object.values(session.speakers)
+                                              .map((s: any) => s.name)
+                                              .join(', ')
+                                    : 'TBA',
+                            },
+                            mainEntityOfPage: 'https://devfestmn.com/',
+                        },
+                    });
+                }
+                this.ldJsonService.setLdJson(agendaMetadata);
+            },
+            { allowSignalWrites: true }
+        );
     }
 
     /**
