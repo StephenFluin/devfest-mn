@@ -49,6 +49,62 @@ app.use((req, res, next) => {
  */
 
 /**
+ * Generate sitemap.txt with all public URLs
+ */
+app.get('/sitemap.txt', async (req, res) => {
+    try {
+        const baseUrl = 'https://devfest.mn';
+        const urls: string[] = [];
+
+        // Static pages
+        urls.push(baseUrl);
+        urls.push(`${baseUrl}/schedule`);
+        urls.push(`${baseUrl}/speakers`);
+        urls.push(`${baseUrl}/gallery`);
+
+        // Fetch Firebase data
+        const firebaseUrl = 'https://devfestmn-2025-default-rtdb.firebaseio.com/devfest2025.json';
+        const response = await fetch(firebaseUrl);
+        const data = await response.json();
+
+        // Add session URLs (schedule/:id/:seo)
+        if (data.schedule) {
+            Object.keys(data.schedule).forEach((sessionKey) => {
+                const session = data.schedule[sessionKey];
+                if (session.title) {
+                    const seoTitle = session.title
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
+                    urls.push(`${baseUrl}/schedule/${sessionKey}/${seoTitle}`);
+                }
+            });
+        }
+
+        // Add speaker URLs (speakers/:id/:seo)
+        if (data.speakers) {
+            Object.keys(data.speakers).forEach((speakerKey) => {
+                const speaker = data.speakers[speakerKey];
+                if (speaker.name) {
+                    const seoName = speaker.name
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
+                    urls.push(`${baseUrl}/speakers/${speakerKey}/${seoName}`);
+                }
+            });
+        }
+
+        // Return as plain text
+        res.setHeader('Content-Type', 'text/plain');
+        res.send(urls.join('\n'));
+    } catch (error) {
+        console.error('Error generating sitemap:', error);
+        res.status(500).send('Error generating sitemap');
+    }
+});
+
+/**
  * Serve static files from /browser
  */
 app.use(
