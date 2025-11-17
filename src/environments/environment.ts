@@ -17,7 +17,7 @@ export const environment = {
     showCFP: false,
     showSpeakers: true,
     showSponsor: true,
-    showFeedback: true,
+    showFeedback: false,
     eventbriteEventId: '1684295616529',
     venueMapUrl: 'https://maps.app.goo.gl/w1nJNEmjhe3cvMKg7',
     sponsors: [
