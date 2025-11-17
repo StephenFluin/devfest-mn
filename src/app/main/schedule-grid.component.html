@@ -8,7 +8,9 @@
                 @for (room of data().rooms; track room) {
                 <td style="height: 55px; vertical-align: middle">
                     <div>{{ room }}</div>
+                    @if(ds.getVenueLayout().hasFloors) {
                     <div style="font-size: 0.75em">{{ ds.getVenueLayout().floors[room] }}</div>
+                    }
                 </td>
                 }
             </tr>

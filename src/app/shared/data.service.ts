@@ -113,10 +113,10 @@ export class DataService {
 
         rooms = ['Main Auditorium'];
         floors = {
-            'Main Auditorium': 3,
+            'Main Auditorium': 1,
         };
 
-        return { floors: floors, rooms: rooms };
+        return { floors: floors, rooms: rooms, hasFloors: false };
     }
 
     getFeedback(): Observable<Feedback[]> {
