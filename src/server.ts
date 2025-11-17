@@ -7,6 +7,7 @@ import {
 import compression from 'compression';
 import express from 'express';
 import { join } from 'node:path';
+import * as fs from 'node:fs/promises';
 
 // Set timezone to Central Time for SSR
 process.env.TZ = 'America/Chicago';
@@ -102,6 +103,35 @@ app.get('/sitemap.txt', async (req, res) => {
         console.error('Error generating sitemap:', error);
         res.status(500).send('Error generating sitemap');
     }
+});
+
+app.get('/api/gallery', async (req, res) => {
+    // Fetch a list of photos depending on environment
+    // In development, use ../a/images/gallery/
+    // In production, use ../browser/a/images/gallery/
+    // The API should look like:  {           url: '/a/images/gallery/2015/20150321_083513_210.jpg',            year: '2015',        },...} where year is the folder name
+    // Check if we're in production by looking for the browser folder (exists after build)
+    const isDev = !import.meta.dirname.includes('/dist/');
+    const galleryFolder = isDev
+        ? join(import.meta.dirname, '../../../src/a/images/gallery/')
+        : join(import.meta.dirname, '../browser/a/images/gallery/');
+    fs.readdir(galleryFolder).then((years) => {
+        const photos: { url: string; year: string }[] = [];
+        Promise.all(
+            years.map(async (year) => {
+                const yearFolder = join(galleryFolder, year);
+                const files = await fs.readdir(yearFolder);
+                files.forEach((file) => {
+                    photos.push({
+                        url: `/a/images/gallery/${year}/${file}`,
+                        year: year,
+                    });
+                });
+            })
+        ).then(() => {
+            res.json(photos);
+        });
+    });
 });
 
 /**
