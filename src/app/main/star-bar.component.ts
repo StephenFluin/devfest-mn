@@ -1,4 +1,4 @@
-import { Component, input, signal, output } from '@angular/core';
+import { Component, input, signal, output, computed } from '@angular/core';
 
 @Component({
     selector: 'star-bar',
@@ -26,8 +26,13 @@ import { Component, input, signal, output } from '@angular/core';
     imports: [],
 })
 export class StarBarComponent {
-    readonly selected = input(0);
-    internalSelected = signal(this.selected());
+    readonly selected = input<number | undefined>(0);
+    changed = signal<boolean>(false);
+    newValue = signal<number>(0);
+
+    internalSelected = computed(() => {
+        return this.changed() ? this.newValue() : this.selected() || 0;
+    });
     readonly newSelection = output<number>();
 
     options = [1, 2, 3, 4, 5];
@@ -36,10 +41,11 @@ export class StarBarComponent {
 
     select(option: number) {
         // Let the user unselect by choosing the same star again
-        if (this.selected() == option) {
+        if (this.internalSelected() == option) {
             option = 0;
         }
-        this.internalSelected.set(option);
+        this.changed.set(true);
+        this.newValue.set(option);
         this.newSelection.emit(option);
     }
 }

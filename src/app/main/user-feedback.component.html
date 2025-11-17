@@ -1,4 +1,4 @@
-@if (auth.uid()) {
+@if (auth.uid() && environment.showFeedback) {
 <div>
     <div>How would you rate this speaker?</div>
     <star-bar (newSelection)="saveSpeaker($event)" [selected]="feedback().speaker"></star-bar>
@@ -13,7 +13,7 @@
     <input
         #feedbackComment
         (blur)="saveComment(feedbackComment.value)"
-        [value]="feedback().comment"
+        [value]="feedback().comment || ''"
     />
     <input
         type="submit"
@@ -22,11 +22,6 @@
         [disabled]="saveButtonDisabled()"
     />
 </div>
-} @else {
+} @else if (environment.showFeedback) {
 <button (click)="auth.login()" mat-raised-button color="primary">Login to provide feedback</button>
 }
-<ng-template #login>
-    <button (click)="auth.login()" mat-raised-button color="primary">
-        Login to provide feedback
-    </button>
-</ng-template>

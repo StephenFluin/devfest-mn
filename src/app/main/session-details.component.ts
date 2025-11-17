@@ -11,6 +11,7 @@ import { UserFeedbackComponent } from './user-feedback.component';
 import { SpeakerContainerComponent } from './speaker-container.component';
 import { AsyncPipe, KeyValuePipe } from '@angular/common';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { environment } from '../../environments/environment';
 
 @Component({
     selector: 'session-details',
@@ -28,6 +29,8 @@ export class SessionDetailsComponent {
     private route = inject(ActivatedRoute);
     ds = inject(DataService);
     auth = inject(AuthService);
+
+    environment = environment;
 
     readonly session = input<Session>(undefined);
 

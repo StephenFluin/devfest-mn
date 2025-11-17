@@ -8,7 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { StarBarComponent } from './star-bar.component';
 import { environment } from '../../environments/environment';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { Observable, of } from 'rxjs';
+import { of } from 'rxjs';
 
 @Component({
     selector: 'user-feedback',
@@ -19,6 +19,8 @@ export class UserFeedbackComponent {
     db = inject(Database);
     ds = inject(DataService);
     auth = inject(AuthService);
+
+    environment = environment;
 
     readonly session = input<Session>(undefined);
     feedback: Signal<Feedback>;

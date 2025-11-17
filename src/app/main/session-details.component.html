@@ -53,11 +53,12 @@
                 <button (click)="removeFromAgenda()" class="cta" style="display: inline">
                     Remove from My Agenda
                 </button>
-                }
+                } @if(environment.showFeedback) {
                 <div>
                     <h3 style="margin-top: 32px">Provide Feedback</h3>
                     <user-feedback [session]="session()"></user-feedback>
                 </div>
+                }
             </div>
             } @else {
             <div style="margin-top: 64px">
