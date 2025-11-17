@@ -8,6 +8,9 @@ import compression from 'compression';
 import express from 'express';
 import { join } from 'node:path';
 
+// Set timezone to Central Time for SSR
+process.env.TZ = 'America/Chicago';
+
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
