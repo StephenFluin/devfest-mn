@@ -18,8 +18,7 @@ export class GetSpeakerPipe implements PipeTransform {
     private ds = inject(DataService);
 
     transform(value: string): Observable<Speaker> {
-        console.log('evaluating value of pipe');
-        if (value) {
+c        if (value) {
             let speakers = this.ds.getSpeakers(environment.year);
             return speakers.pipe(
                 map((list) => {
