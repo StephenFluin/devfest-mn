@@ -1,5 +1,6 @@
-import { Component, HostListener, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, computed, HostListener, OnInit, Signal } from '@angular/core';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
+import { httpResource } from '@angular/common/http';
 
 interface Photo {
     url: string;
@@ -19,15 +20,15 @@ interface PhotosByYear {
             <h1>Photo Gallery</h1>
 
             <div class="year-sections">
-                @for (yearGroup of photosByYear; track yearGroup.year) {
+                @for (yearGroup of photosByYear(); track yearGroup.year) {
                 <div class="year-section">
                     <h2 class="year-header">{{ yearGroup.year }}</h2>
                     <div class="photo-grid">
                         @for (photoUrl of yearGroup.photos; track photoUrl) {
                         <div class="photo-item" (click)="openFullscreen(photoUrl, yearGroup.year)">
                             <img
-                                loading="lazy"
                                 [src]="photoUrl"
+                                loading="lazy"
                                 alt="Gallery photo from {{ yearGroup.year }}"
                                 class="thumbnail"
                             />
@@ -226,164 +227,14 @@ interface PhotosByYear {
     }
   `,
 })
-export class GalleryComponent implements OnInit {
-    selectedPhoto: Photo | null = null;
-    photosByYear: PhotosByYear[] = [];
-
-    // Photos from the DevFest gallery organized by year
-    photos: Photo[] = [
-        // 2015 Photos
-        {
-            url: '/a/images/gallery/2015/20150321_083513_210.jpg',
-            year: '2015',
-        },
-        {
-            url: '/a/images/gallery/2015/20150321_090702_087.jpg',
-            year: '2015',
-        },
-        {
-            url: '/a/images/gallery/2015/20150321_095008_025.jpg',
-            year: '2015',
-        },
-        {
-            url: '/a/images/gallery/2015/IMG_20150320_180455.jpg',
-            year: '2015',
-        },
-        {
-            url: '/a/images/gallery/2015/IMG_20150320_180738.jpg',
-            year: '2015',
-        },
-        {
-            url: '/a/images/gallery/2015/IMG_20150321_065456.jpg',
-            year: '2015',
-        },
-        {
-            url: '/a/images/gallery/2015/IMG_20150321_065624.jpg',
-            year: '2015',
-        },
-        {
-            url: '/a/images/gallery/2015/IMG_20150321_065639-EFFECTS.jpg',
-            year: '2015',
-        },
-        {
-            url: '/a/images/gallery/2015/IMG_20150321_091753.jpg',
-            year: '2015',
-        },
-        // 2017 Photos
-        {
-            url: '/a/images/gallery/2017/2017-02-04 12.49.31 copy.jpg',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/20170204_085058.jpg',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/20170204_090148.jpg',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/7264541D-1763-4C30-BDE8-DC173271FE73.JPG',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/CB6D865F-5900-471B-A9C8-63FEB0DDB2D6.JPG',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/DSC00795.JPG',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/DSC00819.JPG',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/DSC00847.JPG',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/EE1FDCCF-45F4-47A1-8461-A5D2FBD47F2A.JPG',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/IMG_-3gd6s3.jpg',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/IMG_20170204_085927.jpg',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/IMG_20170204_090244.jpg',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/IMG_20170204_214448.jpg',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/IMG_2881.JPG',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/IMG_2902.JPG',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/IMG_2921.JPG',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/IMG_2929.JPG',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/IMG_2932.JPG',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/IMG_8087.JPG',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/LND_24555B8D-B473-4F23-985F-0A35C5577DB0.JPG',
-            year: '2017',
-        },
-        {
-            url: '/a/images/gallery/2017/LND_39A8521B-915E-4057-8DCA-7B15064556CE.JPG',
-            year: '2017',
-        },
-        // 2023 Photos
-        {
-            url: '/a/images/gallery/2023/20231202091239_R5__6278.JPG',
-            year: '2023',
-        },
-        {
-            url: '/a/images/gallery/2023/PXL_20231202_143202089.jpg',
-            year: '2023',
-        },
-        {
-            url: '/a/images/gallery/2023/PXL_20231202_150034478.jpg',
-            year: '2023',
-        },
-        {
-            url: '/a/images/gallery/2023/PXL_20231202_154842461.jpg',
-            year: '2023',
-        },
-        {
-            url: '/a/images/gallery/2023/R5__6328.JPG',
-            year: '2023',
-        },
-    ];
-
-    ngOnInit(): void {
-        this.preprocessPhotos();
-    }
-
-    private preprocessPhotos(): void {
-        // Group photos by year
-        const photoGroups = this.photos.reduce((acc, photo) => {
+export class GalleryComponent {
+    photoData = httpResource<Photo[]>(() => '/api/gallery');
+    photosByYear = computed(() => {
+        let photos = this.photoData.value();
+        if (!photos || photos.length === 0) {
+            return [];
+        }
+        const photoGroups = photos.reduce((acc, photo) => {
             const year = parseInt(photo.year);
             if (!acc[year]) {
                 acc[year] = [];
@@ -393,13 +244,16 @@ export class GalleryComponent implements OnInit {
         }, {} as { [key: number]: string[] });
 
         // Convert to array format and sort by highest year first
-        this.photosByYear = Object.entries(photoGroups)
+        let photosByYear = Object.entries(photoGroups)
             .map(([year, photos]) => ({
                 year: parseInt(year),
                 photos: photos,
             }))
             .sort((a, b) => b.year - a.year);
-    }
+        return photosByYear;
+    });
+
+    selectedPhoto: Photo | null = null;
 
     openFullscreen(photoUrl: string, year: number): void {
         this.selectedPhoto = { url: photoUrl, year: year.toString() };
