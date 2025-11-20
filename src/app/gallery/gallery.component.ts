@@ -1,5 +1,5 @@
 import { Component, computed, HostListener, OnInit, Signal } from '@angular/core';
-import { CommonModule, NgOptimizedImage } from '@angular/common';
+import { NgOptimizedImage } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 
 interface Photo {
@@ -14,7 +14,7 @@ interface PhotosByYear {
 
 @Component({
     selector: 'app-gallery',
-    imports: [CommonModule],
+    imports: [],
     template: `
         <div class="gallery-container">
             <h1>Photo Gallery</h1>
