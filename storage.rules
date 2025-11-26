@@ -13,19 +13,22 @@ service firebase.storage {
     // Allow authenticated users to upload/manage files in devfest folders
     match /devfest2025/{folder}/{speakerId}/{filename} {
       allow read: if true;
-      allow write, delete: if request.auth != null;
+      allow write: if request.auth != null;
+      allow delete: if false;
     }
     
     // Allow authenticated users to upload/manage files in any devfest path
     match /devfest2025/{allPaths=**} {
       allow read: if true;
-      allow write, delete: if request.auth != null;
+      allow write: if request.auth != null;
+      allow delete: if false;
     }
     
     // Legacy support for other devfest paths
     match /{year}/{folder}/{speakerId}/{filename} {
       allow read: if true;
-      allow write, delete: if request.auth != null;
+      allow write: if request.auth != null;
+      allow delete: if false;
     }
   }
 }
