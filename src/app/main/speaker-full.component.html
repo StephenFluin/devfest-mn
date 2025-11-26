@@ -3,7 +3,7 @@
     <div class="callout">
         {{ speaker().name }}
         @if (auth.isAdmin()) {
-        <a [routerLink]="['/', year(), 'admin', 'speakers', speaker().$key, 'edit']">
+        <a [routerLink]="['/', 'admin', 'speakers', speaker().$key, 'edit']">
             <img src="/a/edit.svg" />
         </a>
         }

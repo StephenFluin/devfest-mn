@@ -5,8 +5,27 @@ rules_version = '2';
 //    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
 service firebase.storage {
   match /b/{bucket}/o {
+    // Allow public read access to all files
     match /{allPaths=**} {
-      allow read, write: if false;
+      allow read: if true;
+    }
+    
+    // Allow authenticated users to upload/manage files in devfest folders
+    match /devfest2025/{folder}/{speakerId}/{filename} {
+      allow read: if true;
+      allow write, delete: if request.auth != null;
+    }
+    
+    // Allow authenticated users to upload/manage files in any devfest path
+    match /devfest2025/{allPaths=**} {
+      allow read: if true;
+      allow write, delete: if request.auth != null;
+    }
+    
+    // Legacy support for other devfest paths
+    match /{year}/{folder}/{speakerId}/{filename} {
+      allow read: if true;
+      allow write, delete: if request.auth != null;
     }
   }
 }
