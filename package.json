@@ -32,7 +32,7 @@
     "compression": "^1.8.1",
     "core-js": "^2.5.4",
     "express": "^5.1.0",
-    "firebase": "^10.6.0",
+    "firebase": "^12.6.0",
     "firebase-http2-push-config": "^0.0.11",
     "firebase-tools": "^14.6.0",
     "promise-polyfill": "^6.0.2",
