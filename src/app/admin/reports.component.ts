@@ -6,150 +6,164 @@ import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { Observable, combineLatest } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { AuthService } from '../realtime-data/auth.service';
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, DecimalPipe } from '@angular/common';
 import { AdminNavComponent } from './admin-nav.component';
 import { environment } from '../../environments/environment';
+
+interface SessionFeedback {
+    speaker: number;
+    content: number;
+    recommendation: number;
+    comment?: string;
+    uid: string;
+}
+
+interface SessionReport {
+    key: string;
+    title: string;
+    startTime: string;
+    numReviews: number;
+    avgSpeaker: number;
+    avgContent: number;
+    avgRecommendation: number;
+    feedback: SessionFeedback[];
+}
 
 @Component({
     template: `
         <admin-nav></admin-nav>
-        @if (auth.isAdmin()) {
+        @if (auth.isAdmin()) { @if (sessions | async; as sessionList) {
         <div>
-            <h2>Speaker</h2>
-            @for (session of sessions | async; track session) {
-            <div>
+            <h2>Session Feedback Report</h2>
+            @for (session of sessionList; track session.key) {
+            <div style="margin-bottom: 2rem;">
                 <div>
                     <strong>{{ session.title }}</strong>
                 </div>
-                @if (session.feedback) {
+                @if (session.numReviews > 0) {
                 <div>
-                    {{ session.feedback.length }} Reviews
+                    <div>{{ session.numReviews }} Reviews</div>
                     <div>
-                        Speaker: {{ session.scoreSpeaker }} / Content: {{ session.scoreContent }} /
-                        Recommendation: {{ session.scoreRecommendation }}
+                        Avg Speaker: {{ session.avgSpeaker | number : '1.1-1' }} / Avg Content:
+                        {{ session.avgContent | number : '1.1-1' }} / Avg Recommendation:
+                        {{ session.avgRecommendation | number : '1.1-1' }}
                     </div>
-                    <table border="1">
-                        <tr>
-                            <td>S</td>
-                            <td>C</td>
-                            <td>R</td>
-                        </tr>
-                        @for (feedback of session.feedback; track feedback) {
-                        <tr>
-                            <td>{{ feedback.speaker }}</td>
-                            <td>{{ feedback.content }}</td>
-                            <td>{{ feedback.recommendation }}</td>
-                        </tr>
-                        }
+                    <table border="1" style="margin-top: 0.5rem;">
+                        <thead>
+                            <tr>
+                                <th>Speaker</th>
+                                <th>Content</th>
+                                <th>Recommendation</th>
+                                <th>Comment</th>
+                                <th>User ID</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (fb of session.feedback; track fb.uid) {
+                            <tr>
+                                <td>{{ fb.speaker || '-' }}</td>
+                                <td>{{ fb.content || '-' }}</td>
+                                <td>{{ fb.recommendation || '-' }}</td>
+                                <td>{{ fb.comment || '' }}</td>
+                                <td>{{ fb.uid }}</td>
+                            </tr>
+                            }
+                        </tbody>
                     </table>
                 </div>
+                } @else {
+                <div style="color: #999;">No reviews yet</div>
                 }
-                <br />
             </div>
             }
-            <h2>Overall Feedback</h2>
-            <ol>
-                @for (session of sessions | async; track session) {
-                <div>
-                    @for (feedback of session.feedback; track feedback) {
-                    <div>
-                        <li>
-                            {{ feedback.speaker }} / {{ feedback.content }} /
-                            {{ feedback.recommendation }} - {{ feedback.uid }}
-                        </li>
-                    </div>
-                    }
-                </div>
-                }
-            </ol>
         </div>
-        }
+        } }
     `,
-    imports: [AdminNavComponent, AsyncPipe],
+    imports: [AdminNavComponent, AsyncPipe, DecimalPipe],
 })
 export class ReportsComponent {
     auth = inject(AuthService);
     db = inject(AngularFireDatabase);
     ds = inject(DataService);
 
-    feedback: Observable<any>;
-    sessions: Observable<
-        {
-            title: string;
-            scoreSpeaker: number;
-            scoreContent: number;
-            scoreRecommendation: number;
-            feedback?: any[];
-        }[]
-    >;
+    sessions: Observable<SessionReport[]>;
 
     constructor() {
         const ds = this.ds;
 
-        this.feedback = ds.getFeedback();
-        this.sessions = combineLatest(this.feedback, ds.getSchedule(environment.year)).pipe(
-            tap((data) => console.log(data)),
-            map((data) => {
-                let [feedback, originalSession] = data;
+        this.sessions = combineLatest([ds.getFeedback(), ds.getSchedule(environment.year)]).pipe(
+            tap((data) => console.log('Feedback and sessions data:', data)),
+            map(([feedbackData, originalSessions]) => {
+                // Create a map to collect feedback by session key
+                const feedbackBySession = new Map<string, SessionFeedback[]>();
 
-                // clone the data
-                let sessions = JSON.parse(JSON.stringify(originalSession));
+                // Process feedback data
+                if (Array.isArray(feedbackData)) {
+                    for (let user of feedbackData) {
+                        const userId = user.$key;
+                        for (let sessionKey of Object.keys(user)) {
+                            if (sessionKey === '$key') continue;
 
-                delete feedback.$key;
-                delete feedback.$exists;
-                delete feedback.$value;
-
-                // Add feedback
-                for (let uid of Object.keys(feedback)) {
-                    let user = feedback[uid];
-                    for (let sessionKey of Object.keys(user)) {
-                        let session = sessions.find((item) => item.$key === sessionKey);
-                        if (session) {
-                            if (!session.feedback) {
-                                session.feedback = [];
+                            if (!feedbackBySession.has(sessionKey)) {
+                                feedbackBySession.set(sessionKey, []);
                             }
-                            user[sessionKey].uid = uid;
-                            session.feedback.push(user[sessionKey]);
+
+                            const userFeedback: SessionFeedback = {
+                                speaker: user[sessionKey].speaker || 0,
+                                content: user[sessionKey].content || 0,
+                                recommendation: user[sessionKey].recommendation || 0,
+                                comment: user[sessionKey].comment || '',
+                                uid: userId,
+                            };
+
+                            feedbackBySession.get(sessionKey)!.push(userFeedback);
                         }
                     }
                 }
 
-                // Summarize feedback
-                for (let session of sessions) {
-                    session.scoreSpeaker = session.scoreContent = session.scoreRecommendation = 0;
-                    if (session.feedback) {
-                        let length = session.feedback.length;
-                        for (let feedbackResult of session.feedback) {
-                            if (
-                                feedbackResult.speaker === 0 ||
-                                feedbackResult.content === 0 ||
-                                feedbackResult.recommendation === 0
-                            ) {
-                                length--;
-                            } else {
-                                session.scoreSpeaker += feedbackResult.speaker;
-                                session.scoreContent += feedbackResult.content;
-                                session.scoreRecommendation += feedbackResult.recommendation;
-                            }
+                // Create session reports
+                const sessionReports: SessionReport[] = [];
+
+                for (let session of originalSessions) {
+                    const sessionKey = session.$key;
+                    const feedbackList = feedbackBySession.get(sessionKey) || [];
+
+                    // Calculate averages (excluding zero values)
+                    let totalSpeaker = 0,
+                        totalContent = 0,
+                        totalRecommendation = 0;
+                    let validCount = 0;
+
+                    for (let fb of feedbackList) {
+                        if (fb.speaker > 0 && fb.content > 0 && fb.recommendation > 0) {
+                            totalSpeaker += fb.speaker;
+                            totalContent += fb.content;
+                            totalRecommendation += fb.recommendation;
+                            validCount++;
                         }
-                        session.scoreSpeaker = session.scoreSpeaker / session.feedback.length;
-                        session.scoreContent = session.scoreContent / session.feedback.length;
-                        session.scoreRecommendation =
-                            session.scoreRecommendation / session.feedback.length;
                     }
+
+                    const report: SessionReport = {
+                        key: sessionKey,
+                        title: session.title || 'Untitled Session',
+                        startTime: session.startTime || '',
+                        numReviews: feedbackList.length,
+                        avgSpeaker: validCount > 0 ? totalSpeaker / validCount : 0,
+                        avgContent: validCount > 0 ? totalContent / validCount : 0,
+                        avgRecommendation: validCount > 0 ? totalRecommendation / validCount : 0,
+                        feedback: feedbackList,
+                    };
+
+                    sessionReports.push(report);
                 }
 
-                // Sort Feedback
-                sessions = sessions.sort((a, b) => {
-                    return a.scoreSpeaker + a.scoreContent + a.scoreRecommendation >
-                        b.scoreSpeaker + b.scoreContent + b.scoreRecommendation
-                        ? -1
-                        : 1;
+                // Sort by start time
+                sessionReports.sort((a, b) => {
+                    return a.startTime.localeCompare(b.startTime);
                 });
 
-                return sessions;
-            }),
-            tap((data) => console.log('processed data', data))
+                return sessionReports;
+            })
         );
     }
 }
