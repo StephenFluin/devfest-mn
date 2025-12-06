@@ -16,9 +16,11 @@ export const environment = {
     showSchedule: true,
     showCFP: false,
     showSpeakers: true,
-    showSponsor: true,
-    showFeedback: false,
+    showSponsor: false,
+    showFeedback: true,
     showVolunteer: 'https://signup.com/go/wWAHYET',
+    dayOf: true,
+    surveyLink: 'https://forms.gle/g9RbypovPUcfYNNW8',
     eventbriteEventId: '1684295616529',
     venueMapUrl: 'https://maps.app.goo.gl/w1nJNEmjhe3cvMKg7',
     sponsors: [

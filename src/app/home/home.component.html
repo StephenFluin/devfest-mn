@@ -38,15 +38,15 @@
 
         <!-- <h2>One Day, One Track</h2> -->
     </div>
-    @if(mode=='dayof') {
+    @if(environment.dayOf) {
     <section class="">
         <div>
             <h2>Important Details for Attendees</h2>
 
-            <div class="callout"><a href="https://bit.ly/devfest2024-survey">Survey</a></div>
+            <div class="callout"><a [href]="environment.surveyLink">Survey</a></div>
             <p>
                 Please fill out the participant survey here:
-                <a href="https://bit.ly/devfest2024-survey">bit.ly/devfest2024-survey</a>
+                <a [href]="environment.surveyLink">bit.ly/devfest2024-survey</a>
             </p>
             <div class="callout">Venue</div>
             <p>
@@ -74,7 +74,7 @@
             <p>We will have a catered lunch break</p>
             <div class="callout">Event Hashtag</div>
             <p>
-                Join the conversation on Twitter/Facebook/Instagram/etc using
+                Join the conversation on Social Media using
                 <strong>#DevFestMN</strong>
             </p>
         </div>
@@ -127,22 +127,6 @@
         </div>
     </section>
 
-    <!-- <section>
-      <div>
-        <h2>Keynote</h2>
-        <div class="callout">
-          <img src="/a/images/annycedavis-headshot.jpg" alt="annyce-davis" height="240px"/><br>
-          <h3>Annyce Davis</h3>
-          <h4>Software Lead, Mobile Development | Off Grid Electric</h4>
-        </div>
-
-        <p>Annyce is an Android Google Developer Expert, with a special focus on the Kotlin programming language. She has spent the past 7+ years developing applications for the Android ecosystem across multiple form factors. She is also an international conference speaker and author, sharing her knowledge of Android development with others. </p>
-
-        <h4>Talk to Me Right!</h4>
-        <p>Annyce will be sharing various tools and techniques that can help propel your career by making you a more effective technical communicator.</p>
-      </div>
-    </section> -->
-
     <section>
         <div>
             <h2>Speakers</h2>
@@ -153,7 +137,7 @@
             </p>
             } @else if (environment.showSpeakers) {
             <p>
-                We've begun announcing some of the event speakers. Check out the
+                Check out the speakers we've announced so far on the
                 <a routerLink="/speakers">Speakers</a> page for more details.
             </p>
             } @else {

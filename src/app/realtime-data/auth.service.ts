@@ -4,9 +4,10 @@ import { Auth, authState, User, signInWithPopup, GoogleAuthProvider } from '@ang
 
 import { environment } from '../../environments/environment';
 import { Database, list, objectVal, ref } from '@angular/fire/database';
-import { map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { Feedback } from '../shared/data.service';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { of } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -50,8 +51,10 @@ export class AuthService {
         return toSignal(
             toObservable(uid).pipe(
                 switchMap((userId) => {
-                    if (!userId) return [false];
-                    return objectVal<boolean>(ref(this.db, key + userId));
+                    if (!userId) return of(false);
+                    return objectVal<boolean>(ref(this.db, key + userId)).pipe(
+                        catchError(() => of(false))
+                    );
                 }),
                 map((value) => !!value)
             ),

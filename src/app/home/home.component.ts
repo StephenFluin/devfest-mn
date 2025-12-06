@@ -23,7 +23,6 @@ declare global {
 })
 export class HomeComponent {
     environment = environment;
-    mode: 'dayof' | 'early' = 'early';
     faqSelection = 1;
     ldJsonService = inject(LdJsonService);
     private platformId = inject(PLATFORM_ID);
