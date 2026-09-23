@@ -21,7 +21,7 @@ export class SessionReportComponent {
 
         this.year = environment.year;
         let allData = http.get<{ feedback: any; schedule: any; speakers: any }>(
-            `https://devfestmn-2025-default-rtdb.firebaseio.com/devfest${environment.year}.json`
+            `https://devfestmn-2026-default-rtdb.firebaseio.com/devfest${environment.year}.json`
         );
 
         let tenthsRound = (x) => Math.round(x * 10) / 10;

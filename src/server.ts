@@ -64,7 +64,7 @@ app.get('/sitemap.txt', async (req, res) => {
         urls.push(`${baseUrl}/gallery`);
 
         // Fetch Firebase data
-        const firebaseUrl = 'https://devfestmn-2025-default-rtdb.firebaseio.com/devfest2025.json';
+        const firebaseUrl = 'https://devfestmn-2026-default-rtdb.firebaseio.com/devfest2026.json';
         const response = await fetch(firebaseUrl);
         const data = await response.json();
 

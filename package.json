@@ -8,7 +8,8 @@
     "build": "ng build",
     "start": "ng serve",
     "serve": "ng serve",
-    "lint": "tslint \"src/**/*.ts\""
+    "lint": "tslint \"src/**/*.ts\"",
+    "publish": "firebase deploy"
   },
   "private": true,
   "dependencies": {

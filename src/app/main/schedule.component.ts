@@ -131,7 +131,7 @@ export class ScheduleComponent {
         const agendaMetadata = {
             '@context': 'https://schema.org',
             '@type': 'ItemList',
-            name: 'DevFestMN 2025 Full Conference Schedule',
+            name: 'DevFestMN 2026 Full Conference Schedule',
             itemListElement: [],
         };
         effect(() => {

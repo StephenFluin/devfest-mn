@@ -39,7 +39,7 @@ Photos should be:
 -   Resize images to fit within 1024x768 while maintaining aspect ratio
 
 ```bash
-find ./src/a/images/gallery -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" \) -exec sh -c '
+find . -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" \) -exec sh -c '
     echo "Processing: $1"
     # Create backup with .original extension if it doesn'\''t exist
     if [ ! -f "$1.original" ]; then
@@ -57,3 +57,13 @@ find ./src/a/images/gallery -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -ina
     echo "---"
 ' _ {} \;
 ```
+
+
+## Yearly Updates
+Every year we keep the same codebase but fork hosting. Usually it's as simple as pointing to a new project in .firebaserc. You'll need to create the project in Firebase.
+
+Steps
+
+* Update `.firebaserc`
+* Update `environment.ts` with new API keys, settings, etc
+* Find and replace old date with new date

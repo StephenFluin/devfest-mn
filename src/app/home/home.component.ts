@@ -33,9 +33,9 @@ export class HomeComponent {
         this.ldJsonService.setLdJson({
             '@context': 'https://schema.org',
             '@type': 'Event',
-            name: 'DevFestMN 2025',
-            startDate: '2025-12-06T09:00-05:00',
-            endDate: '2025-12-06T17:00-05:00',
+            name: 'DevFestMN 2026',
+            startDate: '2026-12-12T09:00-05:00',
+            endDate: '2026-12-12T17:00-05:00',
             eventStatus: 'https://schema.org/EventScheduled',
             location: {
                 '@type': 'Place',

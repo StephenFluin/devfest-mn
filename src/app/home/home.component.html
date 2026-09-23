@@ -4,7 +4,7 @@
             src="a/images/devfestmn.svg"
             fetchpriority="high"
             style="width: 40%; max-width: 400px; min-width: 250px"
-            alt="DevFestMN 2025"
+            alt="DevFestMN 2026"
         />
         <div>
             <div class="event-hero-info">
@@ -15,7 +15,7 @@
                             d="M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1M17,12H12V17H17V12Z"
                         ></path>
                     </svg>
-                    <span>December 6, 2025</span>
+                    <span>December 12, 2026</span>
                 </a>
                 <!--<a href="https://www.google.com/maps/place/Schulze+Hall/@44.974195,-93.279928,17z/data=!3m1!4b1!4m2!3m1!1s0x52b332944d7d30f9:0x169d5a902717f38e?hl=en" -->
                 <a [href]="environment.venueMapUrl" target="_blank" class="icon-text-link">
@@ -84,7 +84,7 @@
             <h2>What to Expect</h2>
             <p>
                 DevFestMN is one of the best developer conferences in the Midwest. This year the
-                event features a single day of content and connections. This year's 2025 DevFestMN
+                event features a single day of content and connections. This year's 2026 DevFestMN
                 event will cover the latest and greatest insights about AI and software engineering,
                 with a smattering of Google's platforms covering Gemini, Cloud, Android, and web
                 development. Intelligence.
@@ -262,8 +262,8 @@
                 <div>
                     <p>
                         @if(environment.showCFP) { The CFP is now open!
-                        <a routerLink="/speaker-cfp">Submit a talk</a>. } @else { The call for
-                        speakers is now closed. Please try again next year. }
+                        <a routerLink="/speaker-cfp">Submit a talk</a>. } @else if(environment.showSpeakers) { The call for
+                        speakers is now closed. Please try again next year. } @else { We haven't announced the CFP yet, stay tuned in the coming weeks! }
                     </p>
                 </div>
                 } @if (faqSelection == 2) {
@@ -280,10 +280,10 @@
                 } @if (faqSelection == 3) {
                 <div>
                     <p>
-                        Sign up to volunteer through
+                        @if(environment.showVolunteer) { Sign up to volunteer through
                         <a href="{{ environment.showVolunteer }}">Sign Up</a>. We're accepting
                         volunteers to help with Registration, Setup, Cleanup, and it's always great
-                        to have welcoming faces. Volunteers get a free ticket!
+                        to have welcoming faces. Volunteers get a free ticket! } @else { We'll be announcing how to sign up as a volunteer soon.}
                     </p>
                 </div>
                 } @if (faqSelection == 4) {

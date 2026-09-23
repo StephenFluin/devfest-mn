@@ -8,6 +8,7 @@ import { Component } from '@angular/core';
             <h2>Past DevFestMN Events</h2>
             <div style="max-width:300px;text-align:left;margin:0px auto;font-size:1.4rem;">
                 <ul>
+                    <li><a href="https://2025.devfest.mn">DevFestMN 2025</a></li>
                     <li><a href="https://2024.devfest.mn">DevFestMN 2024</a></li>
                     <li><a href="https://2023.devfest.mn">DevFestMN 2023</a></li>
                     <li><a href="https://2022.devfest.mn">DevFestMN 2022</a></li>
