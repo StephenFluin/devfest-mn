@@ -269,4 +269,30 @@ export class GalleryComponent {
             this.closeFullscreen();
         }
     }
+
+    @HostListener('document:keydown.arrowleft')
+    onLeftKey(): void {
+        this.navigate(-1);
+    }
+
+    @HostListener('document:keydown.arrowright')
+    onRightKey(): void {
+        this.navigate(1);
+    }
+
+    navigate(offset: number): void {
+        if (!this.selectedPhoto) {
+            return;
+        }
+        // Flatten in display order so navigation crosses year boundaries
+        const allPhotos = this.photosByYear().flatMap((group) =>
+            group.photos.map((url) => ({ url, year: group.year.toString() }))
+        );
+        const index = allPhotos.findIndex((photo) => photo.url === this.selectedPhoto!.url);
+        if (index === -1) {
+            return;
+        }
+        const nextIndex = (index + offset + allPhotos.length) % allPhotos.length;
+        this.selectedPhoto = allPhotos[nextIndex];
+    }
 }
