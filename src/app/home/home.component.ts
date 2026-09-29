@@ -1,5 +1,5 @@
 import { Component, DOCUMENT, inject, PLATFORM_ID, Renderer2 } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { DatePipe, isPlatformBrowser } from '@angular/common';
 
 import { environment } from '../../environments/environment';
 import { RouterLink } from '@angular/router';
@@ -18,7 +18,7 @@ declare global {
 
 @Component({
     templateUrl: './home.component.html',
-    imports: [RouterLink, ADirective, TicketEmbedComponent],
+    imports: [RouterLink, ADirective, TicketEmbedComponent, DatePipe],
     host: { ngSkipHydration: 'true' },
 })
 export class HomeComponent {
@@ -34,8 +34,8 @@ export class HomeComponent {
             '@context': 'https://schema.org',
             '@type': 'Event',
             name: 'DevFestMN 2026',
-            startDate: '2026-12-12T09:00-05:00',
-            endDate: '2026-12-12T17:00-05:00',
+            startDate: `${environment.eventDate}T09:00-06:00`,
+            endDate: `${environment.eventDate}T17:00-06:00`,
             eventStatus: 'https://schema.org/EventScheduled',
             location: {
                 '@type': 'Place',

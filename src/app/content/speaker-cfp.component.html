@@ -24,99 +24,134 @@
     @if(environment.showCFP) {
     <section>
         <p>
-            The DevFestMN 2026 Call for Speakers is officially open! If you are interested in
-            presenting (or know someone who might be), read on. Submissions will be accepted until
-            <strong>September 30th at 11:59pm CST</strong>.
+            DevFestMN, a premier developer conference in Minnesota, is back for 2026! We're excited
+            to invite developers, designers, technologists, and innovators of all levels to share
+            their knowledge, expertise, and passion with the community. Submissions will be accepted
+            until <strong>{{ environment.cfpCloses | date: 'MMMM d' }} at 11:59pm CST</strong>.
         </p>
 
         <p style="margin: 40px 0; text-align: center">
-            <!-- <a class="cta all-caps" routerLink="/cfp">Submit Your Talk</a> -->
-            <a class="cta all-caps" href="https://forms.gle/kqmq8X4apJwL5nT3A">Submit Your Talk</a>
+            <a class="cta all-caps" [href]="environment.cfpLink">Submit Your Talk</a>
         </p>
 
         <h2>About the Conference</h2>
 
-        <p><strong>When:</strong> December 12, 2026</p>
-
-        <p><strong>Where:</strong> University of Minnesota, Minneapolis, MN (to be finalized)</p>
+        <p><strong>Theme:</strong> Innovate, Inspire, Connect</p>
 
         <p>
-            The first DevFestMN was in 2014 and is organized by GDG Twin Cities, a group of Google
-            Developer practitioners and enthusiasts. The conference draws many of the best
-            technologists from our region, as well as many Google employees who attend and present.
-            This year we expect to have over 250 attendees join the event and share the experience.
+            This year, we're focusing on
+            <strong>Building, Securing, and Scaling: Developers and Builders in the Agentic Era</strong>.
+            We believe that by coming together and sharing our ideas, we can build a better future
+            for everyone.
+        </p>
+
+        <p><strong>When:</strong> {{ environment.eventDate | date: 'longDate' }}</p>
+
+        <p>
+            <strong>Where:</strong> University of Minnesota Health Sciences Education Center, 526
+            Delaware Street Southeast, Minneapolis, MN 55455 (same venue as 2025)
         </p>
 
         <h2>What We're Looking For</h2>
 
-        <p>
-            We're always seeking a diverse mix of content and speakers for this community
-            conference. Most sessions at DevFestMN are technical, but we're also interested in
-            submissions that discuss non-technical topics relevant to technology practitioners.
-            Ultimately, we're looking for speakers who have something interesting to say and are
-            excited to share their knowledge with others.
-        </p>
-
-        <p>
-            We welcome speakers of all experience levels, including those who have never presented
-            before at a conference.
-        </p>
-
-        <p>
-            If you're looking for inspiration or examples of the type of content that would be a
-            good fit for DevFestMN, please check out the sample topics at the end of this CFP or
-            explore our past session
-            <a href="https://www.youtube.com/user/GDGTC/videos">video library </a>.
-        </p>
-
-        <h2>Why You Should Present and How We Can Help</h2>
-
-        <p>
-            DevFestMN is an opportunity to present to a friendly and engaged audience. This is a
-            great way for you to share your passion, increase the strength of your network and
-            advance your career.
-        </p>
-
-        <p>Additionally, we've compiled some resources here that you may find helpful:</p>
+        <p>We're looking for interesting proposals across a wide range of topics, including:</p>
 
         <ul>
             <li>
-                <p>
-                    <a href="https://twitter.com/hashtag/speakerconfessions?f=tweets"
-                        >#SpeakerConfessions</a
-                    >
-                    - Encouragement, advice and laughs from speakers on Twitter
-                </p>
+                <strong>Google technologies:</strong> Gemini, Google AI Studio, Vertex AI, Google
+                Cloud, Firebase, Android, Flutter, Angular, and Web MCP.
             </li>
-
             <li>
-                <p>
-                    <a href="https://github.com/vmbrasseur/Public_Speaking/blob/master/README.md"
-                        >Public Speaking on Github</a
-                    >
-                    - Repo full of links to public speaking resources
-                </p>
+                <strong>AI &amp; Agentic Systems:</strong> Autonomous AI agents, Gemini API / Gemini
+                Live API, Agent Development Kits (ADK), RAG architecture, and "vibe coding" to
+                production pipelines.
+            </li>
+            <li>
+                <strong>Web Technologies:</strong> Modern Web Standards (Baseline), WebAssembly
+                (Wasm), WebGPU, Angular, React, and Web Accessibility.
+            </li>
+            <li>
+                <strong>Mobile Development:</strong> Cross-platform (Flutter, KMP), Android Jetpack,
+                iOS, context-aware applications, and on-device machine learning.
+            </li>
+            <li>
+                <strong>Cloud &amp; Infrastructure:</strong> Cloud-native architecture, Kubernetes
+                (GKE), serverless, vector databases, microservices, and cost optimization.
+            </li>
+            <li>
+                <strong>DevOps, SRE &amp; Security:</strong> CI/CD pipelines, site reliability,
+                infrastructure monitoring, supply chain security, and securing AI agents/data
+                privacy.
+            </li>
+            <li>
+                <strong>Open Source:</strong> AI frameworks (LangGraph, CrewAI), community
+                sustainability, governance, and open-source contributions.
+            </li>
+            <li>
+                <strong>Career Development &amp; Leadership:</strong> Soft skills, technical
+                leadership, founding startups, and navigating tech careers in the AI era.
+            </li>
+            <li>
+                <strong>Diversity &amp; Inclusion:</strong> Neurodiversity in tech, building
+                accessible products, and creating inclusive developer communities.
+            </li>
+            <li>
+                <strong>Social Impact &amp; Responsible AI:</strong> Tech for sustainability, AI
+                safety guardrails, ethical innovation, and tech for good.
             </li>
         </ul>
 
-        <p>
-            If you need practice giving talks, get in touch, and we can connect you with local
-            groups who may be seeking presenters.
-        </p>
+        <p>We encourage talks to:</p>
+
+        <ul>
+            <li>Be engaging and interactive</li>
+            <li>Share practical knowledge and experience</li>
+            <li>Inspire and motivate attendees</li>
+            <li>Showcase innovative solutions and ideas</li>
+            <li>Foster connection and collaboration</li>
+        </ul>
 
         <p>
-            If you have a specific question that isn't answered in those resources and you can't
-            make either of the Hangout sessions listed above, shoot us an email: info&#64;devfest.mn
-            (just don't use this to submit a proposal).
+            We encourage proposals from speakers of all backgrounds and experiences, including those
+            who have never presented at a conference before.
         </p>
 
         <h2>Session Length</h2>
 
         <p>
             Most sessions are 20-45 minutes in length. If you want to leave time for questions and
-            discussion at the end (completely optional), plan your presentation accordingly. We'll
-            also be organizing some sessions for 10 minute lightning talks and we're open to
-            considering a few 90 minute Codelab style sessions.
+            discussion at the end, plan your presentation accordingly. We'll also be hosting at
+            least one workshop-style session this year, likely in the 60 minute range. Other ideas?
+            Let us know!
+        </p>
+
+        <h2>Important Dates</h2>
+
+        <ul>
+            <li><strong>Call for Speakers Opens:</strong> {{ environment.cfpOpens | date: 'longDate' }}</li>
+            <li><strong>Call for Speakers Closes:</strong> {{ environment.cfpCloses | date: 'longDate' }}</li>
+            <li><strong>Speaker Notifications:</strong> Rolling basis after first batch</li>
+            <li><strong>Conference Date:</strong> {{ environment.eventDate | date: 'longDate' }}</li>
+        </ul>
+
+        <h2>How We Select Talks</h2>
+
+        <p>We will review all proposals and select speakers based on the following criteria:</p>
+
+        <ul>
+            <li>Relevance of the topic to the conference audience and theme</li>
+            <li>Expertise of the speaker</li>
+            <li>Clarity and quality of the proposal</li>
+            <li>Potential to deliver an informative and engaging talk</li>
+        </ul>
+
+        <h2>Why You Should Present</h2>
+
+        <p>
+            DevFestMN is an opportunity to present to a friendly and engaged audience. This is a
+            great way for you to share your passion, increase your network and advance your career.
+            Speakers receive a free pass to the conference and recognition as a thought leader in
+            their field.
         </p>
 
         <h2>Guide for Speakers</h2>
@@ -135,27 +170,61 @@
             us know and we will work things out.
         </p>
 
-        <p>
-            We will ask to see your slides in advance of the conference to ensure the content is a
-            good fit for our audience.
-        </p>
-
         <h2>How to Submit</h2>
 
         <p>
-            Our best advice is to keep your submission short and sweet. We won't impose a limit on
-            length, but we suggest that it be no longer than 250 words. Engaging titles and
-            descriptions tend to attract more attendees to your session, so we recommend spending
-            some time fine-tuning this portion.
+            Your submission will ask for a brief bio, a proposed talk title, a 200-300 word abstract
+            (including your desired talk length / format), and any relevant links to your work, such
+            as blog posts, articles, GitHub repositories, or past talks.
         </p>
 
-        <p>When you're ready, submit your application by clicking the link below.</p>
+        <p>Some tips for writing a successful proposal:</p>
+
+        <ul>
+            <li>
+                Choose a topic that is relevant to the conference audience and that you are
+                passionate about.
+            </li>
+            <li>
+                Be clear and concise in your abstract. Explain what your talk is about, why it is
+                important, and what attendees will learn.
+            </li>
+            <li>
+                Use keywords in your abstract that are likely to be used by people searching for
+                talks on your topic.
+            </li>
+            <li>Proofread your proposal carefully before submitting it.</li>
+        </ul>
+
+        <p>Some resources you may find helpful:</p>
+
+        <ul>
+            <li>
+                <a href="https://github.com/vmbrasseur/Public_Speaking/blob/master/README.md"
+                    >Public Speaking on Github</a
+                >
+                - Repository full of links to public speaking resources to help make your
+                presentation great
+            </li>
+            <li>
+                <a href="https://www.amazon.com/Talk-Like-TED-Public-Speaking-Secrets/dp/1250041120/"
+                    >Talk like TED: The 9 Public Speaking Secrets of the World's Top Minds</a
+                >
+                - Book by Carmine Gallo
+            </li>
+        </ul>
+
+        <p>
+            If you have a question, shoot us an email at info&#64;devfest.mn (just don't use this to
+            submit a proposal). Interested in volunteering instead? Email volunteers&#64;gdgtc.com
+            or visit our <a href="https://signup.com/go/PdzJpbd">volunteer sign up</a>.
+        </p>
 
         <p style="margin: 40px 0; text-align: center">
-            <a class="cta all-caps" href="https://forms.gle/kqmq8X4apJwL5nT3A">Submit Your Talk</a>
+            <a class="cta all-caps" [href]="environment.cfpLink">Submit Your Talk</a>
         </p>
 
-        <p>We look forward to seeing you at DevFestMN!</p>
+        <p>Let's make DevFestMN 2026 the best one yet!</p>
     </section>
     } @else {
     <p>

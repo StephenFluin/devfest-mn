@@ -1,6 +1,10 @@
 export const environment = {
     year: '2026',
     siteName: 'DevFestMN',
+    eventDate: '2026-12-12',
+    cfpOpens: '2026-09-29',
+    cfpCloses: '2026-10-20',
+    cfpLink: 'https://forms.gle/ogepGnFYvvc68Wup6',
     firebaseConfig: {
         apiKey: 'AIzaSyC6c2soUhewnosbGiLJJLoF3a7Q54InVk0',
         authDomain: 'devfestmn-2026.firebaseapp.com',
@@ -14,7 +18,7 @@ export const environment = {
     showRegister: false,
         //'https://www.eventbrite.com/e/devfestmn-2025-tickets-1684295616529?aff=oddtdtcreator',
     showSchedule: false,
-    showCFP: false,
+    showCFP: true,
     showSpeakers: false,
     showSponsor: true,
     showFeedback: false,
