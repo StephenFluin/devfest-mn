@@ -1,7 +1,7 @@
 export const environment = {
     year: '2026',
     siteName: 'DevFestMN',
-    eventDate: '2026-12-12',
+    eventDate: '2026-12-05',
     cfpOpens: '2026-09-29',
     cfpCloses: '2026-10-20',
     cfpLink: 'https://forms.gle/ogepGnFYvvc68Wup6',
