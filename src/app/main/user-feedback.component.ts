@@ -1,5 +1,6 @@
 import { Component, computed, signal, inject, input, Signal } from '@angular/core';
-import { Database, ref, objectVal, set } from '@angular/fire/database';
+import { ref, set } from 'firebase/database';
+import { Rtdb } from '../realtime-data/firebase';
 import { DataService, Session, Feedback } from '../shared/data.service';
 
 import { switchMap, map } from 'rxjs/operators';
@@ -16,7 +17,8 @@ import { of } from 'rxjs';
     imports: [StarBarComponent, MatButtonModule],
 })
 export class UserFeedbackComponent {
-    db = inject(Database);
+    rtdb = inject(Rtdb);
+    db = this.rtdb.db;
     ds = inject(DataService);
     auth = inject(AuthService);
 
@@ -48,7 +50,7 @@ export class UserFeedbackComponent {
             toObservable(url).pipe(
                 switchMap((path) => {
                     if (path) {
-                        return objectVal<Feedback>(ref(db, path));
+                        return this.rtdb.objectVal<Feedback>(ref(db, path));
                     }
                     return of({} as Feedback);
                 }),

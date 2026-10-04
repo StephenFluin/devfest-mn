@@ -1,7 +1,5 @@
 import { ChangeDetectorRef, Component, inject, input, effect } from '@angular/core';
-import { Database } from '@angular/fire/database';
 import {
-    getDatabase,
     ref as dbRef,
     push,
     remove,
@@ -12,9 +10,9 @@ import {
 
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { getApp } from 'firebase/app';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { AsyncPipe } from '@angular/common';
+import { DATABASE, FIREBASE_APP } from '../../realtime-data/firebase';
 
 export interface Image {
     path: string;
@@ -29,7 +27,7 @@ export interface Image {
     imports: [AsyncPipe],
 })
 export class UploaderComponent {
-    db = inject(Database);
+    db = inject(DATABASE);
 
     cdr = inject(ChangeDetectorRef);
 
@@ -42,7 +40,7 @@ export class UploaderComponent {
 
     imageList: Observable<Image[]>;
 
-    private storage = getStorage(getApp());
+    private storage = getStorage(inject(FIREBASE_APP));
 
     constructor() {
         // Use effect to watch for folder changes

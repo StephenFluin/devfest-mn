@@ -1,22 +1,9 @@
 import { Routes } from '@angular/router';
 import AdminRoutes from './admin/admin.routes';
 import { DataService } from './shared/data.service';
-import { importProvidersFrom } from '@angular/core';
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
-import { getDatabase, provideDatabase } from '@angular/fire/database';
-import { getAuth, provideAuth } from '@angular/fire/auth';
 import { AuthService } from './realtime-data/auth.service';
-import { environment } from '../environments/environment';
-import { AngularFireModule } from '@angular/fire/compat';
 
-const dataProviders = [
-    DataService,
-    importProvidersFrom(AngularFireModule.initializeApp(environment.firebaseConfig)),
-    provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
-    provideDatabase(() => getDatabase()),
-    provideAuth(() => getAuth()),
-    AuthService,
-];
+const dataProviders = [DataService, AuthService];
 
 export const MainRoutes: Routes = [
     {

@@ -1,20 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import {
-    Database,
     ref,
-    list,
-    object,
     query,
     orderByChild,
-    DataSnapshot,
     push,
     update,
     remove,
     set,
     DatabaseReference,
-    listVal,
-    objectVal,
-} from '@angular/fire/database';
+} from 'firebase/database';
 
 import { Observable, of } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
@@ -22,6 +16,7 @@ import { SafeHtml } from '@angular/platform-browser';
 import { environment } from '../../environments/environment';
 import { localstorageCache } from './localstorage-cache.operator';
 import { TransferStateService } from './transfer-state.service';
+import { Rtdb } from '../realtime-data/firebase';
 
 export interface Session {
     $key?: string;
@@ -59,7 +54,8 @@ export interface Feedback {
 
 @Injectable()
 export class DataService {
-    db = inject(Database);
+    private rtdb = inject(Rtdb);
+    db = this.rtdb.db;
     private transferStateService = inject(TransferStateService);
 
     private speakersByYear: { [key: string]: Observable<Speaker[]> } = {};
@@ -83,7 +79,7 @@ export class DataService {
         return this.speakersByYear[year];
     }
     getSpeaker(speakerKey: string) {
-        return objectVal<Speaker>(
+        return this.rtdb.objectVal<Speaker>(
             ref(this.db, `devfest${environment.year}/speakers/${speakerKey}/name`)
         );
     }
@@ -126,7 +122,7 @@ export class DataService {
     getVolunteers() {
         const dbRef = ref(this.db, `devfest${environment.year}/volunteers`);
         return {
-            valueChanges: () => objectVal(dbRef),
+            valueChanges: () => this.rtdb.objectVal(dbRef),
             update: (data: any) => update(dbRef, data),
             set: (data: any) => set(dbRef, data),
             remove: () => remove(dbRef),
@@ -146,7 +142,7 @@ export class DataService {
         console.log('fetching agenda stored at', path);
         const dbRef = ref(this.db, path);
         return {
-            valueChanges: () => objectVal<null | { value: boolean }>(dbRef),
+            valueChanges: () => this.rtdb.objectVal<{ value: boolean }>(dbRef),
             set: (data: any) => set(dbRef, data),
             remove: () => remove(dbRef),
             update: (data: any) => update(dbRef, data),
@@ -232,7 +228,7 @@ export class DataService {
         const dbRef = ref(this.db, `devfest${environment.year}/${type}`);
         const queryRef = queryConstraints ? query(dbRef, ...queryConstraints) : dbRef;
 
-        return listVal<T>(queryRef, { keyField: '$key' });
+        return this.rtdb.listVal<T>(queryRef, '$key');
     }
 
     modifiableList<T>(

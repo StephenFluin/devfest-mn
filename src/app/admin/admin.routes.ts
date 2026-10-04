@@ -1,13 +1,9 @@
 import { Routes } from '@angular/router';
-import { getStorage, provideStorage } from '@angular/fire/storage';
 
 export const AdminRoutes: Routes = [
     {
         path: '',
         pathMatch: 'prefix',
-        providers: [
-            provideStorage(() => getStorage()),
-        ],
         children: [
             {
                 path: '',

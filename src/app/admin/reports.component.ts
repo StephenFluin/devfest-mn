@@ -1,7 +1,6 @@
 import { Component, inject } from '@angular/core';
 
 import { DataService } from '../shared/data.service';
-import { AngularFireDatabase } from '@angular/fire/compat/database';
 
 import { Observable, combineLatest } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
@@ -83,7 +82,6 @@ interface SessionReport {
 })
 export class ReportsComponent {
     auth = inject(AuthService);
-    db = inject(AngularFireDatabase);
     ds = inject(DataService);
 
     sessions: Observable<SessionReport[]>;

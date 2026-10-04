@@ -19,7 +19,6 @@
     "@angular/compiler": "^22.2.1",
     "@angular/compiler-cli": "^22.2.1",
     "@angular/core": "^22.2.1",
-    "@angular/fire": "21.0.0-canary.20260930011755.sha-59d44e7",
     "@angular/forms": "^22.2.1",
     "@angular/language-service": "^22.2.1",
     "@angular/material": "^22.2.1",
@@ -32,7 +31,6 @@
     "compression": "^1.8.2",
     "express": "^5.2.1",
     "firebase": "^12.19.0",
-    "firebase-tools": "^15.32.1",
     "rxjs": "^7.8.1",
     "snarkdown": "^2.0.0",
     "tslib": "^2.0.0",
@@ -41,7 +39,8 @@
   "devDependencies": {
     "@angular/build": "^22.2.1",
     "@types/express": "^5.0.1",
-    "baseline-browser-mapping": "^2.8.31"
+    "baseline-browser-mapping": "^2.8.31",
+    "firebase-tools": "^15.32.1"
   },
   "prettier": {
     "trailingComma": "es5",
@@ -54,13 +53,6 @@
     "basic-ftp": "^6.2.2",
     "uuid": "^14.0.2",
     "@grpc/grpc-js": "^1.14.5",
-    "@opentelemetry/core": "^2.11.0",
-    "@angular/fire": {
-      "@angular/core": "$@angular/core",
-      "@angular/common": "$@angular/common",
-      "@angular/platform-server": "$@angular/platform-server",
-      "@angular/platform-browser": "$@angular/platform-browser",
-      "typescript": "$typescript"
-    }
+    "@opentelemetry/core": "^2.11.0"
   }
 }

@@ -1,9 +1,10 @@
 import { Injectable, inject, PLATFORM_ID, signal, computed, Signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Auth, authState, User, signInWithPopup, GoogleAuthProvider } from '@angular/fire/auth';
+import { User, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { ref } from 'firebase/database';
 
 import { environment } from '../../environments/environment';
-import { Database, list, objectVal, ref } from '@angular/fire/database';
+import { AUTH, authState, Rtdb } from './firebase';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { Feedback } from '../shared/data.service';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -11,17 +12,17 @@ import { of } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-    auth = inject(Auth, { optional: true });
+    auth = inject(AUTH);
     provider = new GoogleAuthProvider();
-    db = inject(Database, { optional: true });
+    private rtdb = inject(Rtdb);
+    db = this.rtdb.db;
     platformId = inject(PLATFORM_ID);
 
     feedback = signal<Feedback | null>(null);
 
-    authStateSignal = toSignal(authState(this.auth));
-
-    state =
-        isPlatformBrowser(this.platformId) && this.auth ? this.authStateSignal : signal<User>(null);
+    state: Signal<User | null | undefined> = this.auth
+        ? toSignal(authState(this.auth))
+        : signal<User>(null);
 
     uid: Signal<string | null> = computed(() => this.state()?.uid);
     name: Signal<string | null> = computed(
@@ -30,14 +31,13 @@ export class AuthService {
 
     agenda = toSignal(
         toObservable(this.uid).pipe(
-            switchMap((uid) => list(ref(this.db, `devfest${environment.year}/agendas/${uid}`))),
-            map((actions) =>
-                actions.map((a) => {
-                    const value = a.snapshot.val();
-                    const key = a.snapshot.key;
-                    console.log('payload includes', a.snapshot.val());
-                    return { key: key, ...value };
-                })
+            switchMap((uid) =>
+                uid
+                    ? this.rtdb.listVal<any>(
+                          ref(this.db, `devfest${environment.year}/agendas/${uid}`),
+                          'key'
+                      )
+                    : of([])
             )
         )
     );
@@ -52,7 +52,7 @@ export class AuthService {
             toObservable(uid).pipe(
                 switchMap((userId) => {
                     if (!userId) return of(false);
-                    return objectVal<boolean>(ref(this.db, key + userId)).pipe(
+                    return this.rtdb.objectVal<boolean>(ref(this.db, key + userId)).pipe(
                         catchError(() => of(false))
                     );
                 }),

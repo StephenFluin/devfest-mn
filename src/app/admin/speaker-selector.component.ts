@@ -1,6 +1,7 @@
 import { Component, OnChanges, inject, input, output } from '@angular/core';
 
-import { Database, ref, query, orderByChild, push, onValue } from '@angular/fire/database';
+import { ref, query, orderByChild, push, onValue } from 'firebase/database';
+import { DATABASE } from '../realtime-data/firebase';
 import { Observable } from 'rxjs';
 
 import { AsyncPipe } from '@angular/common';
@@ -39,7 +40,7 @@ interface SpeakerSnapshot {
     imports: [AsyncPipe],
 })
 export class SpeakerSelectorComponent implements OnChanges {
-    db = inject(Database);
+    db = inject(DATABASE);
 
     speakers: Observable<SpeakerSnapshot[]> = new Observable((observer) => {
         const speakersRef = ref(this.db, `devfest${environment.year}/speakers`);
