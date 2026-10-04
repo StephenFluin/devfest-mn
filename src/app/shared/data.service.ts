@@ -96,7 +96,7 @@ export class DataService {
             if (min == 0) {
                 return `${time} ${indicator}`;
             } else {
-                return `${time}:${min} ${indicator}`;
+                return `${time}:${String(min).padStart(2, '0')} ${indicator}`;
             }
         } else {
             if (isoDateTime.toString().toLowerCase().indexOf('am') == -1) {
