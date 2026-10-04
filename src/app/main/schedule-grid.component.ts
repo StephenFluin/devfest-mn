@@ -1,6 +1,5 @@
 import { Component, inject, input } from '@angular/core';
 import { DataService } from '../shared/data.service';
-import { ChangeDetectionStrategy } from '@angular/core';
 import { AuthService } from '../realtime-data/auth.service';
 import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
 import { EncodeURI } from '../shared/encode-uri.pipe';
@@ -11,7 +10,6 @@ import { AsyncPipe, JsonPipe, KeyValuePipe } from '@angular/common';
 @Component({
     selector: 'schedule-grid',
     templateUrl: 'schedule-grid.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
     RouterLink,
     MatButtonModule,

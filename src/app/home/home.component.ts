@@ -1,5 +1,5 @@
 import { Component, DOCUMENT, inject, PLATFORM_ID, Renderer2 } from '@angular/core';
-import { DatePipe, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 
 import { environment } from '../../environments/environment';
 import { RouterLink } from '@angular/router';
@@ -18,7 +18,7 @@ declare global {
 
 @Component({
     templateUrl: './home.component.html',
-    imports: [RouterLink, ADirective, TicketEmbedComponent, DatePipe],
+    imports: [RouterLink, ADirective, TicketEmbedComponent],
     host: { ngSkipHydration: 'true' },
 })
 export class HomeComponent {

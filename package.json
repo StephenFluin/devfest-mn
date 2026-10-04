@@ -12,22 +12,22 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^21.2.25",
-    "@angular/cdk": "^21.2.14",
-    "@angular/cli": "^21.2.24",
-    "@angular/common": "^21.2.25",
-    "@angular/compiler": "^21.2.25",
-    "@angular/compiler-cli": "^21.2.25",
-    "@angular/core": "^21.2.25",
-    "@angular/fire": "^21.0.0-rc.1",
-    "@angular/forms": "^21.2.25",
-    "@angular/language-service": "^21.2.25",
-    "@angular/material": "^21.2.14",
-    "@angular/platform-browser": "^21.2.25",
-    "@angular/platform-browser-dynamic": "^21.2.25",
-    "@angular/platform-server": "^21.2.25",
-    "@angular/router": "^21.2.25",
-    "@angular/ssr": "^21.2.24",
+    "@angular/animations": "^22.2.1",
+    "@angular/cdk": "^22.2.1",
+    "@angular/cli": "^22.2.1",
+    "@angular/common": "^22.2.1",
+    "@angular/compiler": "^22.2.1",
+    "@angular/compiler-cli": "^22.2.1",
+    "@angular/core": "^22.2.1",
+    "@angular/fire": "21.0.0-canary.20260930011755.sha-59d44e7",
+    "@angular/forms": "^22.2.1",
+    "@angular/language-service": "^22.2.1",
+    "@angular/material": "^22.2.1",
+    "@angular/platform-browser": "^22.2.1",
+    "@angular/platform-browser-dynamic": "^22.2.1",
+    "@angular/platform-server": "^22.2.1",
+    "@angular/router": "^22.2.1",
+    "@angular/ssr": "^22.2.1",
     "@types/compression": "^1.8.1",
     "compression": "^1.8.2",
     "express": "^5.2.1",
@@ -36,10 +36,10 @@
     "rxjs": "^7.8.1",
     "snarkdown": "^2.0.0",
     "tslib": "^2.0.0",
-    "typescript": "5.9.3"
+    "typescript": "6.0.3"
   },
   "devDependencies": {
-    "@angular/build": "^21.2.24",
+    "@angular/build": "^22.2.1",
     "@types/express": "^5.0.1",
     "baseline-browser-mapping": "^2.8.31"
   },
@@ -54,6 +54,13 @@
     "basic-ftp": "^6.2.2",
     "uuid": "^14.0.2",
     "@grpc/grpc-js": "^1.14.5",
-    "@opentelemetry/core": "^2.11.0"
+    "@opentelemetry/core": "^2.11.0",
+    "@angular/fire": {
+      "@angular/core": "$@angular/core",
+      "@angular/common": "$@angular/common",
+      "@angular/platform-server": "$@angular/platform-server",
+      "@angular/platform-browser": "$@angular/platform-browser",
+      "typescript": "$typescript"
+    }
   }
 }

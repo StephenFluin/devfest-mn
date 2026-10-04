@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { DataService } from '../shared/data.service';
@@ -8,8 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { AsyncPipe } from '@angular/common';
 
 @Component({
-    templateUrl: './speakers.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,
+    templateUrl: './speakers.component.html',
     imports: [MatButtonModule, SpeakerContainerComponent, AsyncPipe],
 })
 export class SpeakersComponent {

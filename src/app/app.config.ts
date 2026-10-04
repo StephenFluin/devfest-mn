@@ -8,7 +8,7 @@ import {
 } from '@angular/platform-browser';
 import { UrlSegment, provideRouter } from '@angular/router';
 import MainRoutes from './app.routes';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -16,6 +16,6 @@ export const appConfig: ApplicationConfig = {
         provideRouter(MainRoutes),
         provideClientHydration(withIncrementalHydration()),
         provideZonelessChangeDetection(),
-        provideHttpClient(),
+        provideHttpClient(withXhr()),
     ],
 };
