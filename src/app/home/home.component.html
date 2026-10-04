@@ -125,15 +125,26 @@
         </div>
     </section>
 
+    @if(environment.showCFP) {
+    <section>
+        <div>
+            <h2>Speakers Welcome!</h2>
+            <p>
+                Our call for speakers is now open. Please submit your talk via the link below. We
+                can't wait to hear from you!
+            </p>
+            <p>
+                <a routerLink="/speaker-cfp" class="cta all-caps" style="display: inline"
+                    >Speak at DevFestMN</a
+                >
+            </p>
+        </div>
+    </section>
+    } @else {
     <section>
         <div>
             <h2>Speakers</h2>
-            @if(environment.showCFP) {
-            <p>
-                We're currently welcoming speaker submission.
-                <a routerLink="/speaker-cfp">Apply to Speak</a>
-            </p>
-            } @else if (environment.showSpeakers) {
+            @if (environment.showSpeakers) {
             <p>
                 Check out the speakers we've announced so far on the
                 <a routerLink="/speakers">Speakers</a> page for more details.
@@ -141,22 +152,6 @@
             } @else {
             <p>We can't wait to share the speaker line-up with you! Hang tight.</p>
             }
-        </div>
-    </section>
-
-    @if(environment.showCFP) {
-    <section>
-        <div>
-            <h2>Speakers Welcome!</h2>
-            <p>
-                Our call for speakers is now open. Please submit your talk via the link below. We
-                can't wait to see hear from you!
-            </p>
-            <p>
-                <a routerLink="/speaker-cfp" class="cta all-caps" style="display: inline"
-                    >Speak at DevFestMN</a
-                >
-            </p>
         </div>
     </section>
     }
