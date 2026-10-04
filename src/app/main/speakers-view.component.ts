@@ -1,38 +1,25 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 
 import { DataService } from '../shared/data.service';
-
-import { switchMap, map } from 'rxjs/operators';
-
-import { AsyncPipe } from '@angular/common';
 import { SpeakerFullComponent } from './speaker-full.component';
 import { environment } from '../../environments/environment';
 
 @Component({
     template: `
         <section>
-            <speaker-full [speaker]="speaker | async" [year]="environment.year"></speaker-full>
+            <speaker-full [speaker]="speaker()" [year]="environment.year"></speaker-full>
         </section>
     `,
-    imports: [SpeakerFullComponent, AsyncPipe],
+    imports: [SpeakerFullComponent],
 })
 export class SpeakersViewComponent {
-    speaker;
-    speakerId;
-    year;
     environment = environment;
+    private ds = inject(DataService);
+    private params = toSignal(inject(ActivatedRoute).paramMap, { requireSync: true });
 
-    constructor() {
-        const route = inject(ActivatedRoute);
-        const ds = inject(DataService);
-
-        this.speaker = route.params.pipe(
-            switchMap((params) => {
-                return ds
-                    .getSpeakers(environment.year)
-                    .pipe(map((list) => list.find((item) => item.$key === params['id'])));
-            })
-        );
-    }
+    speaker = computed(() =>
+        this.ds.speakers().find((item) => item.$key === this.params().get('id'))
+    );
 }

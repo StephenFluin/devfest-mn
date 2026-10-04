@@ -1,15 +1,12 @@
-import { Component, computed, signal, inject, input, Signal } from '@angular/core';
+import { Component, computed, signal, inject, input } from '@angular/core';
 import { ref, set } from 'firebase/database';
-import { Rtdb } from '../realtime-data/firebase';
+import { DATABASE, objectResource } from '../realtime-data/firebase';
 import { DataService, Session, Feedback } from '../shared/data.service';
 
-import { switchMap, map } from 'rxjs/operators';
 import { AuthService } from '../realtime-data/auth.service';
 import { MatButtonModule } from '@angular/material/button';
 import { StarBarComponent } from './star-bar.component';
 import { environment } from '../../environments/environment';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { of } from 'rxjs';
 
 @Component({
     selector: 'user-feedback',
@@ -17,70 +14,41 @@ import { of } from 'rxjs';
     imports: [StarBarComponent, MatButtonModule],
 })
 export class UserFeedbackComponent {
-    rtdb = inject(Rtdb);
-    db = this.rtdb.db;
+    db = inject(DATABASE);
     ds = inject(DataService);
     auth = inject(AuthService);
 
     environment = environment;
 
     readonly session = input<Session>(undefined);
-    feedback: Signal<Feedback>;
-    editableFeedbackPath: Signal<string | null>;
     uid;
     count = 0;
     saved = signal(false);
     saveButtonText = computed(() => (this.saved() ? 'Saved!' : 'Save'));
     saveButtonDisabled = computed(() => this.saved());
 
-    constructor() {
-        const db = this.db;
+    editableFeedbackPath = computed(() => {
+        const uid = this.auth.uid();
+        const key = this.session()?.$key;
+        return uid && key ? `/devfest${environment.year}/feedback/${uid}/${key}/` : null;
+    });
 
-        let url = computed(() => {
-            const uid = this.auth.uid();
-
-            if (uid && this.session() && this.session().$key) {
-                return `/devfest${environment.year}/feedback/${uid}/${this.session().$key}/`;
-            } else {
-                return null;
-            }
-        });
-
-        this.feedback = toSignal(
-            toObservable(url).pipe(
-                switchMap((path) => {
-                    if (path) {
-                        return this.rtdb.objectVal<Feedback>(ref(db, path));
-                    }
-                    return of({} as Feedback);
-                }),
-                map((feedback) => feedback || ({} as Feedback))
-            ),
-            { initialValue: {} as Feedback }
-        );
-
-        this.editableFeedbackPath = url;
-    }
+    feedback = objectResource<Feedback>(
+        () => (this.editableFeedbackPath() ? ref(this.db, this.editableFeedbackPath()) : undefined),
+        { initialValue: {} as Feedback }
+    );
 
     saveSpeaker(val) {
-        const currentFeedback = (this.feedback() || {}) as Feedback;
-        currentFeedback.speaker = val;
-        this.saveWithData(currentFeedback);
+        this.saveWithData({ ...this.feedback(), speaker: val });
     }
     saveContent(val) {
-        const currentFeedback = (this.feedback() || {}) as Feedback;
-        currentFeedback.content = val;
-        this.saveWithData(currentFeedback);
+        this.saveWithData({ ...this.feedback(), content: val });
     }
     saveRecommendation(val) {
-        const currentFeedback = (this.feedback() || {}) as Feedback;
-        currentFeedback.recommendation = val;
-        this.saveWithData(currentFeedback);
+        this.saveWithData({ ...this.feedback(), recommendation: val });
     }
     saveComment(val) {
-        const currentFeedback = (this.feedback() || {}) as Feedback;
-        currentFeedback.comment = val;
-        this.saveWithData(currentFeedback);
+        this.saveWithData({ ...this.feedback(), comment: val });
     }
 
     saveWithData(feedbackData: Feedback) {
@@ -99,7 +67,6 @@ export class UserFeedbackComponent {
     }
 
     save() {
-        const feedbackData = (this.feedback() || {}) as Feedback;
-        this.saveWithData(feedbackData);
+        this.saveWithData(this.feedback());
     }
 }

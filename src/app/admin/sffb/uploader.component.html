@@ -5,12 +5,12 @@
 </form>
 
 <h2>File Gallery</h2>
-@if (imageList | async; as images) {
+@if (images(); as images) {
   <div style="overflow: hidden">
     @if (images.length === 0) {
       <div>There are not any images in this folder yet.</div>
     }
-    @for (img of images; track img) {
+    @for (img of images; track img.$key; let i = $index) {
       <div
         style="
             position: relative;
@@ -22,14 +22,14 @@
             align-items: center;
         "
         >
-        @if (img && img.downloadURL && ($any(img.downloadURL) | async)) {
+        @if (downloadUrls()[i]; as url) {
           <img
-            [src]="$any(img.downloadURL) | async"
+            [src]="url"
             style="max-width: 100px; max-height: 100px"
             />
         }
         <button (click)="delete(img)" style="position: absolute; top: -15px; right: -30px">[x]</button>
-        <button (click)="select(img)" style="position: absolute; top: 10px; right: -30px">[ ]</button>
+        <button (click)="select(img, downloadUrls()[i])" style="position: absolute; top: 10px; right: -30px">[ ]</button>
       </div>
     }
   </div>

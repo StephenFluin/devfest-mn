@@ -8,15 +8,15 @@
     @if (authService.uid()) {
     <div class="button-container" style="margin: 40px 0; line-height: 40px">
         <a
-            (click)="filteredData = populatedAgenda"
-            [class.cta-unselected]="filteredData != populatedAgenda"
+            (click)="showAgenda.set(true)"
+            [class.cta-unselected]="!showAgenda()"
             class="cta"
             style="cursor: pointer; display: inline; border: 1px solid #19a9e5"
             >My Agenda</a
         >
         <a
-            (click)="filteredData = allSessions"
-            [class.cta-unselected]="filteredData == populatedAgenda"
+            (click)="showAgenda.set(false)"
+            [class.cta-unselected]="showAgenda()"
             class="cta"
             style="cursor: pointer; display: inline; border: 1px solid #19a9e5; white-space: nowrap"
             >Full Schedule</a
@@ -25,8 +25,8 @@
     }
     <div></div>
     <schedule-grid
-        [data]="filteredData | async"
-        [forceMobile]="filteredData == populatedAgenda"
+        [data]="data()"
+        [forceMobile]="showAgenda()"
     ></schedule-grid>
     @if (authService.isAdmin()) {
     <button mat-raised-button color="primary" (click)="addSession()">Add Session</button>

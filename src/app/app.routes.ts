@@ -1,9 +1,5 @@
 import { Routes } from '@angular/router';
 import AdminRoutes from './admin/admin.routes';
-import { DataService } from './shared/data.service';
-import { AuthService } from './realtime-data/auth.service';
-
-const dataProviders = [DataService, AuthService];
 
 export const MainRoutes: Routes = [
     {
@@ -51,7 +47,6 @@ export const MainRoutes: Routes = [
     {
         path: '',
         pathMatch: 'prefix',
-        providers: dataProviders,
         children: [
             {
                 path: 'sessions',

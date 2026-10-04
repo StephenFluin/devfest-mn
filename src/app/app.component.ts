@@ -1,5 +1,5 @@
 import { Component, DOCUMENT, inject, PLATFORM_ID } from '@angular/core';
-import { Router, NavigationStart, NavigationEnd, RouterLink, RouterOutlet } from '@angular/router';
+import { Router, NavigationEnd, RouterLink, RouterOutlet } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../environments/environment';
 
@@ -50,9 +50,6 @@ export class AppComponent {
                     window.ga('send', 'pageview', n.urlAfterRedirects);
                 }
             });
-        router.events
-            .pipe(filter((e) => e instanceof NavigationStart))
-            .subscribe((n: NavigationStart) => {});
     }
 
     ngOnInit() {

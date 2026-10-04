@@ -1,22 +1,8 @@
-import { Injectable, inject } from '@angular/core';
-import {
-    ref,
-    query,
-    orderByChild,
-    push,
-    update,
-    remove,
-    set,
-    DatabaseReference,
-} from 'firebase/database';
-
-import { Observable, of } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { Injectable, computed, inject } from '@angular/core';
+import { ref, query, orderByChild, push, update, remove, set } from 'firebase/database';
 import { SafeHtml } from '@angular/platform-browser';
 import { environment } from '../../environments/environment';
-import { localstorageCache } from './localstorage-cache.operator';
-import { TransferStateService } from './transfer-state.service';
-import { Rtdb } from '../realtime-data/firebase';
+import { DATABASE, listResource } from '../realtime-data/firebase';
 
 export interface Session {
     $key?: string;
@@ -52,54 +38,31 @@ export interface Feedback {
     comment: string;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class DataService {
-    private rtdb = inject(Rtdb);
-    db = this.rtdb.db;
-    private transferStateService = inject(TransferStateService);
+    db = inject(DATABASE);
+    private year = environment.year;
 
-    private speakersByYear: { [key: string]: Observable<Speaker[]> } = {};
-    private scheduleByYear: { [key: string]: Observable<Session[]> } = {};
+    speakers = listResource<Speaker>(
+        () => query(this.ref('speakers'), orderByChild('name')),
+        '$key',
+        { transferKey: `speakers-${this.year}`, localStorageKey: `speakerCache${this.year}` }
+    );
 
-    getSpeakers(year: string) {
-        if (this.speakersByYear[year]) {
-            return this.speakersByYear[year];
-        }
+    schedule = listResource<Session>(
+        () => query(this.ref('schedule'), orderByChild('title')),
+        '$key',
+        { transferKey: `schedule-${this.year}`, localStorageKey: `sessionsCache${this.year}` }
+    );
 
-        const baseObservable = this.listPath('speakers', [orderByChild('name')]).pipe(
-            filter((x) => !!x),
-            localstorageCache('speakerCache' + year)
-        );
+    private speakerMap = computed(() => new Map(this.speakers().map((s) => [s.$key, s])));
 
-        this.speakersByYear[year] = this.transferStateService.cacheObservable(
-            `speakers-${year}`,
-            baseObservable
-        );
-
-        return this.speakersByYear[year];
-    }
-    getSpeaker(speakerKey: string) {
-        return this.rtdb.objectVal<Speaker>(
-            ref(this.db, `devfest${environment.year}/speakers/${speakerKey}/name`)
-        );
+    speaker(key: string): Speaker | undefined {
+        return this.speakerMap().get(key);
     }
 
-    getSchedule(year: string): Observable<Session[]> {
-        if (this.scheduleByYear[year]) {
-            return this.scheduleByYear[year];
-        }
-
-        const baseObservable = this.listPath<Session>('schedule', [orderByChild('title')]).pipe(
-            filter((x) => !!x),
-            localstorageCache('sessionsCache' + year)
-        );
-
-        this.scheduleByYear[year] = this.transferStateService.cacheObservable(
-            `schedule-${year}`,
-            baseObservable
-        );
-
-        return this.scheduleByYear[year];
+    agendaRef(uid: string, session: string) {
+        return this.ref(`agendas/${uid}/${session}`);
     }
 
     // @TODO this method is called much too often
@@ -113,40 +76,6 @@ export class DataService {
         };
 
         return { floors: floors, rooms: rooms, hasFloors: false };
-    }
-
-    getFeedback(): Observable<Feedback[]> {
-        const baseObservable = this.listPath<Feedback>('feedback');
-        return this.transferStateService.cacheObservable('feedback', baseObservable);
-    }
-    getVolunteers() {
-        const dbRef = ref(this.db, `devfest${environment.year}/volunteers`);
-        return {
-            valueChanges: () => this.rtdb.objectVal(dbRef),
-            update: (data: any) => update(dbRef, data),
-            set: (data: any) => set(dbRef, data),
-            remove: () => remove(dbRef),
-        };
-    }
-
-    getAgenda(uid: string, session: string) {
-        if (!uid || !session) {
-            return {
-                valueChanges: () => of(null),
-                set: (data: any) => Promise.resolve(),
-                remove: () => Promise.resolve(),
-                update: (data: any) => Promise.resolve(),
-            };
-        }
-        const path = `devfest${environment.year}/agendas/${uid}/${session}/`;
-        console.log('fetching agenda stored at', path);
-        const dbRef = ref(this.db, path);
-        return {
-            valueChanges: () => this.rtdb.objectVal<{ value: boolean }>(dbRef),
-            set: (data: any) => set(dbRef, data),
-            remove: () => remove(dbRef),
-            update: (data: any) => update(dbRef, data),
-        };
     }
 
     /**
@@ -221,23 +150,7 @@ export class DataService {
             });
     }
 
-    listPath<T>(
-        type: 'schedule' | 'speakers' | 'feedback' | 'volunteers',
-        queryConstraints?: any[]
-    ): Observable<T[]> {
-        const dbRef = ref(this.db, `devfest${environment.year}/${type}`);
-        const queryRef = queryConstraints ? query(dbRef, ...queryConstraints) : dbRef;
-
-        return this.rtdb.listVal<T>(queryRef, '$key');
-    }
-
-    modifiableList<T>(
-        type: 'schedule' | 'speakers' | 'feedback' | 'volunteers',
-        queryConstraints?: any[]
-    ): DatabaseReference {
-        const dbRef = ref(this.db, `devfest${environment.year}/${type}`);
-        return queryConstraints
-            ? (query(dbRef, ...queryConstraints) as unknown as DatabaseReference)
-            : dbRef;
+    ref(path: string) {
+        return ref(this.db, `devfest${this.year}/${path}`);
     }
 }

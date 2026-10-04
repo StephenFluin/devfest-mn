@@ -12,7 +12,7 @@
     <button mat-raised-button color="primary" (click)="addSpeaker()">Add Speaker</button>
     }
     <div class="speaker-list-container">
-        @for (speaker of speakers | async; track speaker) {
+        @for (speaker of speakers(); track speaker.$key) {
         <speaker-container [speaker]="speaker" [showEdit]="auth.isAdmin()"></speaker-container>
         }
     </div>

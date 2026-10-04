@@ -1,17 +1,11 @@
-import { Component, effect, inject, afterNextRender } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { ActivatedRoute } from '@angular/router';
 
-import { DataService } from '../shared/data.service';
+import { DataService, Session } from '../shared/data.service';
 
-import { Observable, combineLatest, BehaviorSubject } from 'rxjs';
-import { map, shareReplay, startWith } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
 import { AuthService } from '../realtime-data/auth.service';
 import { MatButtonModule } from '@angular/material/button';
 import { ScheduleGridComponent } from './schedule-grid.component';
-import { AsyncPipe } from '@angular/common';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { LdJsonService } from '../ld-json.service';
 
 export interface Schedule {
@@ -22,122 +16,32 @@ export interface Schedule {
 
 @Component({
     templateUrl: './schedule.component.html',
-    imports: [ScheduleGridComponent, MatButtonModule, AsyncPipe],
+    imports: [ScheduleGridComponent, MatButtonModule],
 })
 export class ScheduleComponent {
     ds = inject(DataService);
-    route = inject(ActivatedRoute);
     authService = inject(AuthService);
     ldJsonService = inject(LdJsonService);
     router = inject(Router);
 
-    // Three versions of the same data, one raw, one processed and one filtered, one not
-    sessions = this.ds.getSchedule(environment.year);
-    sessionSignal = toSignal(this.sessions);
-    allSessions: Observable<Schedule>;
-    populatedAgenda: Observable<any>;
-
-    // Where we store the reference to the currently selected data.
-    filteredData: Observable<any>;
+    showAgenda = signal(false);
+    allSessions = computed(() => this.buildGrid(this.ds.schedule()));
+    populatedAgenda = computed(() =>
+        this.filterToMyAgenda(this.allSessions(), this.authService.agenda())
+    );
+    data = computed(() => (this.showAgenda() ? this.populatedAgenda() : this.allSessions()));
 
     constructor() {
-        /**
-         * Session data should look like data[time][room] = session;
-         */
-        this.allSessions = this.sessions.pipe(
-            map((list) => {
-                let data = {};
-                for (let session of list) {
-                    let time = session.startTime;
-                    if (typeof data[time] !== 'object') {
-                        data[time] = {};
-                    }
-
-                    // Get height of box
-                    if (!session.blocks) {
-                        session.blocks = 1;
-                    }
-                    if (session.track !== 'all' && session.track !== 'Keynote') {
-                        data[time][session.room] = session;
-                    } else {
-                        data[time]['all'] = session;
-                    }
-                }
-
-                let pad = (n) => (n < 10 ? '0' + n : n);
-                // Look for holes
-                for (let time in data) {
-                    if (data.hasOwnProperty(time)) {
-                        let slot = data[time];
-                        // Holes can only exist if there isn't an "all" session
-                        if (!slot.all) {
-                            for (let room of this.ds.getVenueLayout().rooms) {
-                                if (!slot[room]) {
-                                    // Found a hole in this room, checking previous time slot
-                                    let previous =
-                                        time.substr(0, 11) +
-                                        pad(parseInt(time.substr(11, 2), 10) - 1) +
-                                        time.substr(13);
-
-                                    if (!data[previous]) {
-                                        // This is fine, it just means we're probably at the beginning of a day
-                                        continue;
-                                    }
-
-                                    // Placeholder if there's nothing in the previous time slot, or there is and it's a short one
-                                    if (!data[previous][room]) {
-                                        data[time][room] = 'placeholder';
-                                    } else if (
-                                        !data[previous][room].blocks ||
-                                        data[previous][room].blocks < 2
-                                    ) {
-                                        // This room has nothing in it!
-                                        data[time][room] = 'placeholder';
-                                    } else {
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                let startTimes = Object.keys(data).sort();
-                return {
-                    startTimes: startTimes,
-                    gridData: data,
-                    rooms: this.ds.getVenueLayout().rooms,
-                };
-            }),
-            startWith({ startTimes: [], gridData: {}, rooms: [] } as Schedule),
-            shareReplay(1)
-        );
-
-        this.filteredData = this.allSessions;
-
-        // Intersect the user's agenda against the session list if user is authed
-        if (this.authService) {
-            this.populatedAgenda = combineLatest([
-                this.allSessions,
-                toObservable(this.authService.agenda),
-            ]).pipe(
-                map(([allData, rawAgenda]) => {
-                    return this.filterToMyAgenda(allData, rawAgenda);
-                }),
-                startWith({ startTimes: [], gridData: {}, rooms: [] } as Schedule)
-            );
-        } else {
-            this.populatedAgenda = this.allSessions;
-        }
-        const agendaMetadata = {
-            '@context': 'https://schema.org',
-            '@type': 'ItemList',
-            name: 'DevFestMN 2026 Full Conference Schedule',
-            itemListElement: [],
-        };
         effect(() => {
-            const sessionList = this.sessionSignal();
+            const sessionList = [...this.ds.schedule()];
 
-            if (!sessionList || sessionList.length <= 0) return;
+            if (sessionList.length <= 0) return;
+            const agendaMetadata = {
+                '@context': 'https://schema.org',
+                '@type': 'ItemList',
+                name: 'DevFestMN 2026 Full Conference Schedule',
+                itemListElement: [],
+            };
             sessionList.sort((a, b) => {
                 return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
             });
@@ -171,6 +75,73 @@ export class ScheduleComponent {
             }
             this.ldJsonService.setLdJson(agendaMetadata);
         });
+    }
+
+    /**
+     * Session data should look like data[time][room] = session;
+     */
+    buildGrid(list: Session[]): Schedule {
+        let data = {};
+        for (let session of list) {
+            let time = session.startTime;
+            if (typeof data[time] !== 'object') {
+                data[time] = {};
+            }
+
+            // Get height of box
+            if (!session.blocks) {
+                session.blocks = 1;
+            }
+            if (session.track !== 'all' && session.track !== 'Keynote') {
+                data[time][session.room] = session;
+            } else {
+                data[time]['all'] = session;
+            }
+        }
+
+        let pad = (n) => (n < 10 ? '0' + n : n);
+        // Look for holes
+        for (let time in data) {
+            if (data.hasOwnProperty(time)) {
+                let slot = data[time];
+                // Holes can only exist if there isn't an "all" session
+                if (!slot.all) {
+                    for (let room of this.ds.getVenueLayout().rooms) {
+                        if (!slot[room]) {
+                            // Found a hole in this room, checking previous time slot
+                            let previous =
+                                time.substr(0, 11) +
+                                pad(parseInt(time.substr(11, 2), 10) - 1) +
+                                time.substr(13);
+
+                            if (!data[previous]) {
+                                // This is fine, it just means we're probably at the beginning of a day
+                                continue;
+                            }
+
+                            // Placeholder if there's nothing in the previous time slot, or there is and it's a short one
+                            if (!data[previous][room]) {
+                                data[time][room] = 'placeholder';
+                            } else if (
+                                !data[previous][room].blocks ||
+                                data[previous][room].blocks < 2
+                            ) {
+                                // This room has nothing in it!
+                                data[time][room] = 'placeholder';
+                            } else {
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        let startTimes = Object.keys(data).sort();
+        return {
+            startTimes: startTimes,
+            gridData: data,
+            rooms: this.ds.getVenueLayout().rooms,
+        };
     }
 
     /**

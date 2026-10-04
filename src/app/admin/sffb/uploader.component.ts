@@ -1,35 +1,20 @@
-import { ChangeDetectorRef, Component, inject, input, effect } from '@angular/core';
-import {
-    ref as dbRef,
-    push,
-    remove,
-    onValue,
-    query,
-    orderByKey,
-} from 'firebase/database';
-
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Component, computed, inject, input, resource } from '@angular/core';
+import { ref as dbRef, push, remove } from 'firebase/database';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { AsyncPipe } from '@angular/common';
-import { DATABASE, FIREBASE_APP } from '../../realtime-data/firebase';
+import { DATABASE, FIREBASE_APP, listResource } from '../../realtime-data/firebase';
 
 export interface Image {
     path: string;
     filename: string;
-    downloadURL?: string;
     $key?: string;
 }
 
 @Component({
     selector: 'sffb-uploader',
     templateUrl: './uploader.component.html',
-    imports: [AsyncPipe],
 })
 export class UploaderComponent {
     db = inject(DATABASE);
-
-    cdr = inject(ChangeDetectorRef);
 
     /**
      * The name of the folder for images
@@ -38,54 +23,21 @@ export class UploaderComponent {
     readonly folder = input<string>(undefined);
     readonly maxAge = input(604800);
 
-    imageList: Observable<Image[]>;
-
     private storage = getStorage(inject(FIREBASE_APP));
 
-    constructor() {
-        // Use effect to watch for folder changes
-        effect(() => {
-            const folderValue = this.folder();
-            if (folderValue) {
-                this.updateImageList(folderValue);
-            }
-        });
-    }
+    images = listResource<Image>(
+        () => (this.folder() ? dbRef(this.db, `/${this.folder()}/images`) : undefined),
+        '$key'
+    );
 
-    private updateImageList(folderValue: string) {
-        console.log('new values for folder');
-        console.log('Rendering all images in ', `/${folderValue}/images`);
-
-        // Create an observable from the Firebase database listener
-        this.imageList = new Observable<Image[]>((subscriber) => {
-            const imagesRef = dbRef(this.db, `/${folderValue}/images`);
-            const unsubscribe = onValue(
-                imagesRef,
-                (snapshot) => {
-                    const images: Image[] = [];
-                    snapshot.forEach((childSnapshot) => {
-                        const image = childSnapshot.val() as Image;
-                        console.log(childSnapshot, 'is in our list of images.');
-                        const pathReference = ref(this.storage, image.path);
-                        images.push({
-                            $key: childSnapshot.key!,
-                            path: image.path,
-                            downloadURL: getDownloadURL(pathReference) as any,
-                            filename: image.filename,
-                        });
-                    });
-                    subscriber.next(images);
-                    this.cdr.markForCheck();
-                },
-                (error) => {
-                    subscriber.error(error);
-                }
-            );
-
-            // Cleanup function
-            return () => unsubscribe();
-        });
-    }
+    private downloadUrlsResource = resource({
+        params: () => this.images(),
+        loader: ({ params }) =>
+            Promise.all(params.map((image) => getDownloadURL(ref(this.storage, image.path)))),
+    });
+    downloadUrls = computed(() =>
+        this.downloadUrlsResource.hasValue() ? this.downloadUrlsResource.value() : []
+    );
 
     upload() {
         // Create a root reference
@@ -148,7 +100,7 @@ export class UploaderComponent {
             });
     }
 
-    select(image: Image) {
+    select(image: Image, downloadURL?: string) {
         console.log('update speaker image, set Speaker ImageUrl or something....');
         const folder = this.folder();
         console.log(`${folder}`);
@@ -156,9 +108,9 @@ export class UploaderComponent {
         const path = `/${folder}/imageUrl`;
         const iRef = ref(this.storage, path);
 
-        console.log('Attempting to set image', path, image.downloadURL.valueOf());
+        console.log('Attempting to set image', path, downloadURL);
         // cache files for up to a week
-        // iRef.putString(image.downloadURL.valueOf() )
-        // iRef.put(image.downloadURL.valueOf())
+        // iRef.putString(downloadURL)
+        // iRef.put(downloadURL)
     }
 }

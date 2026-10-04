@@ -5,7 +5,7 @@ import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
 import { EncodeURI } from '../shared/encode-uri.pipe';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
-import { AsyncPipe, JsonPipe, KeyValuePipe } from '@angular/common';
+import { JsonPipe, KeyValuePipe } from '@angular/common';
 
 @Component({
     selector: 'schedule-grid',
@@ -13,7 +13,6 @@ import { AsyncPipe, JsonPipe, KeyValuePipe } from '@angular/common';
     imports: [
     RouterLink,
     MatButtonModule,
-    AsyncPipe,
     JsonPipe,
     KeyValuePipe,
     EncodeURI,

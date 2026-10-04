@@ -54,7 +54,7 @@
                         @for ( speaker of $any( data().gridData[time][room].speakers | keyvalue ) ;
                         track speaker) {
                         <div>
-                            {{(speaker.value | getSpeaker | async)?.['name']}}
+                            {{(speaker.value | getSpeaker)?.['name']}}
                         </div>
                         }
                     </a>
@@ -112,7 +112,7 @@
                         @for ( speaker of $any(data().gridData[time].all.speakers | keyvalue) ;
                         track speaker) {
                         <div>
-                            {{(speaker.value | getSpeaker | async)?.['name']}}
+                            {{(speaker.value | getSpeaker)?.['name']}}
                         </div>
                         }
                     </a>
@@ -157,7 +157,7 @@
                 @for ( speaker of $any(data().gridData[time][room].speakers | keyvalue) ; track
                 speaker) {
                 <div>
-                    {{(speaker.value | getSpeaker | async)?.['name']}}
+                    {{(speaker.value | getSpeaker)?.['name']}}
                 </div>
                 } @if (data().gridData[time][room].blocks == 2) {
                 <div>
@@ -199,7 +199,7 @@
                 @for (speaker of $any(data().gridData[time].all.speakers | keyvalue); track speaker)
                 {
                 <div>
-                    {{(speaker.value | getSpeaker | async)?.['name']}}
+                    {{(speaker.value | getSpeaker)?.['name']}}
                 </div>
                 }
             </a>
@@ -222,7 +222,7 @@
             </div>
             @for (speaker of $any(slot.speakers | keyvalue); track speaker) {
             <div>
-                {{(speaker.value | getSpeaker | async)?.['name']}}
+                {{(speaker.value | getSpeaker)?.['name']}}
             </div>
             }
         </div>

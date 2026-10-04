@@ -6,7 +6,7 @@
 }
 </style>
 
-@if (sessionData | async; as session) {
+@if (sessionData(); as session) {
   <h1>{{ session.$key ? 'Edit' : 'New' }} Session</h1>
   <form ngNoForm (submit)="save(session, $event)" autocomplete="off">
     <mat-form-field
@@ -86,12 +86,12 @@
                         src="{{
                             (
                                 speaker.value
-                                | getSpeaker | async
+                                | getSpeaker
                             )?.['imageUrl']
                         }}"
                 style="max-height: 50px"
                 />
-              {{ (speaker.value | getSpeaker | async)?.name }}
+              {{ (speaker.value | getSpeaker)?.name }}
               <button type="button" (click)="deleteSpeakerFromSession(session, speaker.key)">
                 -X-
               </button>

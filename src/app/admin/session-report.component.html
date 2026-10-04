@@ -1,7 +1,7 @@
 <h2>{{ year }} Session Report</h2>
 @if (auth.isAdmin()) {
 <div>
-    @for (session of sessions | async; track session) {
+    @for (session of sessions(); track session) {
     <div style="margin-bottom: 32px; margin-top: 32px">
         @if (session.speakers && session.speakers.length > 0) {
         <h3>{{ session.name }}</h3>

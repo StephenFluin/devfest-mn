@@ -1,52 +1,42 @@
-import { Component, inject } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-
-import { Observable } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { Component, computed, effect, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
 
 import snarkdown from 'snarkdown';
 
 import { DataService, Session } from '../shared/data.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { OurMeta } from '../our-meta.service';
-import { AsyncPipe } from '@angular/common';
 import { SessionDetailsComponent } from './session-details.component';
-import { environment } from '../../environments/environment';
 
 @Component({
     templateUrl: './session-view.component.html',
-    imports: [SessionDetailsComponent, AsyncPipe],
+    imports: [SessionDetailsComponent],
 })
 export class SessionViewComponent {
-    session: Observable<Session>;
+    private ds = inject(DataService);
+    private sanitizer = inject(DomSanitizer);
+    private params = toSignal(inject(ActivatedRoute).paramMap, { requireSync: true });
+
+    session = computed<Session | undefined>(() => {
+        const item = this.ds.schedule().find((s) => s.$key === this.params().get('id'));
+        if (!item) {
+            return undefined;
+        }
+        return {
+            ...item,
+            renderedDescription: this.sanitizer.bypassSecurityTrustHtml(
+                snarkdown(item.description || '')
+            ),
+        };
+    });
 
     constructor() {
-        const route = inject(ActivatedRoute);
-        const ds = inject(DataService);
         const meta = inject(OurMeta);
-        const sanitizer = inject(DomSanitizer);
-
-        this.session = route.params.pipe(
-            switchMap((params) =>
-                ds.getSchedule(environment.year).pipe(
-                    map((list) => list.find((item) => item.$key === params['id'])),
-                    map((item) => {
-                        if (!item) {
-                            return {};
-                        }
-                        item.renderedDescription = sanitizer.bypassSecurityTrustHtml(
-                            snarkdown(item.description || '')
-                        );
-                        return item;
-                    })
-                )
-            )
-        );
-
-        this.session.subscribe((sessionData) => {
-            if (sessionData) {
-                console.log('setting session view metadata');
-                meta.setTitle(sessionData.title);
+        effect(() => {
+            const title = this.session()?.title;
+            if (title) {
+                meta.setTitle(title);
             }
         });
     }

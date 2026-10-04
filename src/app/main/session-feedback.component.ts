@@ -1,43 +1,33 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { switchMap, map } from 'rxjs/operators';
 
 import { DataService } from '../shared/data.service';
 import { OurMeta } from '../our-meta.service';
-import { AsyncPipe } from '@angular/common';
 import { UserFeedbackComponent } from './user-feedback.component';
-import { environment } from '../../environments/environment';
 
 @Component({
     template: `
         <section>
-            <div class="callout">{{ $any(session | async)?.title }}</div>
-            <user-feedback [session]="session | async"></user-feedback>
+            <div class="callout">{{ session()?.title }}</div>
+            <user-feedback [session]="session()"></user-feedback>
         </section>
     `,
-    imports: [UserFeedbackComponent, AsyncPipe],
+    imports: [UserFeedbackComponent],
 })
 export class SessionFeedbackComponent {
-    ds = inject(DataService);
-    meta = inject(OurMeta);
+    private ds = inject(DataService);
+    private params = toSignal(inject(ActivatedRoute).paramMap, { requireSync: true });
 
-    session;
+    session = computed(() => this.ds.schedule().find((item) => item.$key === this.params().get('id')));
 
     constructor() {
-        const route = inject(ActivatedRoute);
-        const ds = this.ds;
-        const meta = this.meta;
-
-        this.session = route.params.pipe(
-            switchMap((params) => {
-                return ds
-                    .getSchedule(environment.year)
-                    .pipe(map((list) => list.find((item) => item.$key === params['id'])));
-            })
-        );
-
-        this.session.subscribe((sessionData) => {
-            meta.setTitle('Feedback on ' + sessionData.title);
+        const meta = inject(OurMeta);
+        effect(() => {
+            const title = this.session()?.title;
+            if (title) {
+                meta.setTitle('Feedback on ' + title);
+            }
         });
     }
 }

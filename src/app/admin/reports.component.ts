@@ -1,13 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 
-import { DataService } from '../shared/data.service';
+import { DataService, Feedback } from '../shared/data.service';
+import { listResource } from '../realtime-data/firebase';
 
-import { Observable, combineLatest } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
 import { AuthService } from '../realtime-data/auth.service';
-import { AsyncPipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { AdminNavComponent } from './admin-nav.component';
-import { environment } from '../../environments/environment';
 
 interface SessionFeedback {
     speaker: number;
@@ -31,7 +29,7 @@ interface SessionReport {
 @Component({
     template: `
         <admin-nav></admin-nav>
-        @if (auth.isAdmin()) { @if (sessions | async; as sessionList) {
+        @if (auth.isAdmin()) { @if (sessions(); as sessionList) {
         <div>
             <h2>Session Feedback Report</h2>
             @for (session of sessionList; track session.key) {
@@ -78,90 +76,84 @@ interface SessionReport {
         </div>
         } }
     `,
-    imports: [AdminNavComponent, AsyncPipe, DecimalPipe],
+    imports: [AdminNavComponent, DecimalPipe],
 })
 export class ReportsComponent {
     auth = inject(AuthService);
     ds = inject(DataService);
+    private feedback = listResource<Feedback>(() => this.ds.ref('feedback'), '$key');
 
-    sessions: Observable<SessionReport[]>;
+    sessions = computed(() => {
+        const feedbackData = this.feedback();
+        const originalSessions = this.ds.schedule();
+        // Create a map to collect feedback by session key
+        const feedbackBySession = new Map<string, SessionFeedback[]>();
 
-    constructor() {
-        const ds = this.ds;
+        // Process feedback data
+        if (Array.isArray(feedbackData)) {
+            for (let user of feedbackData) {
+                const userId = user.$key;
+                for (let sessionKey of Object.keys(user)) {
+                    if (sessionKey === '$key') continue;
 
-        this.sessions = combineLatest([ds.getFeedback(), ds.getSchedule(environment.year)]).pipe(
-            tap((data) => console.log('Feedback and sessions data:', data)),
-            map(([feedbackData, originalSessions]) => {
-                // Create a map to collect feedback by session key
-                const feedbackBySession = new Map<string, SessionFeedback[]>();
-
-                // Process feedback data
-                if (Array.isArray(feedbackData)) {
-                    for (let user of feedbackData) {
-                        const userId = user.$key;
-                        for (let sessionKey of Object.keys(user)) {
-                            if (sessionKey === '$key') continue;
-
-                            if (!feedbackBySession.has(sessionKey)) {
-                                feedbackBySession.set(sessionKey, []);
-                            }
-
-                            const userFeedback: SessionFeedback = {
-                                speaker: user[sessionKey].speaker || 0,
-                                content: user[sessionKey].content || 0,
-                                recommendation: user[sessionKey].recommendation || 0,
-                                comment: user[sessionKey].comment || '',
-                                uid: userId,
-                            };
-
-                            feedbackBySession.get(sessionKey)!.push(userFeedback);
-                        }
-                    }
-                }
-
-                // Create session reports
-                const sessionReports: SessionReport[] = [];
-
-                for (let session of originalSessions) {
-                    const sessionKey = session.$key;
-                    const feedbackList = feedbackBySession.get(sessionKey) || [];
-
-                    // Calculate averages (excluding zero values)
-                    let totalSpeaker = 0,
-                        totalContent = 0,
-                        totalRecommendation = 0;
-                    let validCount = 0;
-
-                    for (let fb of feedbackList) {
-                        if (fb.speaker > 0 && fb.content > 0 && fb.recommendation > 0) {
-                            totalSpeaker += fb.speaker;
-                            totalContent += fb.content;
-                            totalRecommendation += fb.recommendation;
-                            validCount++;
-                        }
+                    if (!feedbackBySession.has(sessionKey)) {
+                        feedbackBySession.set(sessionKey, []);
                     }
 
-                    const report: SessionReport = {
-                        key: sessionKey,
-                        title: session.title || 'Untitled Session',
-                        startTime: session.startTime || '',
-                        numReviews: feedbackList.length,
-                        avgSpeaker: validCount > 0 ? totalSpeaker / validCount : 0,
-                        avgContent: validCount > 0 ? totalContent / validCount : 0,
-                        avgRecommendation: validCount > 0 ? totalRecommendation / validCount : 0,
-                        feedback: feedbackList,
+                    const userFeedback: SessionFeedback = {
+                        speaker: user[sessionKey].speaker || 0,
+                        content: user[sessionKey].content || 0,
+                        recommendation: user[sessionKey].recommendation || 0,
+                        comment: user[sessionKey].comment || '',
+                        uid: userId,
                     };
 
-                    sessionReports.push(report);
+                    feedbackBySession.get(sessionKey)!.push(userFeedback);
                 }
+            }
+        }
 
-                // Sort by start time
-                sessionReports.sort((a, b) => {
-                    return a.startTime.localeCompare(b.startTime);
-                });
+        // Create session reports
+        const sessionReports: SessionReport[] = [];
 
-                return sessionReports;
-            })
-        );
-    }
+        for (let session of originalSessions) {
+            const sessionKey = session.$key;
+            const feedbackList = feedbackBySession.get(sessionKey) || [];
+
+            // Calculate averages (excluding zero values)
+            let totalSpeaker = 0,
+                totalContent = 0,
+                totalRecommendation = 0;
+            let validCount = 0;
+
+            for (let fb of feedbackList) {
+                if (fb.speaker > 0 && fb.content > 0 && fb.recommendation > 0) {
+                    totalSpeaker += fb.speaker;
+                    totalContent += fb.content;
+                    totalRecommendation += fb.recommendation;
+                    validCount++;
+                }
+            }
+
+            const report: SessionReport = {
+                key: sessionKey,
+                title: session.title || 'Untitled Session',
+                startTime: session.startTime || '',
+                numReviews: feedbackList.length,
+                avgSpeaker: validCount > 0 ? totalSpeaker / validCount : 0,
+                avgContent: validCount > 0 ? totalContent / validCount : 0,
+                avgRecommendation: validCount > 0 ? totalRecommendation / validCount : 0,
+                feedback: feedbackList,
+            };
+
+            sessionReports.push(report);
+        }
+
+        // Sort by start time
+        sessionReports.sort((a, b) => {
+            return a.startTime.localeCompare(b.startTime);
+        });
+
+        return sessionReports;
+    });
 }

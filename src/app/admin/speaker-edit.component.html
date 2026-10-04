@@ -5,7 +5,7 @@
     }
 </style>
 
-@if (speakerData | async; as speaker) {
+@if (speakerData(); as speaker) {
 <h1>{{ speaker.$key ? 'Edit' : 'New' }} Speaker</h1>
 <form ngNoForm (submit)="save(speaker)">
     <mat-form-field

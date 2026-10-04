@@ -1,15 +1,10 @@
-import { Component } from '@angular/core';
-import { of as observableOf } from 'rxjs';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AsyncPipe } from '@angular/common';
 
 @Component({
     templateUrl: 'events.component.html',
-    imports: [
-    FormsModule,
-    AsyncPipe
-]
+    imports: [FormsModule],
 })
 export class EventsComponent {
-    events = observableOf([]);
+    events = signal<{ id?: string; title?: string }[]>([]);
 }

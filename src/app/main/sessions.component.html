@@ -5,7 +5,7 @@
       <td>Room</td>
       <td>startTime</td>
     </tr>
-    @for (session of sessions | async; track session) {
+    @for (session of sessions(); track session.$key) {
       <tr>
         <td> <a [routerLink]="['/admin/sessions',session.$key,'edit']">{{session.title}}</a></td>
         <td>{{session.room}}</td>

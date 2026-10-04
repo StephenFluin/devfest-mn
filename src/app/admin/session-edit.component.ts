@@ -1,9 +1,7 @@
-import { of as observableOf, Observable } from 'rxjs';
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { switchMap } from 'rxjs/operators';
-import { map } from 'rxjs/operators';
 
 import { DataService, Session } from '../shared/data.service';
 import { SpeakerSelectorComponent } from './speaker-selector.component';
@@ -13,9 +11,8 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { AsyncPipe, KeyValuePipe } from '@angular/common';
+import { KeyValuePipe } from '@angular/common';
 import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
-import { environment } from '../../environments/environment';
 
 @Component({
     templateUrl: './session-edit.component.html',
@@ -27,7 +24,6 @@ import { environment } from '../../environments/environment';
         MatOptionModule,
         MatButtonModule,
         SpeakerSelectorComponent,
-        AsyncPipe,
         KeyValuePipe,
         GetSpeakerPipe,
     ],
@@ -37,23 +33,17 @@ export class SessionEditComponent {
     route = inject(ActivatedRoute);
     router = inject(Router);
 
-    sessionData: Observable<Session>;
+    private params = toSignal(this.route.paramMap, { requireSync: true });
 
-    constructor() {
-        const ds = this.ds;
-        const route = this.route;
-
-        this.sessionData = route.params.pipe(
-            switchMap((params) => {
-                if (params['id'] === 'new') {
-                    return observableOf({ startTime: params['time'], room: params['room'] });
-                }
-                return ds
-                    .getSchedule(environment.year)
-                    .pipe(map((list) => list.find((item) => item.$key === params['id'])));
-            })
-        );
-    }
+    /** A copy, so form edits don't leak into the shared live data before saving. */
+    sessionData = computed<Session>(() => {
+        const params = this.params();
+        if (params.get('id') === 'new') {
+            return { startTime: params.get('time'), room: params.get('room') };
+        }
+        const item = this.ds.schedule().find((item) => item.$key === params.get('id'));
+        return item && { ...item };
+    });
 
     save(session, event?: Event) {
         if (event) {

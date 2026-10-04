@@ -20,7 +20,7 @@
                 @for (speaker of session().speakers | keyvalue; track speaker) {
                 <div>
                     <speaker-container
-                        [speaker]="speaker.value | getSpeaker | async"
+                        [speaker]="speaker.value | getSpeaker"
                     ></speaker-container>
                 </div>
                 }
@@ -45,11 +45,11 @@
             ></div>
             } @if (auth.uid()) {
             <div>
-                @if (sessionAgendaRead()) {
+                @if (!inAgenda()?.value) {
                 <button (click)="addToAgenda()" class="cta" style="display: inline">
                     Add to My Agenda
                 </button>
-                } @if (sessionAgendaRead()) {
+                } @else {
                 <button (click)="removeFromAgenda()" class="cta" style="display: inline">
                     Remove from My Agenda
                 </button>

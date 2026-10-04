@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core';
-import { map } from 'rxjs/operators';
+import { Component, computed, inject } from '@angular/core';
 
+import { update } from 'firebase/database';
 import { DataService } from '../shared/data.service';
-import { AsyncPipe } from '@angular/common';
+import { objectResource } from '../realtime-data/firebase';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -17,23 +17,18 @@ import { FormsModule } from '@angular/forms';
             </button>
         </div>
 
-        @for (volunteer of volunteerList | async; track volunteer) {
+        @for (volunteer of volunteerList(); track volunteer) {
         <div>{{ volunteer }} (<a href="#" (click)="set(volunteer, null)">x</a>)</div>
         }
     `,
-    imports: [FormsModule, AsyncPipe],
+    imports: [FormsModule],
 })
 export class VolunteersComponent {
     ds = inject(DataService);
-    volunteers = this.ds.getVolunteers();
-    volunteerList = this.volunteers.valueChanges().pipe(
-        map((map: any) => {
-            if (!map) return [];
-            let list = Object.keys(map);
-            list = list.filter((x) => x != '$key' && x != '$exists');
-            return list;
-        })
-    );
+    private volunteers = objectResource<Record<string, boolean>>(() => this.ds.ref('volunteers'), {
+        initialValue: {},
+    });
+    volunteerList = computed(() => Object.keys(this.volunteers()));
     id = '';
     constructor() {}
 
@@ -42,7 +37,7 @@ export class VolunteersComponent {
         if (volunteerId) {
             let v = {};
             v[volunteerId] = state;
-            this.volunteers.update(v);
+            update(this.ds.ref('volunteers'), v);
         }
         this.id = '';
     }

@@ -1,10 +1,20 @@
-import { inject, Injectable, InjectionToken, Injector, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { pendingUntilEvent } from '@angular/core/rxjs-interop';
+import {
+    computed,
+    inject,
+    InjectionToken,
+    makeStateKey,
+    PLATFORM_ID,
+    resource,
+    ResourceStreamItem,
+    Signal,
+    signal,
+    TransferState,
+    WritableSignal,
+} from '@angular/core';
+import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 import { FirebaseApp, getApp, getApps, initializeApp } from 'firebase/app';
-import { Auth, getAuth, onAuthStateChanged, User } from 'firebase/auth';
-import { Database, DataSnapshot, getDatabase, onValue, Query, ref } from 'firebase/database';
-import { Observable } from 'rxjs';
+import { Auth, getAuth } from 'firebase/auth';
+import { Database, DataSnapshot, getDatabase, onValue, Query } from 'firebase/database';
 import { environment } from '../../environments/environment';
 
 export const FIREBASE_APP = new InjectionToken<FirebaseApp>('FirebaseApp', {
@@ -24,56 +34,105 @@ export const AUTH = new InjectionToken<Auth | null>('Auth', {
         isPlatformBrowser(inject(PLATFORM_ID)) ? getAuth(inject(FIREBASE_APP)) : null,
 });
 
-export function authState(auth: Auth): Observable<User | null> {
-    return new Observable((subscriber) =>
-        onAuthStateChanged(
-            auth,
-            (user) => subscriber.next(user),
-            (error) => subscriber.error(error)
-        )
-    );
+export interface RtdbOptions<T> {
+    /** Value while loading, when there is no query, or if the read fails (e.g. permission denied). */
+    initialValue: T;
+    /** Hand the server-rendered value to the browser so hydration doesn't flash empty. */
+    transferKey?: string;
+    /** Remember the last value in localStorage and start from it on the next visit. */
+    localStorageKey?: string;
 }
 
 /**
- * Realtime Database reads as observables. Each one holds the app unstable until its first
- * value arrives, so SSR waits for data before rendering.
+ * A live signal of the data at `query()`. Listens while the owning injector is alive, re-listens
+ * when the query changes, and keeps SSR waiting until the first value arrives. Must be created in
+ * an injection context.
  */
-@Injectable({ providedIn: 'root' })
-export class Rtdb {
-    readonly db = inject(DATABASE);
-    private injector = inject(Injector);
+export function rtdbResource<T>(
+    query: () => Query | undefined,
+    read: (snapshot: DataSnapshot) => T,
+    { initialValue, transferKey, localStorageKey }: RtdbOptions<T>
+): Signal<T> {
+    const transferState = inject(TransferState);
+    const isServer = isPlatformServer(inject(PLATFORM_ID));
+    const stateKey = transferKey ? makeStateKey<T>(transferKey) : undefined;
+    // Node has its own global localStorage, which would be shared between SSR requests.
+    const cacheKey = isServer ? undefined : localStorageKey;
+    const seed =
+        (stateKey && transferState.get(stateKey, null)) ??
+        readLocal<T>(cacheKey) ??
+        initialValue;
 
-    ref(path: string) {
-        return ref(this.db, path);
-    }
+    const res = resource({
+        params: query,
+        defaultValue: seed,
+        stream: ({ params, abortSignal }) =>
+            new Promise<Signal<ResourceStreamItem<T>>>((resolve) => {
+                let stream: WritableSignal<ResourceStreamItem<T>> | undefined;
+                const emit = (item: ResourceStreamItem<T>) => {
+                    if (stream) {
+                        stream.set(item);
+                    } else {
+                        resolve((stream = signal(item)));
+                    }
+                };
+                const unsubscribe = onValue(
+                    params,
+                    (snapshot) => {
+                        const value = read(snapshot);
+                        if (isServer && stateKey) {
+                            transferState.set(stateKey, value);
+                        }
+                        writeLocal(cacheKey, value);
+                        emit({ value });
+                    },
+                    (error) => emit({ error })
+                );
+                abortSignal.addEventListener('abort', unsubscribe);
+            }),
+    });
 
-    objectVal<T>(query: Query): Observable<T | null> {
-        return this.watch(query, (snapshot) => snapshot.val());
-    }
+    return computed(() => (res.error() ? initialValue : res.value()));
+}
 
-    /** Children in query order; object values get their key copied into `keyField`. */
-    listVal<T>(query: Query, keyField?: string): Observable<T[]> {
-        return this.watch(query, (snapshot) => {
+export function objectResource<T>(query: () => Query | undefined, options: RtdbOptions<T>) {
+    return rtdbResource<T>(query, (snapshot) => snapshot.val() ?? options.initialValue, options);
+}
+
+/** Children in query order; object values get their key copied into `keyField`. */
+export function listResource<T>(
+    query: () => Query | undefined,
+    keyField: string,
+    options: Omit<RtdbOptions<T[]>, 'initialValue'> = {}
+) {
+    return rtdbResource<T[]>(
+        query,
+        (snapshot) => {
             const items = [];
             snapshot.forEach((child) => {
                 const value = child.val();
                 items.push(
-                    keyField && value !== null && typeof value === 'object'
+                    value !== null && typeof value === 'object'
                         ? { ...value, [keyField]: child.key }
                         : value
                 );
             });
             return items;
-        });
-    }
+        },
+        { initialValue: [], ...options }
+    );
+}
 
-    private watch<T>(query: Query, toValue: (snapshot: DataSnapshot) => T): Observable<T> {
-        return new Observable<T>((subscriber) =>
-            onValue(
-                query,
-                (snapshot) => subscriber.next(toValue(snapshot)),
-                (error) => subscriber.error(error)
-            )
-        ).pipe(pendingUntilEvent(this.injector));
+function readLocal<T>(key: string | undefined): T | undefined {
+    try {
+        return key ? JSON.parse(localStorage[key]) : undefined;
+    } catch {
+        return undefined;
     }
+}
+
+function writeLocal(key: string | undefined, value: unknown) {
+    try {
+        if (key) localStorage[key] = JSON.stringify(value);
+    } catch {}
 }
