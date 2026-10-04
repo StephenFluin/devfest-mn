@@ -64,9 +64,15 @@
           >
         }
       </mat-autocomplete>
-      <label>Start Time</label><em>Enter time in UTC format ... i.e. 2024-12-02T12:00-06:00</em>
+      <label>Start Time</label><em> on {{ environment.eventDateDisplay }}, Minneapolis time</em>
       <mat-form-field
-        ><input matInput [(ngModel)]="session.startTime" placeholder="Start Time"
+        ><input
+        matInput
+        type="time"
+        step="300"
+        [ngModel]="timeOf(session.startTime)"
+        (ngModelChange)="setTime(session, $event)"
+        placeholder="Start Time"
       /></mat-form-field>
       <mat-form-field
         ><input matInput [(ngModel)]="session.blocks" placeholder="# of Blocks"

@@ -13,6 +13,16 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { KeyValuePipe } from '@angular/common';
 import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
+import { environment } from '../../environments/environment';
+
+/** Minneapolis's UTC offset on the event date, e.g. "-06:00". */
+const eventUtcOffset = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Chicago',
+    timeZoneName: 'longOffset',
+})
+    .formatToParts(new Date(`${environment.eventDate}T12:00:00Z`))
+    .find((part) => part.type === 'timeZoneName')
+    .value.replace('GMT', '');
 
 @Component({
     templateUrl: './session-edit.component.html',
@@ -45,10 +55,23 @@ export class SessionEditComponent {
         return item && { ...item };
     });
 
+    environment = environment;
+
+    /** The wall-clock time of a stored start time, e.g. "13:40". */
+    timeOf(startTime?: string) {
+        return startTime?.slice(11, 16) ?? '';
+    }
+
+    /** Sessions are always on the event date, stored as e.g. 2026-12-05T13:40-06:00. */
+    setTime(session: Session, time: string) {
+        session.startTime = time ? `${environment.eventDate}T${time}${eventUtcOffset}` : undefined;
+    }
+
     save(session, event?: Event) {
         if (event) {
             event.preventDefault();
         }
+        this.setTime(session, this.timeOf(session.startTime));
         this.ds.save('schedule', session);
         this.router.navigate(['/', 'schedule']);
     }
