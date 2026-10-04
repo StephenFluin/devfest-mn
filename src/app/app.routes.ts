@@ -6,7 +6,6 @@ import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getDatabase, provideDatabase } from '@angular/fire/database';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { AuthService } from './realtime-data/auth.service';
-import { FirebaseService } from './realtime-data/firebase.service';
 import { environment } from '../environments/environment';
 import { AngularFireModule } from '@angular/fire/compat';
 
@@ -17,7 +16,6 @@ const dataProviders = [
     provideDatabase(() => getDatabase()),
     provideAuth(() => getAuth()),
     AuthService,
-    FirebaseService,
 ];
 
 export const MainRoutes: Routes = [
