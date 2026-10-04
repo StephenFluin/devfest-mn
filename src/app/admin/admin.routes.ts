@@ -51,11 +51,6 @@ export const AdminRoutes: Routes = [
                             import('./volunteers.component').then((m) => m.VolunteersComponent),
                     },
                     {
-                        path: 'cfps',
-                        loadComponent: () =>
-                            import('./manage-cfps.component').then((m) => m.ManageCFPsComponent),
-                    },
-                    {
                         path: 'events',
                         loadComponent: () =>
                             import('./events.component').then((m) => m.EventsComponent),
