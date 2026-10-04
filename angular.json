@@ -35,7 +35,15 @@
                         },
                         "namedChunks": true,
                         "sourceMap": true,
-                        "outputMode": "server"
+                        "outputMode": "server",
+                        "security": {
+                            "allowedHosts": [
+                                "devfest.mn",
+                                "www.devfest.mn",
+                                "devfestmn-2026-webapp--devfestmn-2026.us-central1.hosted.app",
+                                "localhost"
+                            ]
+                        }
                     },
                     "configurations": {
                         "production": {

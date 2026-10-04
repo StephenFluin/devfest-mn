@@ -2,6 +2,7 @@ export const environment = {
     year: '2026',
     siteName: 'DevFestMN',
     eventDate: '2026-12-05',
+    eventDateDisplay: 'Saturday, December 5th',
     cfpOpens: '2026-09-29',
     cfpCloses: '2026-10-20',
     cfpLink: 'https://forms.gle/ogepGnFYvvc68Wup6',
@@ -26,7 +27,10 @@ export const environment = {
     dayOf: false,
     surveyLink: 'https://forms.gle/73k2ZXYqiGpRabkv6',
     eventbriteEventId: '1996529152440',
-    venueMapUrl: 'https://maps.app.goo.gl/w1nJNEmjhe3cvMKg7',
+    venueName: 'University of St. Thomas | Schulze Hall',
+    venueAddress: '46 S 11th St, Minneapolis, MN 55403',
+    venueMapUrl:
+        'https://www.google.com/maps/place/Schulze+Hall/@44.974195,-93.279928,17z/data=!3m1!4b1!4m2!3m1!1s0x52b332944d7d30f9:0x169d5a902717f38e?hl=en',
     sponsors: [
         {
             type: 'Premiere',

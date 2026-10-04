@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import * as fs from 'node:fs/promises';
 
 // Set timezone to Central Time for SSR
-process.env.TZ = 'America/Chicago';
+process.env['TZ'] = 'America/Chicago';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 

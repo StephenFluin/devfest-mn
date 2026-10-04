@@ -39,12 +39,12 @@ export class HomeComponent {
             eventStatus: 'https://schema.org/EventScheduled',
             location: {
                 '@type': 'Place',
-                name: 'University of Minnesota Health Sciences Education Center',
+                name: 'University of St. Thomas Schulze Hall',
                 address: {
                     '@type': 'PostalAddress',
-                    streetAddress: '526 Delaware St SE',
+                    streetAddress: '46 S 11th St',
                     addressLocality: 'Minneapolis',
-                    postalCode: '55455',
+                    postalCode: '55403',
                     addressRegion: 'MN',
                     addressCountry: 'US',
                 },

@@ -45,11 +45,10 @@
             for everyone.
         </p>
 
-        <p><strong>When:</strong> {{ environment.eventDate | date: 'longDate' }}</p>
+        <p><strong>When:</strong> {{ environment.eventDateDisplay }}</p>
 
         <p>
-            <strong>Where:</strong> University of Minnesota Health Sciences Education Center, 526
-            Delaware Street Southeast, Minneapolis, MN 55455 (same venue as 2025)
+            <strong>Where:</strong> {{ environment.venueName }}, {{ environment.venueAddress }}
         </p>
 
         <h2>What We're Looking For</h2>
@@ -131,7 +130,7 @@
             <li><strong>Call for Speakers Opens:</strong> {{ environment.cfpOpens | date: 'longDate' }}</li>
             <li><strong>Call for Speakers Closes:</strong> {{ environment.cfpCloses | date: 'longDate' }}</li>
             <li><strong>Speaker Notifications:</strong> Rolling basis after first batch</li>
-            <li><strong>Conference Date:</strong> {{ environment.eventDate | date: 'longDate' }}</li>
+            <li><strong>Conference Date:</strong> {{ environment.eventDateDisplay }}</li>
         </ul>
 
         <h2>How We Select Talks</h2>
