@@ -1,5 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { Component, DOCUMENT, inject, PLATFORM_ID } from '@angular/core';
+import { DatePipe, isPlatformServer } from '@angular/common';
 
 import { environment } from '../../environments/environment';
 import { RouterLink } from '@angular/router';
@@ -50,6 +50,21 @@ export class HomeComponent {
     faqSelection = 1;
     ldJsonService = inject(LdJsonService);
     cfpCountdown = cfpCountdown();
+
+    constructor() {
+        // The hero photo is the largest thing on screen, but as a CSS background the browser only
+        // finds it after the stylesheet loads. Preloading it from the server-rendered HTML lets
+        // the download start right away.
+        if (isPlatformServer(inject(PLATFORM_ID))) {
+            const doc = inject(DOCUMENT);
+            const link = doc.createElement('link');
+            link.setAttribute('rel', 'preload');
+            link.setAttribute('as', 'image');
+            link.setAttribute('href', '/a/images/hero-cover.webp');
+            link.setAttribute('fetchpriority', 'high');
+            doc.head.appendChild(link);
+        }
+    }
 
     ngOnInit() {
         this.ldJsonService.setLdJson({

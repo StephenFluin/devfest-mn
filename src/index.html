@@ -29,17 +29,28 @@
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:image" content="https://devfest.mn/a/images/og-image.jpg" />
 
-        <!-- Google tag (gtag.js). GA4 tracks SPA route changes itself via enhanced measurement. -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-9DBPLX5XKT"></script>
+        <!--
+            Google tag (gtag.js). Calls queue in dataLayer straight away, but the tag script only
+            downloads once the page has loaded and the browser is idle. GA4 tracks
+            SPA route changes itself via enhanced measurement.
+        -->
         <script>
             window.dataLayer = window.dataLayer || [];
             function gtag() {
                 dataLayer.push(arguments);
             }
             gtag('js', new Date());
-
             gtag('config', 'G-9DBPLX5XKT');
-            gtag('config', 'AW-1026541738');
+
+            window.addEventListener('load', function () {
+                var idle = window.requestIdleCallback || function (cb) { setTimeout(cb, 1); };
+                idle(function () {
+                    var tag = document.createElement('script');
+                    tag.async = true;
+                    tag.src = 'https://www.googletagmanager.com/gtag/js?id=G-9DBPLX5XKT';
+                    document.head.appendChild(tag);
+                }, { timeout: 3000 });
+            });
         </script>
     </head>
 
