@@ -11,7 +11,7 @@
 @mixin light-colors {
     --color-bg: #fff;
     --color-text: #333;
-    --color-text-muted: #777;
+    --color-text-muted: #707070;
     --color-link-hover: #000;
     --color-heading: #0066cc;
     --color-brand-surface: #0066cc;
@@ -198,11 +198,11 @@ a:hover {
 }
 
 /* The hero sits on a light photo in both color schemes, so its text stays dark. */
-.event-hero-info a {
+.event-hero-info > * {
     color: #222;
 }
 
-.event-hero-info a:not(:last-child) {
+.event-hero-info > *:not(:last-child) {
     margin-right: 32px;
 }
 
@@ -229,8 +229,16 @@ section.section-background {
     background-color: var(--color-brand-surface);
     color: white;
 }
-section.section-background h2 {
+section.section-background h2,
+section.section-background a {
     color: white;
+}
+
+/* Links inside running text need more than color to stand out. */
+section p a:not(.cta):not(.button),
+section li a:not(.cta):not(.button) {
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
 
 #home {
@@ -405,11 +413,11 @@ footer section {
 
 footer a {
     color: white;
-    opacity: 0.8;
 }
 
 footer a:hover {
-    color: #137097;
+    color: white;
+    text-decoration: underline;
 }
 
 footer .blocks {
@@ -419,9 +427,11 @@ footer .blocks {
     margin: 0 auto;
 }
 
-footer .blocks h5 {
+footer .blocks h2 {
     font-size: 16px;
     line-height: 1.5em;
+    margin: 0;
+    letter-spacing: 0.25px;
 }
 
 footer .blocks > div {
@@ -430,6 +440,8 @@ footer .blocks > div {
 
 footer .blocks a {
     display: block;
+    /* Keeps each link at least 24px tall so it's easy to tap. */
+    padding: 2px 0;
 }
 
 /* Buttons */
