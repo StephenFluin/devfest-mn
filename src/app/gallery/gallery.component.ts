@@ -70,7 +70,7 @@ interface Photo {
     h1 {
       text-align: center;
       margin-bottom: 2rem;
-      color: #333;
+      color: var(--color-text);
     }
 
     .year-sections {
@@ -88,7 +88,7 @@ interface Photo {
     .year-header {
       font-size: 2rem;
       font-weight: 600;
-      color: #333;
+      color: var(--color-text);
       margin: 0;
       padding-bottom: 0.5rem;
       border-bottom: 3px solid #4285f4;

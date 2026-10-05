@@ -7,6 +7,58 @@
     font-display: swap;
 }
 
+/* Colors. Pages follow the device's light/dark preference; admin pages stay light because the
+   Material theme they use is light-only. */
+@mixin light-colors {
+    --color-bg: #fff;
+    --color-text: #333;
+    --color-text-muted: #777;
+    --color-link-hover: #000;
+    --color-heading: #0066cc;
+    --color-brand-surface: #0066cc;
+    --color-header-bg: #fff;
+    --color-border: #d4d2d2;
+    --color-border-soft: #ccc;
+    --color-surface: #f6f6f6;
+    --color-surface-strong: #eee;
+}
+
+@mixin dark-colors {
+    --color-bg: #121417;
+    --color-text: #e3e5e8;
+    --color-text-muted: #a3a9b0;
+    --color-link-hover: #fff;
+    --color-heading: #6cb4ff;
+    --color-brand-surface: #0a3d73;
+    --color-header-bg: #1a1d21;
+    --color-border: #33383d;
+    --color-border-soft: #3d4349;
+    --color-surface: #1e2226;
+    --color-surface-strong: #2a2f35;
+}
+
+:root {
+    @include light-colors;
+    color-scheme: light dark;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not(:has(.light-only)) {
+        @include dark-colors;
+    }
+
+    /* Black line icons, only shown to admins on public pages. */
+    :root:not(:has(.light-only)) img[src$='edit.svg'] {
+        filter: invert(1);
+    }
+}
+
+:root:has(.light-only) {
+    color-scheme: light;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -26,12 +78,12 @@ img {
 
 a {
     text-decoration: none;
-    color: #777;
+    color: var(--color-text-muted);
     transition: 0.2s;
 }
 
 a:hover {
-    color: black;
+    color: var(--color-link-hover);
 }
 
 .all-caps {
@@ -58,10 +110,10 @@ a:hover {
 #header-bar {
     position: fixed;
     top: 0;
-    background-color: white;
+    background-color: var(--color-header-bg);
     width: 100%;
     padding: 16px;
-    color: #777;
+    color: var(--color-text-muted);
     transition: 0.2s;
     font-size: 18px;
     display: flex;
@@ -94,7 +146,7 @@ a:hover {
     font-family: 'Montserrat', sans-serif;
     letter-spacing: 0.15em;
     line-height: 24px;
-    color: #333;
+    color: var(--color-text);
 }
 
 #hero-section {
@@ -146,6 +198,7 @@ a:hover {
     }
 }
 
+/* The hero sits on a light photo in both color schemes, so its text stays dark. */
 .event-hero-info a {
     color: #222;
 }
@@ -170,11 +223,11 @@ a:hover {
 section {
     text-align: center;
     padding: 0 32px 64px;
-    color: #333;
+    color: var(--color-text);
 }
 
 section.section-background {
-    background-color: #0066cc;
+    background-color: var(--color-brand-surface);
     color: white;
 }
 section.section-background h2 {
@@ -206,7 +259,7 @@ section.section-background h2 {
 }
 
 #home section:not(:last-child) {
-    border-bottom: 1px solid #d4d2d2;
+    border-bottom: 1px solid var(--color-border);
 }
 
 #home section h2 {
@@ -299,7 +352,7 @@ h4 {
     margin: 8px 0;
     font-weight: bold;
     letter-spacing: 1px;
-    color: #333;
+    color: var(--color-text);
 }
 
 p {
@@ -308,7 +361,7 @@ p {
 
 section h2 {
     text-transform: uppercase;
-    color: #0066cc;
+    color: var(--color-heading);
 }
 
 /* section h2:after {
@@ -323,7 +376,7 @@ section h2 {
 section .callout {
     margin: 32px 0;
     font-size: 32px;
-    color: #333;
+    color: var(--color-text);
     font-family: 'Montserrat', sans-serif;
 }
 
@@ -339,7 +392,7 @@ footer {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #0066cc;
+    background-color: var(--color-brand-surface);
     padding: 32px;
     font-size: 14px;
     letter-spacing: 0.25px;
@@ -429,14 +482,14 @@ button.button.warn {
     font-family: Montserrat, sans-serif;
 }
 .cta-unselected {
-    color: rgb(119, 119, 119);
+    color: var(--color-text-muted);
     background: none;
 }
 
 .cta.cta-unselected:active,
 .cta.cta-unselected:focus,
 .cta.cta-unselected:hover {
-    color: rgb(119, 119, 119);
+    color: var(--color-text-muted);
 }
 
 .cta:active,
@@ -476,7 +529,7 @@ button.button.warn {
     width: 200px;
     padding: 8px 16px;
     border-radius: 4px 0 0 4px;
-    border: 1px solid lightgray;
+    border: 1px solid var(--color-border-soft);
 }
 
 .input-with-button button {
@@ -533,7 +586,7 @@ button.button.warn {
 }
 
 .faq-table ul li:not(:last-child) {
-    border-bottom: 1px solid lightgray;
+    border-bottom: 1px solid var(--color-border-soft);
 }
 
 /* Speakers */
@@ -551,12 +604,12 @@ button.button.warn {
     width: 325px;
     margin: 3px;
     border-radius: 2px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--color-border-soft);
     padding: 16px;
 }
 
 .speaker-card .thumb {
-    border: 1px solid #ccc;
+    border: 1px solid var(--color-border-soft);
     border-radius: 50%;
     background-size: cover;
     width: 70px;
@@ -576,7 +629,7 @@ button.button.warn {
 }
 
 .schedule-announcement {
-    color: rgb(119, 119, 119);
+    color: var(--color-text-muted);
 }
 
 .bigschedulelist {
@@ -589,14 +642,14 @@ button.button.warn {
     width: 325px;
     margin: 3px;
     border-radius: 2px;
-    background-color: #f6f6f6;
+    background-color: var(--color-surface);
 }
 
 .bigschedulelist h2 {
     font-size: 1em;
     font-weight: bold;
     text-transform: none;
-    color: #333;
+    color: var(--color-text);
     margin-top: 5px;
 }
 
@@ -632,8 +685,8 @@ button.button.warn {
 .schedule thead tr td:first-child,
 .schedule thead tr:first-child td,
 .schedule .time {
-    background-color: #eee;
-    color: black;
+    background-color: var(--color-surface-strong);
+    color: var(--color-text);
     font-family: Montserrat, sans-serif;
     padding: 5px;
     vertical-align: top;
@@ -681,7 +734,7 @@ button.button.warn {
 
 .schedule.small .session,
 .schedule.small .time {
-    border-bottom: 1px solid white;
+    border-bottom: 1px solid var(--color-bg);
     display: block;
 }
 .schedule .session > div {
@@ -702,7 +755,7 @@ button.button.warn {
     margin: 0px auto;
 }
 .session-details-right {
-    border-left: 5px solid #e5e5e5;
+    border-left: 5px solid var(--color-border);
     margin-left: 50px;
     padding-left: 50px;
     margin-top: 16px;
