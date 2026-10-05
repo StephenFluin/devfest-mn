@@ -57,7 +57,7 @@ export const environment = {
             list: [
                 {
                     name: 'SomeConf',
-                    logo: '/a/images/sponsors/someconf.png',
+                    logo: '/a/images/sponsors/someconf.webp',
                     url: 'https://someconf.com/?apply_somecoupon=devfest2026',
                 },
                 {

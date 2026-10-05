@@ -3,8 +3,10 @@
         <h1 class="hero-title">
             <img
                 src="a/images/devfestmn.svg"
+                width="400"
+                height="350"
                 fetchpriority="high"
-                style="width: 40%; max-width: 400px; min-width: 250px"
+                style="width: 40%; max-width: 400px; min-width: 250px; height: auto"
                 alt="DevFestMN 2026"
             />
             <span class="visually-hidden">: </span>
@@ -98,7 +100,13 @@
                 development.
             </p>
             <div class="split-column">
-                <img src="/a/images/background.webp" alt="downtown view of Minneapolis" />
+                <img
+                    src="/a/images/background.webp"
+                    width="800"
+                    height="533"
+                    loading="lazy"
+                    alt="downtown view of Minneapolis"
+                />
                 <div>
                     <p>
                         DevFestMN has been running since 2013. Over the years we've been thankful
@@ -175,7 +183,7 @@
                 @for( sponsor of sponsorGroup.list; track sponsor.name) {
                 <div class="sponsor-bar">
                     <a href="{{ sponsor.url }}">
-                        <img src="{{ sponsor.logo }}" alt="{{ sponsor.name }} Logo" />
+                        <img src="{{ sponsor.logo }}" loading="lazy" alt="{{ sponsor.name }} Logo" />
                     </a>
                 </div>
                 }
@@ -326,7 +334,13 @@
                     target="map"
                     aria-label="Visit the map on Google Maps"
                 >
-                    <img src="/a/images/map-ust-LR.png" alt="Map of University of St. Thomas Minneapolis Campus" />
+                    <img
+                        src="/a/images/map-ust.webp"
+                        width="1090"
+                        height="484"
+                        loading="lazy"
+                        alt="Map of University of St. Thomas Minneapolis Campus"
+                    />
                 </a>
             </div>
         </div>
