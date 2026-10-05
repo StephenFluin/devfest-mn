@@ -1,15 +1,10 @@
-import { Component, computed, HostListener, OnInit, Signal } from '@angular/core';
-import { NgOptimizedImage } from '@angular/common';
+import { Component, computed, HostListener } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 
 interface Photo {
     url: string;
+    thumbnail: string;
     year: string;
-}
-
-interface PhotosByYear {
-    year: number;
-    photos: string[];
 }
 
 @Component({
@@ -19,15 +14,18 @@ interface PhotosByYear {
         <div class="gallery-container">
             <h1>Photo Gallery</h1>
 
+            @if (photoData.error()) {
+            <p class="gallery-error">The photo gallery couldn't be loaded. Please try again later.</p>
+            }
             <div class="year-sections">
                 @for (yearGroup of photosByYear(); track yearGroup.year) {
                 <div class="year-section">
                     <h2 class="year-header">{{ yearGroup.year }}</h2>
                     <div class="photo-grid">
-                        @for (photoUrl of yearGroup.photos; track photoUrl) {
-                        <div class="photo-item" (click)="openFullscreen(photoUrl, yearGroup.year)">
+                        @for (photo of yearGroup.photos; track photo.url) {
+                        <div class="photo-item" (click)="selectedPhoto = photo">
                             <img
-                                [src]="photoUrl"
+                                [src]="photo.thumbnail"
                                 loading="lazy"
                                 alt="Gallery photo from {{ yearGroup.year }}"
                                 class="thumbnail"
@@ -63,6 +61,10 @@ interface PhotosByYear {
       padding: 2rem;
       max-width: 1200px;
       margin: 0 auto;
+    }
+
+    .gallery-error {
+      text-align: center;
     }
 
     h1 {
@@ -119,27 +121,6 @@ interface PhotosByYear {
       height: 280px;
       object-fit: cover;
       display: block;
-    }
-
-    .photo-overlay {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-      color: white;
-      padding: 1rem;
-      transform: translateY(100%);
-      transition: transform 0.3s ease;
-    }
-
-    .photo-item:hover .photo-overlay {
-      transform: translateY(0);
-    }
-
-    .photo-title {
-      font-weight: 500;
-      font-size: 0.9rem;
     }
 
     .fullscreen-overlay {
@@ -239,9 +220,9 @@ export class GalleryComponent {
             if (!acc[year]) {
                 acc[year] = [];
             }
-            acc[year].push(photo.url);
+            acc[year].push(photo);
             return acc;
-        }, {} as { [key: number]: string[] });
+        }, {} as { [key: number]: Photo[] });
 
         // Convert to array format and sort by highest year first
         let photosByYear = Object.entries(photoGroups)
@@ -254,10 +235,6 @@ export class GalleryComponent {
     });
 
     selectedPhoto: Photo | null = null;
-
-    openFullscreen(photoUrl: string, year: number): void {
-        this.selectedPhoto = { url: photoUrl, year: year.toString() };
-    }
 
     closeFullscreen(): void {
         this.selectedPhoto = null;
@@ -285,9 +262,7 @@ export class GalleryComponent {
             return;
         }
         // Flatten in display order so navigation crosses year boundaries
-        const allPhotos = this.photosByYear().flatMap((group) =>
-            group.photos.map((url) => ({ url, year: group.year.toString() }))
-        );
+        const allPhotos = this.photosByYear().flatMap((group) => group.photos);
         const index = allPhotos.findIndex((photo) => photo.url === this.selectedPhoto!.url);
         if (index === -1) {
             return;

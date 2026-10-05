@@ -1,5 +1,12 @@
-import { Component, DOCUMENT, inject, PLATFORM_ID } from '@angular/core';
-import { Router, NavigationEnd, RouterLink, RouterOutlet } from '@angular/router';
+import { Component, inject, PLATFORM_ID } from '@angular/core';
+import {
+    ActivatedRouteSnapshot,
+    Data,
+    NavigationEnd,
+    Router,
+    RouterLink,
+    RouterOutlet,
+} from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../environments/environment';
 
@@ -9,12 +16,6 @@ import { OurMeta } from './our-meta.service';
 import { ADirective } from './a.directive';
 import { trackTicketPurchase } from './analytics.util';
 
-declare global {
-    interface Window {
-        ga: any;
-    }
-}
-
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
@@ -22,7 +23,6 @@ declare global {
 })
 export class AppComponent {
     environment = environment;
-    private document = inject(DOCUMENT);
     private platformId = inject(PLATFORM_ID);
     private isBrowser = isPlatformBrowser(this.platformId);
     isSecure = this.isBrowser && window?.location?.protocol === 'https:';
@@ -36,44 +36,24 @@ export class AppComponent {
         router.events
             .pipe(filter((e) => e instanceof NavigationEnd))
             .subscribe((n: NavigationEnd) => {
-                let pageTitle = this.getDeepestTitle(router.routerState.snapshot.root);
-                if (pageTitle && pageTitle !== true) {
-                    meta.setTitle(pageTitle);
-                } else if (pageTitle !== false) {
+                // Defaults for every page; detail pages override these once their data loads.
+                const data = this.getDeepestData(router.routerState.snapshot.root);
+                if (data['title'] && data['title'] !== true) {
+                    meta.setTitle(data['title']);
+                } else if (data['title'] !== false) {
                     meta.clearTitle();
                 }
-
-                meta.clearCanonical();
+                meta.setDescription(data['description']);
+                meta.setCanonical(n.urlAfterRedirects.split(/[?#]/)[0].slice(1));
 
                 if (typeof window !== 'undefined') {
                     window.scrollTo(0, 0);
-                    window.ga('send', 'pageview', n.urlAfterRedirects);
                 }
             });
     }
 
-    ngOnInit() {
-        const link = this.document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = '/a/montserrat-latin-400-700.woff2';
-        this.document.head.appendChild(link);
-    }
-
-    prepRouteState(outlet: any) {
-        return outlet.activatedRouteData['depth'] || '0';
-    }
-
-    getDeepestTitle(snapshot): string | boolean {
-        let child = snapshot.children[0];
-        let result;
-        if (child) {
-            result = this.getDeepestTitle(child);
-        } else if (snapshot.data['title']) {
-            result = snapshot.data['title'];
-        } else {
-            result = false;
-        }
-        return result;
+    getDeepestData(snapshot: ActivatedRouteSnapshot): Data {
+        return snapshot.firstChild ? this.getDeepestData(snapshot.firstChild) : snapshot.data;
     }
 
     loadEBWidget() {

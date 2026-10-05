@@ -1,11 +1,15 @@
 <div id="home">
     <div id="hero-section">
-        <img
-            src="a/images/devfestmn.svg"
-            fetchpriority="high"
-            style="width: 40%; max-width: 400px; min-width: 250px"
-            alt="DevFestMN 2026"
-        />
+        <h1 class="hero-title">
+            <img
+                src="a/images/devfestmn.svg"
+                fetchpriority="high"
+                style="width: 40%; max-width: 400px; min-width: 250px"
+                alt="DevFestMN 2026"
+            />
+            <span class="visually-hidden">: </span>
+            <span class="hero-subtitle">Twin Cities Developer Conference</span>
+        </h1>
         <div>
             <div class="event-hero-info">
                 <a class="icon-text-link">
@@ -30,12 +34,17 @@
         </div>
 
         <!-- Call to Action Buttons -->
-        <div class="cta-block">
-            <!-- <a *ngIf="environment.showRegister" routerLink="/tickets" class="cta all-caps">Register</a> -->
-            <!-- <a href="https://bit.ly/sponsorsheet-devfestmn2017" target="_blank" class="cta all-caps">Sponsor</a> -->
+        @if (environment.showCFP) {
+        <div class="cta-block hero-cta">
+            <a routerLink="/speaker-cfp" class="cta all-caps">Submit a Talk</a>
         </div>
-
-        <!-- <h2>One Day, One Track</h2> -->
+        <p class="hero-deadline">
+            Call for speakers closes {{ environment.cfpCloses | date: 'MMMM d' }}
+            @if (cfpCountdown(); as countdown) {
+            <strong>· {{ countdown }}</strong>
+            }
+        </p>
+        }
     </div>
     @if(environment.dayOf) {
     <section class="">
@@ -86,7 +95,7 @@
                 event features a single day of content and connections. This year's 2026 DevFestMN
                 event will cover the latest and greatest insights about AI and software engineering,
                 with a smattering of Google's platforms covering Gemini, Cloud, Android, and web
-                development. Intelligence.
+                development.
             </p>
             <div class="split-column">
                 <img src="/a/images/background.webp" alt="downtown view of Minneapolis" />
@@ -96,9 +105,8 @@
                         for the amazing community that has grown around the event. We've been able
                         to invite speakers and attendees from around the world. DevFest has a
                         diverse group of participants that spans from students to industry
-                        professionals. We've featured over 50+ speakers.
+                        professionals. We've featured over 50 speakers.
                     </p>
-                    <p></p>
                 </div>
             </div>
         </div>
@@ -130,8 +138,9 @@
         <div>
             <h2>Speakers Welcome!</h2>
             <p>
-                Our call for speakers is now open. Please submit your talk via the link below. We
-                can't wait to hear from you!
+                Our call for speakers is open until
+                <strong>{{ environment.cfpCloses | date: 'MMMM d' }}</strong>. Please submit your
+                talk via the link below. We can't wait to hear from you!
             </p>
             <p>
                 <a routerLink="/speaker-cfp" class="cta all-caps" style="display: inline"
@@ -158,7 +167,7 @@
 
     <section id="home-section-sponsors" class="section-background">
         <div>
-            <h2>2025 Sponsors</h2>
+            <h2>{{ environment.year }} Sponsors</h2>
             <p>This event would not be possible without our awesome sponsors.</p>
             @for(sponsorGroup of environment.sponsors; track sponsorGroup.type) {
             <div>
@@ -230,7 +239,7 @@
                         (click)="setFaqSelection(1)"
                         [style.font-weight]="faqSelection == 1 ? 'bold' : 'normal'"
                     >
-                        <span>How can I speak at DevFestMN</span>
+                        <span>How can I speak at DevFestMN?</span>
                     </li>
                     <li
                         (click)="setFaqSelection(2)"
@@ -255,7 +264,8 @@
                 @if (faqSelection == 1) {
                 <div>
                     <p>
-                        @if(environment.showCFP) { The CFP is now open!
+                        @if(environment.showCFP) { The CFP is open until
+                        {{ environment.cfpCloses | date: 'MMMM d' }}!
                         <a routerLink="/speaker-cfp">Submit a talk</a>. } @else if(environment.showSpeakers) { The call for
                         speakers is now closed. Please try again next year. } @else { We haven't announced the CFP yet, stay tuned in the coming weeks! }
                     </p>

@@ -8,6 +8,8 @@ import compression from 'compression';
 import express from 'express';
 import { join } from 'node:path';
 import * as fs from 'node:fs/promises';
+import { environment } from './environments/environment';
+import { slugify } from './app/shared/slug';
 
 // Set timezone to Central Time for SSR
 process.env['TZ'] = 'America/Chicago';
@@ -15,6 +17,7 @@ process.env['TZ'] = 'America/Chicago';
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
+app.disable('x-powered-by');
 const angularApp = new AngularNodeAppEngine();
 
 app.use(
@@ -32,106 +35,103 @@ app.use(
     })
 );
 
-app.use((req, res, next) => {
-    res.set('X-Test-Header', 'Working');
-    next();
-});
-
 /**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/{*splat}', (req, res) => {
- *   // Handle API request
- * });
- * ```
- */
-
-/**
- * Generate sitemap.txt with all public URLs
+ * sitemap.txt lists the public pages that are switched on for the current phase of the event,
+ * plus a page for every scheduled session and confirmed speaker once those are live.
  */
 app.get('/sitemap.txt', async (req, res) => {
     try {
-        const baseUrl = 'https://devfest.mn';
-        const urls: string[] = [];
+        const baseUrl = environment.siteUrl;
+        const paths = ['', 'gallery', 'past', 'conduct', 'refunds'];
+        if (environment.showCFP) paths.push('speaker-cfp');
+        if (environment.showSponsor) paths.push('sponsors');
+        if (environment.showSchedule) paths.push('schedule');
+        if (environment.showSpeakers) paths.push('speakers');
 
-        // Static pages
-        urls.push(baseUrl);
-        urls.push(`${baseUrl}/schedule`);
-        urls.push(`${baseUrl}/speakers`);
-        urls.push(`${baseUrl}/gallery`);
+        if (environment.showSchedule || environment.showSpeakers) {
+            const response = await fetch(
+                `${environment.firebaseConfig.databaseURL}/devfest${environment.year}.json`
+            );
+            if (!response.ok) {
+                throw new Error(`Firebase responded with ${response.status}`);
+            }
+            const data = (await response.json()) ?? {};
 
-        // Fetch Firebase data
-        const firebaseUrl = 'https://devfestmn-2026-default-rtdb.firebaseio.com/devfest2026.json';
-        const response = await fetch(firebaseUrl);
-        const data = await response.json();
-
-        // Add session URLs (schedule/:id/:seo)
-        if (data.schedule) {
-            Object.keys(data.schedule).forEach((sessionKey) => {
-                const session = data.schedule[sessionKey];
-                if (session.title) {
-                    const seoTitle = session.title
-                        .toLowerCase()
-                        .replace(/[^a-z0-9]+/g, '-')
-                        .replace(/^-+|-+$/g, '');
-                    urls.push(`${baseUrl}/schedule/${sessionKey}/${seoTitle}`);
+            if (environment.showSchedule) {
+                for (const [key, session] of Object.entries<any>(data.schedule ?? {})) {
+                    if (session.title) {
+                        paths.push(`schedule/${key}/${slugify(session.title)}`);
+                    }
                 }
-            });
+            }
+            if (environment.showSpeakers) {
+                for (const [key, speaker] of Object.entries<any>(data.speakers ?? {})) {
+                    if (speaker.name && speaker.confirmed) {
+                        paths.push(`speakers/${key}/${slugify(speaker.name)}`);
+                    }
+                }
+            }
         }
 
-        // Add speaker URLs (speakers/:id/:seo)
-        if (data.speakers) {
-            Object.keys(data.speakers).forEach((speakerKey) => {
-                const speaker = data.speakers[speakerKey];
-                if (speaker.name) {
-                    const seoName = speaker.name
-                        .toLowerCase()
-                        .replace(/[^a-z0-9]+/g, '-')
-                        .replace(/^-+|-+$/g, '');
-                    urls.push(`${baseUrl}/speakers/${speakerKey}/${seoName}`);
-                }
-            });
-        }
-
-        // Return as plain text
-        res.setHeader('Content-Type', 'text/plain');
-        res.send(urls.join('\n'));
+        res.set('Cache-Control', 'public, max-age=3600');
+        res.type('text/plain').send(
+            paths.map((path) => (path ? `${baseUrl}/${path}` : baseUrl)).join('\n')
+        );
     } catch (error) {
         console.error('Error generating sitemap:', error);
         res.status(500).send('Error generating sitemap');
     }
 });
 
-app.get('/api/gallery', async (req, res) => {
-    // Fetch a list of photos depending on environment
-    // In development, use ../a/images/gallery/
-    // In production, use ../browser/a/images/gallery/
-    // The API should look like:  {           url: '/a/images/gallery/2015/20150321_083513_210.jpg',            year: '2015',        },...} where year is the folder name
-    // Check if we're in production by looking for the browser folder (exists after build)
+/**
+ * Gallery photos come from src/a/images/gallery/<year>/, with small previews generated into
+ * gallery-thumbs/<year>/<name>.webp by scripts/gallery-thumbnails.sh. The files only change on
+ * deploy, so the list is built once per server.
+ */
+interface GalleryPhoto {
+    url: string;
+    thumbnail: string;
+    year: string;
+}
+let galleryPhotos: Promise<GalleryPhoto[]> | undefined;
+
+async function listGalleryPhotos(): Promise<GalleryPhoto[]> {
+    // In development the server runs from source; after a build, assets live in ../browser.
     const isDev = !import.meta.dirname.includes('/dist/');
-    const galleryFolder = isDev
-        ? join(import.meta.dirname, '../../../src/a/images/gallery/')
-        : join(import.meta.dirname, '../browser/a/images/gallery/');
-    fs.readdir(galleryFolder).then((years) => {
-        const photos: { url: string; year: string }[] = [];
-        Promise.all(
-            years.map(async (year) => {
-                const yearFolder = join(galleryFolder, year);
-                const files = await fs.readdir(yearFolder);
-                files.forEach((file) => {
-                    photos.push({
-                        url: `/a/images/gallery/${year}/${file}`,
-                        year: year,
-                    });
-                });
-            })
-        ).then(() => {
-            res.json(photos);
-        });
-    });
+    const imagesFolder = isDev
+        ? join(import.meta.dirname, '../../../src/a/images/')
+        : join(import.meta.dirname, '../browser/a/images/');
+    const years = await fs.readdir(join(imagesFolder, 'gallery'));
+    const perYear = await Promise.all(
+        years.map(async (year) => {
+            const files = await fs.readdir(join(imagesFolder, 'gallery', year));
+            const thumbs = new Set(
+                await fs.readdir(join(imagesFolder, 'gallery-thumbs', year)).catch(() => [])
+            );
+            return files.map((file) => {
+                const thumb = file.replace(/\.[^.]+$/, '.webp');
+                const url = `/a/images/gallery/${year}/${file}`;
+                return {
+                    url,
+                    thumbnail: thumbs.has(thumb) ? `/a/images/gallery-thumbs/${year}/${thumb}` : url,
+                    year,
+                };
+            });
+        })
+    );
+    return perYear.flat();
+}
+
+app.get('/api/gallery', async (req, res) => {
+    try {
+        galleryPhotos ??= listGalleryPhotos();
+        res.set('Cache-Control', 'public, max-age=3600');
+        res.json(await galleryPhotos);
+    } catch (error) {
+        galleryPhotos = undefined;
+        console.error('Error listing gallery photos:', error);
+        res.status(500).json({ error: 'Unable to load the photo gallery' });
+    }
 });
 
 /**

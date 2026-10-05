@@ -1,5 +1,6 @@
 import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { EncodeURI } from '../shared/encode-uri.pipe';
 
 
 @Component({
@@ -24,7 +25,7 @@ import { RouterLink } from '@angular/router';
                     </div>
                   }
                   <div style="font-size:20px;">
-                    <a [routerLink]="['/', 'speakers', speaker().$key, speaker().name]">{{
+                    <a [routerLink]="['/', 'speakers', speaker().$key, speaker().name | encodeURI]">{{
                       speaker().name
                     }}</a>
                     @if (showEdit()) {
@@ -48,7 +49,7 @@ import { RouterLink } from '@angular/router';
             </div>
           }
         `,
-    imports: [RouterLink]
+    imports: [RouterLink, EncodeURI]
 })
 export class SpeakerContainerComponent {
     readonly speaker = input(undefined);

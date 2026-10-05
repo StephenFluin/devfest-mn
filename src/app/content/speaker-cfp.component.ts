@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ADirective } from '../a.directive';
 import { environment } from '../../environments/environment';
+import { cfpCountdown } from '../shared/cfp-deadline';
 
 @Component({
     selector: 'app-speaker-cfp',
@@ -10,4 +11,5 @@ import { environment } from '../../environments/environment';
 })
 export class SpeakerCfpComponent {
     environment = environment;
+    countdown = cfpCountdown();
 }

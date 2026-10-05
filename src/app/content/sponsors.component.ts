@@ -8,7 +8,6 @@ import { environment } from '../../environments/environment';
 })
 export class SponsorsComponent  {
     environment = environment;
-
-    constructor() { }
+    sponsorMailto = `mailto:${environment.contactEmail}?subject=Sponsor%20DevFestMN`;
 
 }

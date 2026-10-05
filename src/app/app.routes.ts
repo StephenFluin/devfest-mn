@@ -20,7 +20,10 @@ export const MainRoutes: Routes = [
     {
         path: 'past',
         loadComponent: () => import('./past/past.component').then((m) => m.PastComponent),
-        data: { title: 'Past DevFestMN Events' },
+        data: {
+            title: 'Past DevFestMN Events',
+            description: 'DevFestMN has brought the Twin Cities developer community together since 2013.',
+        },
     },
     {
         path: 'conduct',
@@ -31,18 +34,29 @@ export const MainRoutes: Routes = [
         path: 'sponsors',
         loadComponent: () =>
             import('./content/sponsors.component').then((m) => m.SponsorsComponent),
-        data: { title: 'Sponsors' },
+        data: {
+            title: 'Sponsors',
+            description:
+                'Sponsor DevFestMN 2026 and put your company in front of hundreds of Twin Cities developers, designers, and tech leaders.',
+        },
     },
     {
         path: 'speaker-cfp',
         loadComponent: () =>
             import('./content/speaker-cfp.component').then((m) => m.SpeakerCfpComponent),
-        data: { title: 'Speaker Call for Papers' },
+        data: {
+            title: 'Speaker Call for Papers',
+            description:
+                'Submit a talk for DevFestMN 2026. We want sessions on AI and agents, Google technologies, web, mobile, cloud, security, and careers from speakers of every experience level.',
+        },
     },
     {
         path: 'gallery',
         loadComponent: () => import('./gallery/gallery.component').then((m) => m.GalleryComponent),
-        data: { title: 'Photo Gallery' },
+        data: {
+            title: 'Photo Gallery',
+            description: 'Photos from past DevFestMN developer conferences in the Twin Cities.',
+        },
     },
     {
         path: '',
@@ -58,7 +72,10 @@ export const MainRoutes: Routes = [
                 path: 'speakers',
                 loadComponent: () =>
                     import('./main/speakers.component').then((m) => m.SpeakersComponent),
-                data: { title: 'Speakers' },
+                data: {
+                    title: 'Speakers',
+                    description: 'Meet the speakers at DevFestMN 2026.',
+                },
             },
             {
                 path: 'speakers/:id/:seo',
@@ -70,7 +87,10 @@ export const MainRoutes: Routes = [
                 path: 'schedule',
                 loadComponent: () =>
                     import('./main/schedule.component').then((m) => m.ScheduleComponent),
-                data: { title: 'Schedule' },
+                data: {
+                    title: 'Schedule',
+                    description: 'The full session schedule for DevFestMN 2026.',
+                },
             },
             {
                 path: 'schedule/:id/feedback',

@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 
 import snarkdown from 'snarkdown';
+import { slugify, summarize } from '../shared/slug';
 
 import { DataService, Session } from '../shared/data.service';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -34,9 +35,13 @@ export class SessionViewComponent {
     constructor() {
         const meta = inject(OurMeta);
         effect(() => {
-            const title = this.session()?.title;
-            if (title) {
-                meta.setTitle(title);
+            const session = this.session();
+            if (session?.title) {
+                meta.setTitle(session.title);
+                meta.setCanonical(`schedule/${session.$key}/${slugify(session.title)}`);
+                if (session.description) {
+                    meta.setDescription(summarize(session.description));
+                }
             }
         });
     }

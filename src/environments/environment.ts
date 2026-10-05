@@ -1,6 +1,11 @@
 export const environment = {
     year: '2026',
     siteName: 'DevFestMN',
+    siteUrl: 'https://devfest.mn',
+    siteDescription:
+        'DevFestMN 2026 is a one-day Twin Cities developer conference on Saturday, December 5th, covering AI, agents, cloud, mobile, and the web.',
+    socialImage: '/a/images/og-image.jpg',
+    contactEmail: 'info@devfest.mn',
     eventDate: '2026-12-05',
     eventDateDisplay: 'Saturday, December 5th',
     cfpOpens: '2026-09-29',

@@ -40,9 +40,7 @@
         <div class="blocks">
             <div>
                 <h5>Links</h5>
-                <a href="http://gdgtc.com" target="_blank" href="http://gdgtc.com"
-                    >GDG Twin Cities</a
-                >
+                <a href="http://gdgtc.com" target="_blank">GDG Twin Cities</a>
                 <a href="https://developers.google.com/" target="_blank">Google Developers</a>
                 <a href="https://github.com/stephenfluin/devfest-mn" target="_blank">GitHub</a>
                 <a routerLink="/admin/">Admin</a>
@@ -50,7 +48,7 @@
             </div>
             <div>
                 <h5>Contact</h5>
-                <a href="mailto:info@gdgtc.com" target="_blank">info&#64;gdgtc.com</a>
+                <a [href]="'mailto:' + environment.contactEmail">{{ environment.contactEmail }}</a>
             </div>
             <div>
                 <h5>FAQ</h5>

@@ -8,6 +8,7 @@ import { ADirective } from '../a.directive';
 import { DomSanitizer } from '@angular/platform-browser';
 
 import snarkdown from 'snarkdown';
+import { slugify, summarize } from '../shared/slug';
 
 @Component({
     selector: 'speaker-full',
@@ -24,9 +25,11 @@ export class SpeakerFullComponent implements OnChanges {
     ngOnChanges() {
         const speaker = this.speaker();
         if (speaker) {
-            const encodedName = encodeURIComponent(speaker.name);
             this.meta.setTitle(speaker.name);
-            this.meta.setCanonical(`${this.year()}/speakers/${speaker.$key}/${encodedName}`);
+            this.meta.setCanonical(`speakers/${speaker.$key}/${slugify(speaker.name)}`);
+            if (speaker.bio) {
+                this.meta.setDescription(summarize(speaker.bio));
+            }
             speaker.renderedBio = this.sanitizer.bypassSecurityTrustHtml(
                 snarkdown(speaker.bio || '')
             );

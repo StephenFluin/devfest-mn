@@ -58,6 +58,12 @@ find . -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname 
 ' _ {} \;
 ```
 
+Then generate the small WebP previews the gallery grid uses (existing ones are skipped):
+
+```bash
+scripts/gallery-thumbnails.sh
+```
+
 
 ## Yearly Updates
 Every year we keep the same codebase but fork hosting. Usually it's as simple as pointing to a new project in .firebaserc. You'll need to create the project in Firebase.
@@ -67,3 +73,4 @@ Steps
 * Update `.firebaserc`
 * Update `environment.ts` with new API keys, settings, etc
 * Find and replace old date with new date
+* Update the date in `scripts/og-image.sh` and run it to regenerate the social share image

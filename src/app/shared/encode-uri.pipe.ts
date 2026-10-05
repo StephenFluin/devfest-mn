@@ -1,14 +1,12 @@
-import { NgModule, Pipe, PipeTransform } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Pipe, PipeTransform } from '@angular/core';
+import { slugify } from './slug';
 
 @Pipe({
     name: 'encodeURI',
     standalone: true,
 })
 export class EncodeURI implements PipeTransform {
-    transform(value) {
-        if (value) {
-            return value.replace(/[()]/g, '').replace(/ /g, '-');
-        }
+    transform(value: string | undefined) {
+        return slugify(value);
     }
 }

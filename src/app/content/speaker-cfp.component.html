@@ -15,6 +15,12 @@
     li {
         margin-left: 16px;
     }
+
+    section p.cfp-deadline {
+        margin-top: 0;
+        margin-bottom: 40px;
+        text-align: center;
+    }
 </style>
 <div id="speaker-cfp">
     <header class="page-header-banner">
@@ -27,11 +33,17 @@
             DevFestMN, a premier developer conference in Minnesota, is back for 2026! We're excited
             to invite developers, designers, technologists, and innovators of all levels to share
             their knowledge, expertise, and passion with the community. Submissions will be accepted
-            until <strong>{{ environment.cfpCloses | date: 'MMMM d' }} at 11:59pm CST</strong>.
+            until <strong>{{ environment.cfpCloses | date: 'MMMM d' }} at 11:59pm Central</strong>.
         </p>
 
-        <p style="margin: 40px 0; text-align: center">
+        <p style="margin: 40px 0 8px; text-align: center">
             <a class="cta all-caps" [href]="environment.cfpLink">Submit Your Talk</a>
+        </p>
+        <p class="cfp-deadline">
+            Closes {{ environment.cfpCloses | date: 'EEEE, MMMM d' }}
+            @if (countdown(); as countdown) {
+            <strong>· {{ countdown }}</strong>
+            }
         </p>
 
         <h2>About the Conference</h2>
@@ -214,13 +226,28 @@
         </ul>
 
         <p>
-            If you have a question, shoot us an email at info&#64;devfest.mn (just don't use this to
-            submit a proposal). Interested in volunteering instead? Email volunteers&#64;gdgtc.com
-            or visit our <a href="https://signup.com/go/PdzJpbd">volunteer sign up</a>.
+            If you have a question, shoot us an email at
+            <a [href]="'mailto:' + environment.contactEmail">{{ environment.contactEmail }}</a>
+            (just don't use this to submit a proposal). Interested in volunteering instead?
+            @if (environment.showVolunteer) {
+            Sign up through our <a [href]="environment.showVolunteer">volunteer sign up</a>.
+            } @else {
+            We'll open volunteer sign-ups closer to the event. Email
+            <a [href]="'mailto:' + environment.contactEmail + '?subject=Volunteering'">{{
+                environment.contactEmail
+            }}</a>
+            and we'll let you know when they're live.
+            }
         </p>
 
-        <p style="margin: 40px 0; text-align: center">
+        <p style="margin: 40px 0 8px; text-align: center">
             <a class="cta all-caps" [href]="environment.cfpLink">Submit Your Talk</a>
+        </p>
+        <p class="cfp-deadline">
+            Closes {{ environment.cfpCloses | date: 'EEEE, MMMM d' }}
+            @if (countdown(); as countdown) {
+            <strong>· {{ countdown }}</strong>
+            }
         </p>
 
         <p>Let's make DevFestMN 2026 the best one yet!</p>
@@ -228,7 +255,7 @@
     } @else {
     <p>
         The speaker CFP is currently closed. If you have any questions, please contact us at
-        info&#64;devfest.mn.
+        <a [href]="'mailto:' + environment.contactEmail">{{ environment.contactEmail }}</a>.
     </p>
     }
 </div>

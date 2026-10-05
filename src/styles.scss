@@ -2,6 +2,8 @@
 @font-face {
     font-family: 'Montserrat';
     src: url('/a/montserrat-latin-400-700.woff2') format('woff2');
+    font-weight: 400 700;
+    font-style: normal;
     font-display: swap;
 }
 
@@ -245,6 +247,19 @@ header.page-header-banner {
     color: white; */
     padding: 18px 0;
     text-align: center;
+}
+
+/* Read by screen readers and search engines, but not shown. */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 /* Headers */

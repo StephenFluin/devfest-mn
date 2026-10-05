@@ -135,7 +135,7 @@ import { Component } from '@angular/core';
             </p>
 
             <p>
-                Organizer Email: events@gdgtc.org<br />
+                Organizer Email: <a href="mailto:info&#64;devfest.mn">info&#64;devfest.mn</a><br />
                 Event Organizers: Stephen Fluin, Jeff Williams, Lloyd Lentz, Baskin Tapkan, Sophie
                 Le<br />
             </p>
