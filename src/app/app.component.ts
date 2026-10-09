@@ -47,7 +47,14 @@ export class AppComponent {
                 meta.setCanonical(n.urlAfterRedirects.split(/[?#]/)[0].slice(1));
 
                 if (typeof window !== 'undefined') {
-                    window.scrollTo(0, 0);
+                    // Honor in-page anchors like /#tickets; otherwise start each page at the top.
+                    const fragment = n.urlAfterRedirects.split('#')[1];
+                    const target = fragment && document.getElementById(fragment);
+                    if (target) {
+                        target.scrollIntoView();
+                    } else {
+                        window.scrollTo(0, 0);
+                    }
                 }
             });
     }

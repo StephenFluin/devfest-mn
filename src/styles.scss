@@ -133,6 +133,11 @@ a:hover {
     padding: 8px 16px;
 }
 
+/* Keep anchored sections (e.g. /#tickets) from landing under the fixed header. */
+section[id] {
+    scroll-margin-top: 80px;
+}
+
 /* Hero */
 
 .logo {

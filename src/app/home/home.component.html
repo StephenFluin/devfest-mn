@@ -36,10 +36,15 @@
         </div>
 
         <!-- Call to Action Buttons -->
-        @if (environment.showCFP) {
+        @if (environment.showCFP || environment.showRegister) {
         <div class="cta-block hero-cta">
+            @if (environment.showCFP) {
             <a routerLink="/speaker-cfp" class="cta all-caps">Submit a Talk</a>
+            } @if (environment.showRegister) {
+            <a href="#tickets" class="cta all-caps">Get Tickets</a>
+            }
         </div>
+        } @if (environment.showCFP) {
         <p class="hero-deadline">
             Call for speakers closes {{ environment.cfpCloses | date: 'MMMM d' }}
             @if (cfpCountdown(); as countdown) {
@@ -311,7 +316,7 @@
     </section>
 
     @if( environment.showRegister ) {
-    <section>
+    <section id="tickets">
         <div>
             <h2>Tickets</h2>
             @defer( on viewport) { <app-ticket-embed></app-ticket-embed> } @placeholder {
