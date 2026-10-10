@@ -86,7 +86,14 @@ function daysBefore(day: string, eventDate: string) {
         @if (series().length) {
         <div class="legend">
             @for (s of series(); track s.year) {
-            <span><i [style.background]="s.color"></i>{{ s.year }}</span>
+            <button
+                type="button"
+                [class.off]="hidden().has(s.year)"
+                [attr.aria-pressed]="!hidden().has(s.year)"
+                (click)="toggle(s.year)"
+            >
+                <i [style.background]="s.color"></i>{{ s.year }}
+            </button>
             }
         </div>
         <div class="chart">
@@ -106,7 +113,7 @@ function daysBefore(day: string, eventDate: string) {
                 <text class="axis" [attr.x]="(pad.left + width - pad.right) / 2" [attr.y]="height - 4" text-anchor="middle">
                     Days before event
                 </text>
-                @for (s of series(); track s.year) {
+                @for (s of visible(); track s.year) {
                 <polyline class="line" [attr.points]="points(s)" [attr.stroke]="s.color" [class.focus]="s.year === year" />
                 } @if (currentSeries(); as now) {
                 <circle class="end" [attr.cx]="x(today())" [attr.cy]="y(now.total)" r="5" [attr.fill]="now.color" />
@@ -124,7 +131,7 @@ function daysBefore(day: string, eventDate: string) {
                 [style.bottom.%]="(pad.bottom / height) * 100"
             >
                 <strong>Day {{ hoverDay() ? -hoverDay()! : 0 }}</strong>
-                @for (s of series(); track s.year) { @if (s.sold[hoverDay()!] !== undefined) {
+                @for (s of visible(); track s.year) { @if (s.sold[hoverDay()!] !== undefined) {
                 <div><i [style.background]="s.color"></i>{{ s.year }}: {{ s.sold[hoverDay()!] | number }}</div>
                 } }
             </div>
@@ -160,7 +167,7 @@ function daysBefore(day: string, eventDate: string) {
                 <thead>
                     <tr>
                         <th>Day</th>
-                        @for (s of series(); track s.year) {
+                        @for (s of visible(); track s.year) {
                         <th>{{ s.year }}</th>
                         }
                     </tr>
@@ -169,7 +176,7 @@ function daysBefore(day: string, eventDate: string) {
                     @for (day of days(); track day) {
                     <tr [class.today]="day === today()">
                         <td>{{ day ? -day : 0 }}</td>
-                        @for (s of series(); track s.year) {
+                        @for (s of visible(); track s.year) {
                         <td>{{ s.sold[day] | number }}</td>
                         }
                     </tr>
@@ -192,7 +199,14 @@ function daysBefore(day: string, eventDate: string) {
         .tiles { display: flex; flex-wrap: wrap; gap: 24px; margin: 16px 0; }
         .tile .label { font-size: 13px; color: #52514e; }
         .tile .value { font-size: 28px; font-weight: 600; }
-        .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; }
+        .legend { display: flex; flex-wrap: wrap; gap: 4px; font-size: 13px; }
+        .legend button {
+            margin: 0; padding: 4px 8px; border: 0; border-radius: 4px; background: none;
+            color: #0b0b0b; font: inherit; text-transform: none; cursor: pointer;
+        }
+        .legend button:hover { background: #f0efec; }
+        .legend button.off { color: #8a8984; text-decoration: line-through; }
+        .legend button.off i { opacity: 0.35; }
         i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
         .chart { position: relative; }
         svg { width: 100%; height: auto; display: block; touch-action: none; }
@@ -273,15 +287,26 @@ export class BurndownComponent {
             })
             .filter((s) => s.total > 0)
     );
+    /** Years switched off in the legend; the oldest start hidden to keep the chart readable. */
+    hidden = signal(new Set(['2018', '2019']));
+    visible = computed(() => this.series().filter((s) => !this.hidden().has(s.year)));
+    toggle(year: string) {
+        this.hidden.update((hidden) => {
+            const next = new Set(hidden);
+            if (!next.delete(year)) next.add(year);
+            return next;
+        });
+    }
+
     currentSeries = computed(() => this.series().find((s) => s.year === this.year));
     lastYear = computed(() => this.series().find((s) => s.year !== this.year));
 
     /** The left edge: the earliest first day of sales across all years. */
-    maxDays = computed(() => Math.max(1, ...this.series().map((s) => s.sold.length - 1)));
+    maxDays = computed(() => Math.max(1, ...this.visible().map((s) => s.sold.length - 1)));
     /** Table rows, left to right like the chart: first day of sales down to event day. */
     days = computed(() => Array.from({ length: this.maxDays() + 1 }, (_, i) => this.maxDays() - i));
     maxTickets = computed(() => {
-        const top = Math.max(10, ...this.series().map((s) => s.total));
+        const top = Math.max(10, ...this.visible().map((s) => s.total));
         const step = this.tickStep(top);
         return Math.ceil(top / step) * step;
     });
