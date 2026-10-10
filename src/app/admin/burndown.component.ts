@@ -149,7 +149,7 @@ function daysBefore(day: string, eventDate: string) {
                 </tr>
             </thead>
             <tbody>
-                @for (s of series(); track s.year) {
+                @for (s of visible(); track s.year) {
                 <tr>
                     <td>{{ s.year }}</td>
                     <td>{{ soldAt(s, today()) | number }}</td>
