@@ -135,6 +135,94 @@ app.get('/api/gallery', async (req, res) => {
 });
 
 /**
+ * Copies this year's Eventbrite orders into burndown/<year>/orders for the admin burndown chart.
+ * Only anonymous fields are kept: the order's day and time (Central), ticket count, and ticket
+ * price (excluding fees and tax). Refunded and cancelled orders are left out.
+ *
+ * The caller's Firebase ID token is passed through to the database, so the database rules decide
+ * who may run it (admins only) and the server needs no Google credentials of its own. The
+ * Eventbrite private token comes from the EVENTBRITE_TOKEN secret (or .env in development).
+ */
+interface EventbriteOrder {
+    created: string;
+    status: string;
+    costs: { base_price: { major_value: string } };
+    attendees: unknown[];
+}
+
+app.post('/api/admin/burndown/update', async (req, res) => {
+    try {
+        const idToken = req.headers.authorization?.match(/^Bearer (.+)$/)?.[1];
+        if (!idToken) {
+            res.status(401).json({ error: 'Sign in first' });
+            return;
+        }
+        const db = (path: string, init?: RequestInit) =>
+            fetch(`${environment.firebaseConfig.databaseURL}/${path}.json?auth=${idToken}`, init);
+
+        // Only admins can read /admin, so this doubles as the permission check.
+        if ((await db('admin')).status !== 200) {
+            res.status(403).json({ error: 'Only admins can update the burndown' });
+            return;
+        }
+
+        if (!process.env['EVENTBRITE_TOKEN']) {
+            try {
+                process.loadEnvFile();
+            } catch {}
+        }
+        const ebToken = process.env['EVENTBRITE_TOKEN'];
+        if (!ebToken) {
+            res.status(500).json({ error: 'EVENTBRITE_TOKEN is not configured' });
+            return;
+        }
+
+        const orders: { day: string; time: string; tickets: number; price: number }[] = [];
+        let continuation = '';
+        do {
+            const response = await fetch(
+                `https://www.eventbriteapi.com/v3/events/${environment.eventbriteEventId}/orders/` +
+                    `?expand=attendees${continuation ? `&continuation=${continuation}` : ''}`,
+                { headers: { Authorization: `Bearer ${ebToken}` } }
+            );
+            if (!response.ok) {
+                throw new Error(`Eventbrite responded with ${response.status}: ${await response.text()}`);
+            }
+            const page: {
+                orders: EventbriteOrder[];
+                pagination: { has_more_items: boolean; continuation?: string };
+            } = await response.json();
+            for (const order of page.orders) {
+                if (order.status !== 'placed') continue;
+                // TZ is America/Chicago (set above), so local date parts are Central time.
+                const created = new Date(order.created);
+                orders.push({
+                    day: created.toLocaleDateString('en-CA'),
+                    time: created.toTimeString().slice(0, 5),
+                    tickets: order.attendees.length,
+                    price: Number(order.costs.base_price.major_value),
+                });
+            }
+            continuation = page.pagination.has_more_items ? (page.pagination.continuation ?? '') : '';
+        } while (continuation);
+        orders.sort((a, b) => `${a.day} ${a.time}`.localeCompare(`${b.day} ${b.time}`));
+
+        const updatedAt = new Date().toISOString();
+        const write = await db(`burndown/${environment.year}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ orders, updatedAt, eventDate: environment.eventDate }),
+        });
+        if (!write.ok) {
+            throw new Error(`Firebase responded with ${write.status}: ${await write.text()}`);
+        }
+        res.json({ orders: orders.length, updatedAt });
+    } catch (error) {
+        console.error('Error updating burndown:', error);
+        res.status(502).json({ error: 'Unable to update from Eventbrite' });
+    }
+});
+
+/**
  * Serve static files from /browser
  */
 app.use(

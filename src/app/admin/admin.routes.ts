@@ -42,6 +42,11 @@ export const AdminRoutes: Routes = [
                             import('./reports.component').then((m) => m.ReportsComponent),
                     },
                     {
+                        path: 'burndown',
+                        loadComponent: () =>
+                            import('./burndown.component').then((m) => m.BurndownComponent),
+                    },
+                    {
                         path: 'volunteers',
                         loadComponent: () =>
                             import('./volunteers.component').then((m) => m.VolunteersComponent),

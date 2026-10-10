@@ -21,3 +21,11 @@ runConfig:
   # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
   # - variable: MY_SECRET
   #   secret: mySecretRef
+
+env:
+  # Eventbrite private token used by /api/admin/burndown/update. Create it once with:
+  #   firebase apphosting:secrets:set eventbriteToken
+  - variable: EVENTBRITE_TOKEN
+    secret: eventbriteToken
+    availability:
+      - RUNTIME
