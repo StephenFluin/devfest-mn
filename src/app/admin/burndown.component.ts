@@ -288,7 +288,7 @@ export class BurndownComponent {
             .filter((s) => s.total > 0)
     );
     /** Years switched off in the legend; the oldest start hidden to keep the chart readable. */
-    hidden = signal(new Set(['2018', '2019']));
+    hidden = signal(new Set(['2017', '2018', '2019']));
     visible = computed(() => this.series().filter((s) => !this.hidden().has(s.year)));
     toggle(year: string) {
         this.hidden.update((hidden) => {
