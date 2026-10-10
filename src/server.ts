@@ -137,7 +137,8 @@ app.get('/api/gallery', async (req, res) => {
 /**
  * Copies this year's Eventbrite orders into burndown/<year>/orders for the admin burndown chart.
  * Only anonymous fields are kept: the order's day and time (Central), ticket count, and ticket
- * price (excluding fees and tax). Refunded and cancelled orders are left out.
+ * price (excluding fees and tax). Refunded and cancelled tickets are left out, including single
+ * tickets refunded from an order Eventbrite still reports as placed.
  *
  * The caller's Firebase ID token is passed through to the database, so the database rules decide
  * who may run it (admins only) and the server needs no Google credentials of its own. The
@@ -147,7 +148,7 @@ interface EventbriteOrder {
     created: string;
     status: string;
     costs: { base_price: { major_value: string } };
-    attendees: unknown[];
+    attendees: { refunded: boolean; cancelled: boolean }[];
 }
 
 app.post('/api/admin/burndown/update', async (req, res) => {
@@ -193,14 +194,18 @@ app.post('/api/admin/burndown/update', async (req, res) => {
                 pagination: { has_more_items: boolean; continuation?: string };
             } = await response.json();
             for (const order of page.orders) {
-                if (order.status !== 'placed') continue;
+                const tickets = order.attendees.filter((a) => !a.refunded && !a.cancelled).length;
+                if (order.status !== 'placed' || !tickets) continue;
+                // Partly refunded orders keep the price of the tickets that are left.
+                const price =
+                    (Number(order.costs.base_price.major_value) * tickets) / order.attendees.length;
                 // TZ is America/Chicago (set above), so local date parts are Central time.
                 const created = new Date(order.created);
                 orders.push({
                     day: created.toLocaleDateString('en-CA'),
                     time: created.toTimeString().slice(0, 5),
-                    tickets: order.attendees.length,
-                    price: Number(order.costs.base_price.major_value),
+                    tickets,
+                    price: Math.round(price * 100) / 100,
                 });
             }
             continuation = page.pagination.has_more_items ? (page.pagination.continuation ?? '') : '';
