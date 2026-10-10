@@ -137,17 +137,27 @@ app.get('/api/gallery', async (req, res) => {
 /**
  * Copies this year's Eventbrite orders into burndown/<year>/orders for the admin burndown chart.
  * Only anonymous fields are kept: the order's day and time (Central), ticket count, and ticket
- * price (excluding fees and tax). Refunded and cancelled tickets are left out, including single
+ * price paid (after discounts, excluding fees and tax). Refunded and cancelled tickets are left out, including single
  * tickets refunded from an order Eventbrite still reports as placed.
  *
  * The caller's Firebase ID token is passed through to the database, so the database rules decide
  * who may run it (admins only) and the server needs no Google credentials of its own. The
  * Eventbrite private token comes from the EVENTBRITE_TOKEN secret (or .env in development).
  */
+/**
+ * What the buyer paid for the tickets themselves. base_price is the list price before discount
+ * codes, and gross includes Eventbrite fees when they're passed on to the buyer, so the lower of
+ * the two is the ticket price actually paid.
+ */
+function ticketPrice({ costs }: EventbriteOrder) {
+    const value = (cost: { major_value: string }) => Number(cost.major_value);
+    return Math.min(value(costs.base_price), value(costs.gross) - value(costs.tax));
+}
+
 interface EventbriteOrder {
     created: string;
     status: string;
-    costs: { base_price: { major_value: string } };
+    costs: Record<'base_price' | 'gross' | 'tax', { major_value: string }>;
     attendees: { refunded: boolean; cancelled: boolean }[];
 }
 
@@ -197,8 +207,7 @@ app.post('/api/admin/burndown/update', async (req, res) => {
                 const tickets = order.attendees.filter((a) => !a.refunded && !a.cancelled).length;
                 if (order.status !== 'placed' || !tickets) continue;
                 // Partly refunded orders keep the price of the tickets that are left.
-                const price =
-                    (Number(order.costs.base_price.major_value) * tickets) / order.attendees.length;
+                const price = (ticketPrice(order) * tickets) / order.attendees.length;
                 // TZ is America/Chicago (set above), so local date parts are Central time.
                 const created = new Date(order.created);
                 orders.push({

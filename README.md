@@ -74,3 +74,13 @@ Steps
 * Update `environment.ts` with new API keys, settings, etc
 * Find and replace old date with new date
 * Update the date in `scripts/og-image.sh` and run it to regenerate the social share image
+## Ticket Burndown
+
+The admin burndown page (`/admin/burndown`) reads anonymous order data (day, time, tickets, price) from
+`burndown/<year>` in the Realtime Database. "Update from Eventbrite" rewrites the current year only, using
+the `eventbriteToken` App Hosting secret (or `EVENTBRITE_TOKEN` in a local `.env`).
+
+Past years are kept in `data/burndown-history.json`. When the site moves to a new Firebase project, copy the
+current year into that file and load it with:
+
+    npx firebase database:update /burndown data/burndown-history.json --project <new-project>
