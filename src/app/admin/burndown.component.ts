@@ -35,6 +35,8 @@ const TIMEZONE = 'America/Chicago';
 const WIDTH = 720;
 const HEIGHT = 320;
 const PAD = { top: 16, right: 56, bottom: 36, left: 48 };
+/** One color per year, newest first, in the validated categorical order. */
+const SERIES_COLORS = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#4a3aa7', '#e34948'];
 
 /** Whole days from `day` until the event; both are YYYY-MM-DD. */
 function daysBefore(day: string, eventDate: string) {
@@ -99,7 +101,7 @@ function daysBefore(day: string, eventDate: string) {
                 <line class="grid" [attr.x1]="pad.left" [attr.x2]="width - pad.right" [attr.y1]="y(tick)" [attr.y2]="y(tick)" />
                 <text class="axis" [attr.x]="pad.left - 8" [attr.y]="y(tick) + 4" text-anchor="end">{{ tick | number }}</text>
                 } @for (tick of xTicks(); track tick) {
-                <text class="axis" [attr.x]="x(tick)" [attr.y]="height - pad.bottom + 18" text-anchor="middle">{{ tick }}</text>
+                <text class="axis" [attr.x]="x(tick)" [attr.y]="height - pad.bottom + 18" text-anchor="middle">{{ tick ? -tick : 0 }}</text>
                 }
                 <text class="axis" [attr.x]="(pad.left + width - pad.right) / 2" [attr.y]="height - 4" text-anchor="middle">
                     Days before event
@@ -115,8 +117,8 @@ function daysBefore(day: string, eventDate: string) {
             </svg>
             @if (hoverDay() !== null) {
             <div class="tooltip" [style.left.%]="(x(hoverDay()!) / width) * 100">
-                <strong>{{ hoverDay() }} days out</strong>
-                @for (s of series(); track s.year) { @if (s.sold.length > hoverDay()!) {
+                <strong>Day {{ hoverDay() ? -hoverDay()! : 0 }}</strong>
+                @for (s of series(); track s.year) { @if (s.sold[hoverDay()!] !== undefined) {
                 <div><i [style.background]="s.color"></i>{{ s.year }}: {{ s.sold[hoverDay()!] | number }}</div>
                 } }
             </div>
@@ -151,9 +153,6 @@ function daysBefore(day: string, eventDate: string) {
     `,
     styles: `
         :host {
-            --series-current: #2a78d6;
-            --series-previous: #eb6834;
-            --series-context: #b9b7b0;
             --grid: #e6e5e1;
             display: block;
             max-width: 760px;
@@ -233,12 +232,7 @@ export class BurndownComponent {
                     total += perDay[day] ?? 0;
                     sold[day] = total;
                 }
-                const color =
-                    year === this.year
-                        ? 'var(--series-current)'
-                        : i === 1
-                          ? 'var(--series-previous)'
-                          : 'var(--series-context)';
+                const color = SERIES_COLORS[Math.min(i, SERIES_COLORS.length - 1)];
                 return { year, color, sold, total, revenue };
             })
             .filter((s) => s.total > 0)
@@ -246,10 +240,8 @@ export class BurndownComponent {
     currentSeries = computed(() => this.series().find((s) => s.year === this.year));
     lastYear = computed(() => this.series().find((s) => s.year !== this.year));
 
-    maxDays = computed(() => {
-        const longest = Math.max(30, ...this.series().map((s) => s.sold.length - 1));
-        return Math.ceil(longest / 10) * 10;
-    });
+    /** The left edge: the earliest first day of sales across all years. */
+    maxDays = computed(() => Math.max(1, ...this.series().map((s) => s.sold.length - 1)));
     maxTickets = computed(() => {
         const top = Math.max(10, ...this.series().map((s) => s.total));
         const step = this.tickStep(top);
@@ -261,7 +253,10 @@ export class BurndownComponent {
     });
     xTicks = computed(() => {
         const step = this.maxDays() > 100 ? 20 : 10;
-        return Array.from({ length: Math.floor(this.maxDays() / step) + 1 }, (_, i) => i * step);
+        const ticks = Array.from({ length: Math.floor(this.maxDays() / step) + 1 }, (_, i) => i * step);
+        // Label the first day of sales too, unless it would crowd the last round tick.
+        if (this.maxDays() - ticks[ticks.length - 1] > step / 2) ticks.push(this.maxDays());
+        return ticks;
     });
 
     /** Days run right-to-left toward the event, so the x axis counts down to 0. */
