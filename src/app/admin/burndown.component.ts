@@ -116,7 +116,13 @@ function daysBefore(day: string, eventDate: string) {
                 }
             </svg>
             @if (hoverDay() !== null) {
-            <div class="tooltip" [style.left.%]="(x(hoverDay()!) / width) * 100">
+            <!-- Sits low and beside the crosshair: cumulative lines climb to the top right. -->
+            <div
+                class="tooltip"
+                [class.flip]="x(hoverDay()!) > width / 2"
+                [style.left.%]="(x(hoverDay()!) / width) * 100"
+                [style.bottom.%]="(pad.bottom / height) * 100"
+            >
                 <strong>Day {{ hoverDay() ? -hoverDay()! : 0 }}</strong>
                 @for (s of series(); track s.year) { @if (s.sold[hoverDay()!] !== undefined) {
                 <div><i [style.background]="s.color"></i>{{ s.year }}: {{ s.sold[hoverDay()!] | number }}</div>
@@ -147,6 +153,30 @@ function daysBefore(day: string, eventDate: string) {
                 }
             </tbody>
         </table>
+
+        <h3>Cumulative tickets by day</h3>
+        <div class="by-day">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        @for (s of series(); track s.year) {
+                        <th>{{ s.year }}</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (day of days(); track day) {
+                    <tr [class.today]="day === today()">
+                        <td>{{ day ? -day : 0 }}</td>
+                        @for (s of series(); track s.year) {
+                        <td>{{ s.sold[day] | number }}</td>
+                        }
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
         } @else {
         <p class="muted">No orders yet. Use "Update from Eventbrite" to load them.</p>
         } }
@@ -167,16 +197,22 @@ function daysBefore(day: string, eventDate: string) {
         .chart { position: relative; }
         svg { width: 100%; height: auto; display: block; touch-action: none; }
         .grid { stroke: var(--grid); stroke-width: 1; }
-        .line { fill: none; stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
-        .line.focus { stroke-width: 2.5; }
+        .line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+        .line.focus { stroke-width: 3; }
         .end { stroke: #fff; stroke-width: 2; }
         .end-label { font-size: 13px; font-weight: 600; fill: #0b0b0b; }
         .crosshair { stroke: #8a8984; stroke-width: 1; }
         .tooltip {
-            position: absolute; top: 8px; transform: translateX(-50%); pointer-events: none;
+            position: absolute; transform: translate(12px, -8px); pointer-events: none;
             background: #fff; border: 1px solid var(--grid); border-radius: 6px;
             padding: 6px 10px; font-size: 12px; white-space: nowrap; box-shadow: 0 2px 8px rgb(0 0 0 / 0.08);
         }
+        .tooltip.flip { transform: translate(calc(-100% - 12px), -8px); }
+        .toolbar button { margin: 0; }
+        .by-day { max-height: 480px; overflow-y: auto; }
+        .by-day th { position: sticky; top: 0; background: #fff; }
+        .by-day td { font-variant-numeric: tabular-nums; }
+        .by-day tr.today td { background: #eef4fc; font-weight: 600; }
         table { border-collapse: collapse; margin-top: 16px; font-size: 14px; }
         th, td { padding: 4px 16px 4px 0; text-align: right; }
         th:first-child, td:first-child { text-align: left; }
@@ -242,6 +278,8 @@ export class BurndownComponent {
 
     /** The left edge: the earliest first day of sales across all years. */
     maxDays = computed(() => Math.max(1, ...this.series().map((s) => s.sold.length - 1)));
+    /** Table rows, left to right like the chart: first day of sales down to event day. */
+    days = computed(() => Array.from({ length: this.maxDays() + 1 }, (_, i) => this.maxDays() - i));
     maxTickets = computed(() => {
         const top = Math.max(10, ...this.series().map((s) => s.total));
         const step = this.tickStep(top);
