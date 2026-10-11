@@ -14,7 +14,7 @@ import { filter } from 'rxjs/operators';
 import { OurMeta } from './our-meta.service';
 
 import { ADirective } from './a.directive';
-import { trackTicketPurchase } from './analytics.util';
+import { captureAttribution, eventbriteAttribution, trackTicketPurchase } from './analytics.util';
 
 @Component({
     selector: 'app-root',
@@ -32,6 +32,9 @@ export class AppComponent {
     constructor() {
         const router = inject(Router);
         const meta = inject(OurMeta);
+        if (this.isBrowser) {
+            captureAttribution();
+        }
 
         router.events
             .pipe(filter((e) => e instanceof NavigationEnd))
@@ -79,6 +82,7 @@ export class AppComponent {
             window['EBWidgets'].createWidget({
                 widgetType: 'checkout',
                 eventId: environment.eventbriteEventId,
+                ...eventbriteAttribution(),
                 modal: true,
                 modalTriggerElementId: 'global-ticket-button',
                 onOrderComplete: trackTicketPurchase,

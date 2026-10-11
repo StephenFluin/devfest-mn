@@ -1,5 +1,5 @@
 import { Component, inject, PLATFORM_ID } from '@angular/core';
-import { trackTicketPurchase } from '../analytics.util';
+import { eventbriteAttribution, trackTicketPurchase } from '../analytics.util';
 import { environment } from '../../environments/environment';
 
 import { isPlatformBrowser } from '@angular/common';
@@ -28,6 +28,7 @@ export class TicketsComponent {
                 window?.['EBWidgets']?.createWidget({
                     widgetType: 'checkout',
                     eventId: environment.eventbriteEventId,
+                    ...eventbriteAttribution(),
                     modal: true,
                     modalTriggerElementId: 'global-ticket-button',
                     onOrderComplete: trackTicketPurchase,

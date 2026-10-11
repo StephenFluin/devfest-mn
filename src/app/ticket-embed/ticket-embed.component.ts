@@ -1,7 +1,7 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Component, inject, PLATFORM_ID } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { trackTicketPurchase } from '../analytics.util';
+import { eventbriteAttribution, trackTicketPurchase } from '../analytics.util';
 
 @Component({
     selector: 'app-ticket-embed',
@@ -27,6 +27,7 @@ export class TicketEmbedComponent {
             window.EBWidgets.createWidget({
                 widgetType: 'checkout',
                 eventId: environment.eventbriteEventId,
+                ...eventbriteAttribution(),
                 iframeContainerId: 'eventbrite-widget-container-1684295616529',
 
                 // Optional
