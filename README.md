@@ -1,42 +1,74 @@
 # DevFestMN
 
-This project is an Angular CLI project.
+This is the website for [DevFestMN](https://devfest.mn), the annual Twin Cities developer conference run by
+GDG Twin Cities. The site is how attendees, speakers, and sponsors find and take part in the event:
 
-## Summary
+-   **Attendees** see the date, venue, schedule, and speakers, and buy tickets through Eventbrite.
+-   **Speakers** read the call for papers and submit talks.
+-   **Sponsors** learn about sponsorship and see who already supports the event.
+-   **Organizers** use the admin pages to manage speakers, sessions, and the schedule, and to track ticket sales.
 
-1. `yarn setup`
-2. Create local branch and make changes
-3. `ng serve`
-4. Submit PR
-5. Merge PR into master
-6. Deployment will happen automatically
+Follow DevFestMN on [Bluesky](https://bsky.app/profile/devfestmn.bsky.social) and
+[Mastodon](https://developers.live/@devfestmn).
 
-## Project Setup
+**Lead maintainer:** [Stephen Fluin](https://github.com/StephenFluin)
+([Mastodon](https://developers.live/@StephenFluin)). Questions about the event go to
+[info@devfest.mn](mailto:info@devfest.mn).
 
-When you first checkout the repo, run `yarn setup` to install all dependencies.
+## Quick start
 
-Install Firebase Tools by running `npm install -g firebase-tools` and run `firebase login` to authenticate for deployment permissions.
+```bash
+npm install
+npm start
+```
 
-## Development Server
+Then open http://localhost:4200/. The app reloads automatically when you change a source file.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+## Contributing
 
-Run `ng serve -o` to have the browser open once the initial build is complete.
+1. Create a branch and make your changes.
+2. Check them locally with `npm start` (and `npm run build` for a production build).
+3. Open a pull request against `main`.
+4. Once it's approved and merged, the site deploys automatically.
 
-## Pushing to GitHub
+## How the site is built and deployed
 
-Create a branch and push a pull request to GitHub. Once the PR has successfully built, and has been approved and merged, the update will be automatically be pushed to Firebase Hosting.
+The site is an Angular app with server-side rendering. Data such as talks, speakers, and the schedule lives in
+the Firebase Realtime Database, and speaker photos live in Firebase Storage.
 
-## Deploying to live http://devfest.mn website
+It's served by **Firebase App Hosting** (backend `devfestmn-2026-webapp`, configured in `firebase.json` and
+`apphosting.yaml`). Every merge to `main` triggers a new App Hosting rollout to https://devfest.mn, so there's
+no manual deploy step for the website.
 
-Will happen automatically upon merge to main.
+Database and Storage security rules (`database.rules.json` and `storage.rules`) aren't deployed by App
+Hosting. To change them, sign in and deploy just the rules. The Firebase CLI is a project dependency, so run it
+with `npx` rather than installing it globally:
 
-## Photo Gallery
+```bash
+npx firebase login
+```
 
-Photos should be:
+```bash
+npx firebase deploy --only database,storage
+```
 
--   Quality at 50%
--   Resize images to fit within 1024x768 while maintaining aspect ratio
+## Yearly updates
+
+We keep the same codebase every year but move to a new Firebase project.
+
+1. Create the new Firebase project and an App Hosting backend connected to this repo.
+2. Point `.firebaserc` at the new project, and update the `backendId` in `firebase.json`.
+3. Update `src/environments/environment.ts` with the new Firebase config, event date, CFP dates, venue, and
+   feature flags (`showCFP`, `showSchedule`, `showSpeakers`, and so on).
+4. Find and replace the old year and date throughout the code.
+5. Update the date in `scripts/og-image.sh` and run it to regenerate the social share image.
+6. Carry the ticket history forward (see [Ticket burndown](#ticket-burndown)).
+
+## Photo gallery
+
+Gallery photos go in `src/a/images/gallery/<year>/`. Before adding them, compress each photo to 50% quality
+and resize it to fit within 1024x768 while keeping the aspect ratio. This command does that for every image
+under the current directory and keeps a `.original` backup of each one (it needs ImageMagick):
 
 ```bash
 find . -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" \) -exec sh -c '
@@ -64,23 +96,17 @@ Then generate the small WebP previews the gallery grid uses (existing ones are s
 scripts/gallery-thumbnails.sh
 ```
 
+## Ticket burndown
 
-## Yearly Updates
-Every year we keep the same codebase but fork hosting. Usually it's as simple as pointing to a new project in .firebaserc. You'll need to create the project in Firebase.
+The admin burndown page (`/admin/burndown`) charts ticket sales over time. It reads anonymous order data
+(day, time, tickets, price) from `burndown/<year>` in the Realtime Database.
 
-Steps
-
-* Update `.firebaserc`
-* Update `environment.ts` with new API keys, settings, etc
-* Find and replace old date with new date
-* Update the date in `scripts/og-image.sh` and run it to regenerate the social share image
-## Ticket Burndown
-
-The admin burndown page (`/admin/burndown`) reads anonymous order data (day, time, tickets, price) from
-`burndown/<year>` in the Realtime Database. "Update from Eventbrite" rewrites the current year only, using
-the `eventbriteToken` App Hosting secret (or `EVENTBRITE_TOKEN` in a local `.env`).
+"Update from Eventbrite" rewrites the current year only. It uses the `eventbriteToken` App Hosting secret in
+production, or `EVENTBRITE_TOKEN` in a local `.env` file during development.
 
 Past years are kept in `data/burndown-history.json`. When the site moves to a new Firebase project, copy the
-current year into that file and load it with:
+current year into that file and load it into the new project:
 
-    npx firebase database:update /burndown data/burndown-history.json --project <new-project>
+```bash
+npx firebase database:update /burndown data/burndown-history.json --project <new-project>
+```

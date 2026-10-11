@@ -4,7 +4,6 @@
   "license": "MIT",
   "angular-cli": {},
   "scripts": {
-    "setup": "yarn && cd functions && yarn",
     "build": "ng build",
     "start": "ng serve",
     "serve": "ng serve",
