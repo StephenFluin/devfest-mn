@@ -19,7 +19,6 @@ export const environment = {
         storageBucket: 'devfestmn-2026.firebasestorage.app',
         messagingSenderId: '126057052732',
         appId: '1:126057052732:web:dce9551e4bb4ae60c1e139',
-        measurementId: 'G-S7RFQ5R2XQ',
     },
     showRegister: true,
     showSchedule: false,
