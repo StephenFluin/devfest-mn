@@ -1,3 +1,11 @@
 <section>
+    @if (notFound()) {
+    <h2>Session not found</h2>
+    <p>
+        This session isn't on the {{ year }} schedule. It may be from a
+        <a routerLink="/past">past DevFestMN</a>.
+    </p>
+    } @else {
     <session-details [session]="session()"></session-details>
+    }
 </section>

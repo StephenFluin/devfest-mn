@@ -1,6 +1,6 @@
-import { Component, computed, effect, inject } from '@angular/core';
+import { Component, computed, effect, inject, RESPONSE_INIT } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import snarkdown from 'snarkdown';
 import { slugify, summarize } from '../shared/slug';
@@ -8,12 +8,14 @@ import { slugify, summarize } from '../shared/slug';
 import { DataService, Session } from '../shared/data.service';
 import { OurMeta } from '../our-meta.service';
 import { SessionDetailsComponent } from './session-details.component';
+import { environment } from '../../environments/environment';
 
 @Component({
     templateUrl: './session-view.component.html',
-    imports: [SessionDetailsComponent],
+    imports: [SessionDetailsComponent, RouterLink],
 })
 export class SessionViewComponent {
+    year = environment.year;
     private ds = inject(DataService);
     private params = toSignal(inject(ActivatedRoute).paramMap, { requireSync: true });
 
@@ -28,8 +30,20 @@ export class SessionViewComponent {
         };
     });
 
+    /** Old or mistyped links answer 404 so search engines drop them instead of indexing an empty page. */
+    notFound = computed(() => this.ds.schedule.loaded() && !this.session());
+
     constructor() {
         const meta = inject(OurMeta);
+        const response = inject(RESPONSE_INIT, { optional: true });
+        effect(() => {
+            if (this.notFound()) {
+                meta.setTitle('Session not found');
+                if (response) {
+                    response.status = 404;
+                }
+            }
+        });
         effect(() => {
             const session = this.session();
             if (session?.title) {

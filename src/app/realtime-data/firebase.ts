@@ -30,8 +30,7 @@ export const DATABASE = new InjectionToken<Database>('Database', {
 /** Auth only exists in the browser; there is never a signed-in user during SSR. */
 export const AUTH = new InjectionToken<Auth | null>('Auth', {
     providedIn: 'root',
-    factory: () =>
-        isPlatformBrowser(inject(PLATFORM_ID)) ? getAuth(inject(FIREBASE_APP)) : null,
+    factory: () => (isPlatformBrowser(inject(PLATFORM_ID)) ? getAuth(inject(FIREBASE_APP)) : null),
 });
 
 export interface RtdbOptions<T> {
@@ -43,6 +42,9 @@ export interface RtdbOptions<T> {
     localStorageKey?: string;
 }
 
+/** A live value plus whether the database has answered yet (false while loading or after an error). */
+export type RtdbSignal<T> = Signal<T> & { loaded: Signal<boolean> };
+
 /**
  * A live signal of the data at `query()`. Listens while the owning injector is alive, re-listens
  * when the query changes, and keeps SSR waiting until the first value arrives. Must be created in
@@ -52,16 +54,14 @@ export function rtdbResource<T>(
     query: () => Query | undefined,
     read: (snapshot: DataSnapshot) => T,
     { initialValue, transferKey, localStorageKey }: RtdbOptions<T>
-): Signal<T> {
+): RtdbSignal<T> {
     const transferState = inject(TransferState);
     const isServer = isPlatformServer(inject(PLATFORM_ID));
     const stateKey = transferKey ? makeStateKey<T>(transferKey) : undefined;
     // Node has its own global localStorage, which would be shared between SSR requests.
     const cacheKey = isServer ? undefined : localStorageKey;
     const seed =
-        (stateKey && transferState.get(stateKey, null)) ??
-        readLocal<T>(cacheKey) ??
-        initialValue;
+        (stateKey && transferState.get(stateKey, null)) ?? readLocal<T>(cacheKey) ?? initialValue;
 
     const res = resource({
         params: query,
@@ -92,7 +92,9 @@ export function rtdbResource<T>(
             }),
     });
 
-    return computed(() => (res.error() ? initialValue : res.value()));
+    const value = computed(() => (res.error() ? initialValue : res.value())) as RtdbSignal<T>;
+    value.loaded = computed(() => res.status() === 'resolved');
+    return value;
 }
 
 export function objectResource<T>(query: () => Query | undefined, options: RtdbOptions<T>) {
