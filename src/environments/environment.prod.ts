@@ -2,6 +2,8 @@ export const environment = {
     production: true,
     defaultYear: '2024',
     siteName: 'DevFestMN',
+    // This year's archive lives on its own subdomain so it never competes with the current site.
+    siteUrl: 'https://2024.devfest.mn',
     firebaseConfig: {
         apiKey: 'AIzaSyBrWJx91j512T3q6AaTGNxu_3fq47bYhfg',
         authDomain: 'devfestmn.firebaseapp.com',

@@ -25,9 +25,12 @@ export class SpeakerFullComponent implements OnChanges {
     ngOnChanges() {
         const speaker = this.speaker();
         if (speaker) {
-            const encodedName = encodeURIComponent(speaker.name);
+            const seoName = speaker.name
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
             this.meta.setTitle(speaker.name);
-            this.meta.setCanonical(`${this.year()}/speakers/${speaker.$key}/${encodedName}`);
+            this.meta.setCanonical(`speakers/${speaker.$key}/${seoName}`);
             speaker.renderedBio = this.sanitizer.bypassSecurityTrustHtml(
                 snarkdown(speaker.bio || '')
             );
