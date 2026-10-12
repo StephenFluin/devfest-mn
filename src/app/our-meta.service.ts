@@ -32,7 +32,7 @@ export class OurMeta {
 
         let canonical = this.doc.createElement('link');
         canonical.rel = 'canonical';
-        canonical.href = `/${path}`;
+        canonical.href = `${environment.siteUrl}/${path}`;
 
         head.appendChild(canonical);
     }

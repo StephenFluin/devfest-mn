@@ -54,7 +54,7 @@ app.use((req, res, next) => {
  */
 app.get('/sitemap.txt', async (req, res) => {
     try {
-        const baseUrl = 'https://devfest.mn';
+        const baseUrl = 'https://2025.devfest.mn';
         const urls: string[] = [];
 
         // Static pages
