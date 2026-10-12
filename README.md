@@ -63,6 +63,24 @@ We keep the same codebase every year but move to a new Firebase project.
 4. Find and replace the old year and date throughout the code.
 5. Update the date in `scripts/og-image.sh` and run it to regenerate the social share image.
 6. Carry the ticket history forward (see [Ticket burndown](#ticket-burndown)).
+7. Point last year's archive at its own subdomain (see [Archiving a past year](#archiving-a-past-year)).
+
+## Archiving a past year
+
+Each past year stays online at `https://<year>.devfest.mn` (for example the `2025` branch and `2025-final` tag).
+Before the new year launches on https://devfest.mn, update the archive so search engines don't mix the two:
+
+-   In the archive's `src/environments/environment.ts`, set `siteUrl` to `https://<year>.devfest.mn` and `year`
+    to the archived year. Canonical links, `og:url`, and `sitemap.txt` are all built from `siteUrl`, so pages
+    then point at the archive instead of claiming to be the current site.
+-   Check that canonical links are absolute URLs on the subdomain, e.g. `https://2025.devfest.mn/speakers/…`,
+    not relative paths like `/2025/speakers/…` or `https://devfest.mn/…`.
+-   Spot-check the deployed archive with `curl -s https://<year>.devfest.mn/sitemap.txt` and the canonical tag on
+    a speaker page.
+
+If this is skipped, Google finds last year's speaker and session URLs on devfest.mn, where they don't exist, and
+reports them as duplicates in Search Console. (The current site now answers those with a 404, but the archive's
+links should still be fixed.)
 
 ## Photo gallery
 
