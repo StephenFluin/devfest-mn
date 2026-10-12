@@ -82,6 +82,18 @@ If this is skipped, Google finds last year's speaker and session URLs on devfest
 reports them as duplicates in Search Console. (The current site now answers those with a 404, but the archive's
 links should still be fixed.)
 
+Each archive lives on a `<year>` branch, cut from that year's `<year>-final` tag, and deploys to that year's
+Firebase project. Commit fixes to the branch, push it, then deploy:
+
+-   **2025 and later (App Hosting):** roll out the branch to the year's backend, e.g.
+
+    ```bash
+    npx firebase apphosting:rollouts:create devfest-mn --git-branch 2025 --project devfestmn-2025
+    ```
+
+-   **2024 (static Firebase Hosting):** install with Yarn (`yarn install --frozen-lockfile`), run `npx ng build`,
+    then from the branch checkout run `npx firebase deploy --only hosting --project devfestmn-2024`.
+
 ## Photo gallery
 
 Gallery photos go in `src/a/images/gallery/<year>/`. Before adding them, compress each photo to 50% quality
