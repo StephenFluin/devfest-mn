@@ -168,15 +168,35 @@ interface EventbriteOrder {
     attendees: { refunded: boolean; cancelled: boolean }[];
 }
 
+/**
+ * Only a few admins ever run the update, so one shared limit per server instance is enough to stop
+ * anyone hammering the database and Eventbrite through it.
+ */
+const burndownLimit = { windowMs: 60_000, max: 5, recent: [] as number[] };
+
 app.post('/api/admin/burndown/update', async (req, res) => {
     try {
-        const idToken = req.headers.authorization?.match(/^Bearer (.+)$/)?.[1];
+        const now = Date.now();
+        burndownLimit.recent = burndownLimit.recent.filter((t) => now - t < burndownLimit.windowMs);
+        if (burndownLimit.recent.length >= burndownLimit.max) {
+            res.set('Retry-After', String(Math.ceil(burndownLimit.windowMs / 1000)));
+            res.status(429).json({ error: 'Too many updates, try again in a minute' });
+            return;
+        }
+        burndownLimit.recent.push(now);
+
+        const idToken = req.headers.authorization?.match(/^Bearer ([\w.-]+)$/)?.[1];
         if (!idToken) {
             res.status(401).json({ error: 'Sign in first' });
             return;
         }
+        // The REST API only accepts Firebase ID tokens as ?auth=, not in a header. This request
+        // goes straight to Firebase over HTTPS and its URL is never logged here.
         const db = (path: string, init?: RequestInit) =>
-            fetch(`${environment.firebaseConfig.databaseURL}/${path}.json?auth=${idToken}`, init);
+            fetch(
+                `${environment.firebaseConfig.databaseURL}/${path}.json?auth=${encodeURIComponent(idToken)}`,
+                init
+            );
 
         // Only admins can read /admin, so this doubles as the permission check.
         if ((await db('admin')).status !== 200) {
