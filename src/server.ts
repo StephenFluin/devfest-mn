@@ -49,13 +49,20 @@ app.get('/sitemap.txt', async (req, res) => {
         if (environment.showSpeakers) paths.push('speakers');
 
         if (environment.showSchedule || environment.showSpeakers) {
-            const response = await fetch(
-                `${environment.firebaseConfig.databaseURL}/devfest${environment.year}.json`
-            );
-            if (!response.ok) {
-                throw new Error(`Firebase responded with ${response.status}`);
-            }
-            const data = (await response.json()) ?? {};
+            // Only schedule and speakers are public; the rest of the year is admin-only.
+            const fetchPublic = async (child: 'schedule' | 'speakers') => {
+                const response = await fetch(
+                    `${environment.firebaseConfig.databaseURL}/devfest${environment.year}/${child}.json`
+                );
+                if (!response.ok) {
+                    throw new Error(`Firebase responded with ${response.status}`);
+                }
+                return (await response.json()) ?? {};
+            };
+            const data = {
+                schedule: environment.showSchedule ? await fetchPublic('schedule') : {},
+                speakers: environment.showSpeakers ? await fetchPublic('speakers') : {},
+            };
 
             if (environment.showSchedule) {
                 for (const [key, session] of Object.entries<any>(data.schedule ?? {})) {

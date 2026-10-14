@@ -3,7 +3,9 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 
 
+import { set } from 'firebase/database';
 import { DataService, Session } from '../shared/data.service';
+import { objectResource } from '../realtime-data/firebase';
 import { SpeakerSelectorComponent } from './speaker-selector.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatOptionModule } from '@angular/material/core';
@@ -45,6 +47,15 @@ export class SessionEditComponent {
 
     private params = toSignal(this.route.paramMap, { requireSync: true });
 
+    /** Kept at adminNotes/<session> rather than on the public session, so only admins can read it. */
+    private adminNotes = objectResource<string>(
+        () => {
+            const id = this.params().get('id');
+            return id === 'new' ? undefined : this.ds.ref(`adminNotes/${id}`);
+        },
+        { initialValue: '' }
+    );
+
     /** A copy, so form edits don't leak into the shared live data before saving. */
     sessionData = computed<Session>(() => {
         const params = this.params();
@@ -52,7 +63,7 @@ export class SessionEditComponent {
             return { startTime: params.get('time'), room: params.get('room') };
         }
         const item = this.ds.schedule().find((item) => item.$key === params.get('id'));
-        return item && { ...item };
+        return item && { ...item, adminNotes: this.adminNotes() };
     });
 
     environment = environment;
@@ -72,12 +83,17 @@ export class SessionEditComponent {
             event.preventDefault();
         }
         this.setTime(session, this.timeOf(session.startTime));
-        this.ds.save('schedule', session);
+        // null also clears notes saved on the public session before they moved.
+        const { adminNotes, ...publicSession } = session;
+        const saved = this.ds.save('schedule', { ...publicSession, adminNotes: null });
+        const key = session.$key ?? saved.key;
+        set(this.ds.ref(`adminNotes/${key}`), adminNotes || null);
         this.router.navigate(['/', 'schedule']);
     }
 
     delete(session) {
         this.ds.delete('schedule', session);
+        set(this.ds.ref(`adminNotes/${session.$key}`), null);
         this.router.navigate(['/', 'schedule']);
     }
 

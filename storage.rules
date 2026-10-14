@@ -1,34 +1,21 @@
 rules_version = '2';
 
-// Craft rules based on data in your Firestore database
-// allow write: if firestore.get(
-//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
+// Storage rules can't read the Realtime Database, so admins are marked with an `admin: true`
+// custom claim instead. Set it with scripts/set-admin-claim.mjs.
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow public read access to all files
+    // Everything in the bucket is public site content.
     match /{allPaths=**} {
       allow read: if true;
     }
-    
-    // Allow authenticated users to upload/manage files in devfest folders
-    match /devfest2026/{folder}/{speakerId}/{filename} {
-      allow read: if true;
-      allow write: if request.auth != null;
-      allow delete: if false;
-    }
-    
-    // Allow authenticated users to upload/manage files in any devfest path
-    match /devfest2026/{allPaths=**} {
-      allow read: if true;
-      allow write: if request.auth != null;
-      allow delete: if false;
-    }
-    
-    // Legacy support for other devfest paths
-    match /{year}/{folder}/{speakerId}/{filename} {
-      allow read: if true;
-      allow write: if request.auth != null;
-      allow delete: if false;
+
+    // Speaker headshots, uploaded from the speaker editor.
+    match /{year}/speakers/{speakerId}/{filename} {
+      allow create, update: if request.auth.token.admin == true
+        && year.matches('devfest[0-9]{4}')
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(png|jpeg|webp)');
+      allow delete: if request.auth.token.admin == true;
     }
   }
 }

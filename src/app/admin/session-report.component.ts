@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
-import { httpResource } from '@angular/common/http';
 import { AuthService } from '../realtime-data/auth.service';
+import { objectResource } from '../realtime-data/firebase';
+import { DataService } from '../shared/data.service';
 import { environment } from '../../environments/environment';
 
 @Component({
@@ -10,15 +11,19 @@ export class SessionReportComponent {
     auth = inject(AuthService);
     year = environment.year;
 
-    private allData = httpResource<{ feedback: any; schedule: any; speakers: any }>(
-        () => `https://devfestmn-2026-default-rtdb.firebaseio.com/devfest${environment.year}.json`
-    );
+    private ds = inject(DataService);
+
+    // Read through the SDK so the request carries the admin's credentials; feedback is admin-only.
+    private feedback = objectResource<any>(() => this.ds.ref('feedback'), { initialValue: {} });
+    private schedule = objectResource<any>(() => this.ds.ref('schedule'), { initialValue: {} });
+    private speakers = objectResource<any>(() => this.ds.ref('speakers'), { initialValue: {} });
 
     sessions = computed(() => {
-        const data = this.allData.hasValue() ? this.allData.value() : null;
-        if (!data) {
-            return [];
-        }
+        const data = {
+            feedback: this.feedback(),
+            schedule: this.schedule(),
+            speakers: this.speakers(),
+        };
         let tenthsRound = (x) => Math.round(x * 10) / 10;
         let feedback = data.feedback ?? {};
         let collectedFeedback = {};
