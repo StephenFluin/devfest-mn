@@ -5,7 +5,6 @@ import { OnChanges } from '@angular/core';
 import { AuthService } from '../realtime-data/auth.service';
 import { RouterLink } from '@angular/router';
 import { ADirective } from '../a.directive';
-import { DomSanitizer } from '@angular/platform-browser';
 
 import snarkdown from 'snarkdown';
 import { slugify, summarize } from '../shared/slug';
@@ -18,7 +17,6 @@ import { slugify, summarize } from '../shared/slug';
 export class SpeakerFullComponent implements OnChanges {
     auth = inject(AuthService);
     meta = inject(OurMeta);
-    sanitizer = inject(DomSanitizer);
 
     readonly speaker = input<Speaker>(undefined);
     readonly year = input(undefined);
@@ -30,9 +28,7 @@ export class SpeakerFullComponent implements OnChanges {
             if (speaker.bio) {
                 this.meta.setDescription(summarize(speaker.bio));
             }
-            speaker.renderedBio = this.sanitizer.bypassSecurityTrustHtml(
-                snarkdown(speaker.bio || '')
-            );
+            speaker.renderedBio = snarkdown(speaker.bio || '');
         }
     }
 }

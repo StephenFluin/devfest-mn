@@ -6,7 +6,6 @@ import snarkdown from 'snarkdown';
 import { slugify, summarize } from '../shared/slug';
 
 import { DataService, Session } from '../shared/data.service';
-import { DomSanitizer } from '@angular/platform-browser';
 import { OurMeta } from '../our-meta.service';
 import { SessionDetailsComponent } from './session-details.component';
 
@@ -16,7 +15,6 @@ import { SessionDetailsComponent } from './session-details.component';
 })
 export class SessionViewComponent {
     private ds = inject(DataService);
-    private sanitizer = inject(DomSanitizer);
     private params = toSignal(inject(ActivatedRoute).paramMap, { requireSync: true });
 
     session = computed<Session | undefined>(() => {
@@ -26,9 +24,7 @@ export class SessionViewComponent {
         }
         return {
             ...item,
-            renderedDescription: this.sanitizer.bypassSecurityTrustHtml(
-                snarkdown(item.description || '')
-            ),
+            renderedDescription: snarkdown(item.description || ''),
         };
     });
 

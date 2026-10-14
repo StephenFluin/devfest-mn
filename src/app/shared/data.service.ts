@@ -1,6 +1,5 @@
 import { Injectable, computed, inject } from '@angular/core';
 import { ref, query, orderByChild, push, update, remove, set } from 'firebase/database';
-import { SafeHtml } from '@angular/platform-browser';
 import { environment } from '../../environments/environment';
 import { DATABASE, listResource } from '../realtime-data/firebase';
 
@@ -13,8 +12,10 @@ export interface Session {
     track?: string;
     speakers?: any[];
     blocks?: number;
-    renderedDescription?: SafeHtml;
+    /** Markdown rendered to HTML. Left for Angular to sanitize when bound to [innerHTML]. */
+    renderedDescription?: string;
     notes?: string;
+    /** Only in the session editor; stored separately at adminNotes/<session>. */
     adminNotes?: string;
 }
 
@@ -22,7 +23,8 @@ export interface Speaker {
     $key?: string;
     name?: string;
     bio?: string;
-    renderedBio?: SafeHtml;
+    /** Markdown rendered to HTML. Left for Angular to sanitize when bound to [innerHTML]. */
+    renderedBio?: string;
     confirmed?: boolean;
     company?: string;
     twitter?: string;
