@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, computed, Signal, DestroyRef } from '@angular/core';
 import { User, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from 'firebase/auth';
-import { ref } from 'firebase/database';
+import { get, ref } from 'firebase/database';
 
 import { environment } from '../../environments/environment';
 import { AUTH, DATABASE, listResource, objectResource } from './firebase';
@@ -29,6 +29,23 @@ export class AuthService {
         () => (this.uid() ? ref(this.db, `/admin/${this.uid()}`) : undefined),
         { initialValue: false }
     );
+
+    /** Waits for the initial auth state, then checks /admin once. Used by the admin route guard. */
+    async checkAdmin(): Promise<boolean> {
+        if (!this.auth) {
+            return false;
+        }
+        await this.auth.authStateReady();
+        const uid = this.auth.currentUser?.uid;
+        if (!uid) {
+            return false;
+        }
+        try {
+            return (await get(ref(this.db, `/admin/${uid}`))).exists();
+        } catch {
+            return false;
+        }
+    }
 
     constructor() {
         if (this.auth) {
