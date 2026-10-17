@@ -264,13 +264,21 @@ app.post('/api/admin/burndown/update', async (req, res) => {
 });
 
 /**
- * Serve static files from /browser
+ * Serve static files from /browser. Build output with a content hash in its name (main-AB12cd34.js)
+ * never changes, so it can be cached for a year. Everything else, like the images, sponsor logos and
+ * sponsor packet under /a, keeps its name when it's replaced, so browsers check back after an hour.
  */
+const hashedFile = /-[\w-]{8}\.(?:js|css)(?:\.map)?$/;
 app.use(
     express.static(browserDistFolder, {
-        maxAge: '1y',
         index: false,
         redirect: false,
+        setHeaders: (res, path) => {
+            res.setHeader(
+                'Cache-Control',
+                hashedFile.test(path) ? 'public, max-age=31536000, immutable' : 'public, max-age=3600'
+            );
+        },
     })
 );
 
