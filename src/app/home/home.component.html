@@ -248,34 +248,50 @@
             <h2>Frequently Asked Questions</h2>
             <div class="split-column faq-table">
                 <ul>
-                    <li
-                        (click)="setFaqSelection(1)"
-                        [style.font-weight]="faqSelection == 1 ? 'bold' : 'normal'"
-                    >
-                        <span>How can I speak at DevFestMN?</span>
+                    <li>
+                        <button
+                            type="button"
+                            (click)="setFaqSelection(1)"
+                            [attr.aria-expanded]="faqSelection == 1"
+                            aria-controls="faq-answer"
+                        >
+                            How can I speak at DevFestMN?
+                        </button>
                     </li>
-                    <li
-                        (click)="setFaqSelection(2)"
-                        [style.font-weight]="faqSelection == 2 ? 'bold' : 'normal'"
-                    >
-                        <span>How do I become a DevFestMN sponsor?</span>
+                    <li>
+                        <button
+                            type="button"
+                            (click)="setFaqSelection(2)"
+                            [attr.aria-expanded]="faqSelection == 2"
+                            aria-controls="faq-answer"
+                        >
+                            How do I become a DevFestMN sponsor?
+                        </button>
                     </li>
-                    <li
-                        (click)="setFaqSelection(3)"
-                        [style.font-weight]="faqSelection == 3 ? 'bold' : 'normal'"
-                    >
-                        <span>How can I volunteer at DevFestMN events?</span>
+                    <li>
+                        <button
+                            type="button"
+                            (click)="setFaqSelection(3)"
+                            [attr.aria-expanded]="faqSelection == 3"
+                            aria-controls="faq-answer"
+                        >
+                            How can I volunteer at DevFestMN events?
+                        </button>
                     </li>
-                    <li
-                        (click)="setFaqSelection(4)"
-                        [style.font-weight]="faqSelection == 4 ? 'bold' : 'normal'"
-                    >
-                        <span>What do I wear?</span>
+                    <li>
+                        <button
+                            type="button"
+                            (click)="setFaqSelection(4)"
+                            [attr.aria-expanded]="faqSelection == 4"
+                            aria-controls="faq-answer"
+                        >
+                            What do I wear?
+                        </button>
                     </li>
                 </ul>
 
                 @if (faqSelection == 1) {
-                <div>
+                <div id="faq-answer" aria-live="polite">
                     <p>
                         @if(environment.showCFP) { The CFP is open until
                         {{ environment.cfpCloses | date: 'MMMM d' }}!
@@ -284,7 +300,7 @@
                     </p>
                 </div>
                 } @if (faqSelection == 2) {
-                <div>
+                <div id="faq-answer" aria-live="polite">
                     <p>
                         We offer a variety of sponsorship levels and love to work with companies to
                         find the right arrangement.
@@ -295,7 +311,7 @@
                     </p>
                 </div>
                 } @if (faqSelection == 3) {
-                <div>
+                <div id="faq-answer" aria-live="polite">
                     <p>
                         @if(environment.showVolunteer) { Sign up to volunteer through
                         <a href="{{ environment.showVolunteer }}">Sign Up</a>. We're accepting
@@ -304,7 +320,7 @@
                     </p>
                 </div>
                 } @if (faqSelection == 4) {
-                <div>
+                <div id="faq-answer" aria-live="polite">
                     <p>
                         We like to keep things casual at DevFestMN but wear whatever makes you feel
                         comfortable! Most people wear jeans and a t-shirt.

@@ -594,11 +594,23 @@ button.button.warn {
     margin-right: 1rem;
 }
 
-.faq-table ul li {
-    font-weight: bold;
+.faq-table ul li button {
+    all: unset;
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
     font-size: 16px;
     padding: 24px 0;
     cursor: pointer;
+}
+
+.faq-table ul li button[aria-expanded='true'] {
+    font-weight: bold;
+}
+
+.faq-table ul li button:focus-visible {
+    outline: 2px solid #0066cc;
+    outline-offset: 2px;
 }
 
 .faq-table ul li:not(:last-child) {

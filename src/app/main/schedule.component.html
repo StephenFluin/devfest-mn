@@ -7,20 +7,26 @@
 
     @if (authService.uid()) {
     <div class="button-container" style="margin: 40px 0; line-height: 40px">
-        <a
+        <button
+            type="button"
             (click)="showAgenda.set(true)"
             [class.cta-unselected]="!showAgenda()"
+            [attr.aria-pressed]="showAgenda()"
             class="cta"
-            style="cursor: pointer; display: inline; border: 1px solid #19a9e5"
-            >My Agenda</a
+            style="border: 1px solid #19a9e5"
         >
-        <a
+            My Agenda
+        </button>
+        <button
+            type="button"
             (click)="showAgenda.set(false)"
             [class.cta-unselected]="showAgenda()"
+            [attr.aria-pressed]="!showAgenda()"
             class="cta"
-            style="cursor: pointer; display: inline; border: 1px solid #19a9e5; white-space: nowrap"
-            >Full Schedule</a
+            style="border: 1px solid #19a9e5; white-space: nowrap"
         >
+            Full Schedule
+        </button>
     </div>
     }
     <div></div>
