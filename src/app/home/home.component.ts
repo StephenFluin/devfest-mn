@@ -74,6 +74,7 @@ export class HomeComponent {
             startDate: `${environment.eventDate}T09:00-06:00`,
             endDate: `${environment.eventDate}T17:00-06:00`,
             eventStatus: 'https://schema.org/EventScheduled',
+            eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
             location: {
                 '@type': 'Place',
                 name: environment.venueName,
@@ -88,6 +89,15 @@ export class HomeComponent {
             },
             image: [`${environment.siteUrl}${environment.socialImage}`],
             description: environment.siteDescription,
+            url: environment.siteUrl,
+            ...(environment.showRegister && {
+                offers: {
+                    '@type': 'Offer',
+                    url: `https://www.eventbrite.com/e/${environment.eventbriteEventId}`,
+                    priceCurrency: 'USD',
+                    availability: 'https://schema.org/InStock',
+                },
+            }),
             organizer: {
                 '@type': 'Organization',
                 name: 'GDG Twin Cities',

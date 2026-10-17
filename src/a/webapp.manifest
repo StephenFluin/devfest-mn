@@ -1,7 +1,7 @@
 {
   "name": "DevFestMN",
   "short_name": "DevFestMN",
-  "start_url": "/schedule",
+  "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#858b91",
