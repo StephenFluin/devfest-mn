@@ -11,13 +11,11 @@ import { Component } from '@angular/core';
                     <li><a href="https://2025.devfest.mn">DevFestMN 2025</a></li>
                     <li><a href="https://2024.devfest.mn">DevFestMN 2024</a></li>
                     <li><a href="https://2023.devfest.mn">DevFestMN 2023</a></li>
-                    <li><a href="https://2022.devfest.mn">DevFestMN 2022</a></li>
-                    <li><a href="https://2021.devfest.mn">DevFestMN 2021</a></li>
-                    <li><a href="https://past.devfest.mn/2019/speakers">DevFestMN AI 2019</a></li>
+                    <li><a href="https://past.devfest.mn/2019ai/speakers">DevFestMN 2019: Focus on ML + AI</a></li>
                     <li><a href="https://past.devfest.mn/2019/speakers">DevFestMN 2019</a></li>
                     <li><a href="https://past.devfest.mn/2018/speakers">DevFestMN 2018</a></li>
                     <li><a href="https://past.devfest.mn/2017/speakers">DevFestMN 2017</a></li>
-                    <li><a href="https://past.devfest.mn/2016/speakers">DevFestMN 2016</a></li>
+                    <li><a href="https://past.devfest.mn/a/2016/">DevFestMN 2016</a></li>
                 </ul>
             </div>
         </section>
