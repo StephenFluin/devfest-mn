@@ -15,9 +15,10 @@
             @if (environment.showRegister) {
             <a
                 id="global-ticket-button"
+                href="/tickets"
                 (mouseenter)="loadEBWidget()"
                 (focus)="loadEBWidget()"
-                (click)="lazyClickEBWidget()"
+                (click)="lazyClickEBWidget($event)"
                 class="button"
                 >Tickets</a
             >

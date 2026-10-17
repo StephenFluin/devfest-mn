@@ -1,39 +1,15 @@
-import { Component, inject, PLATFORM_ID } from '@angular/core';
-import { eventbriteAttribution, trackTicketPurchase } from '../analytics.util';
-import { environment } from '../../environments/environment';
-
-import { isPlatformBrowser } from '@angular/common';
+import { Component } from '@angular/core';
+import { TicketEmbedComponent } from '../ticket-embed/ticket-embed.component';
 
 @Component({
     selector: 'app-tickets',
-    imports: [],
+    imports: [TicketEmbedComponent],
     host: { ngSkipHydration: 'true' },
     template: `
         <section>
             <h2>Buy Tickets</h2>
-            <div id="eventbrite-widget-container-1684295616529"></div>
-            @if (!isSecure) {
-            <p>Ticket window isn't loaded over http.</p>
-            }
+            <app-ticket-embed></app-ticket-embed>
         </section>
     `,
 })
-export class TicketsComponent {
-    platformId = inject(PLATFORM_ID);
-    isBrowser = isPlatformBrowser(this.platformId);
-    isSecure = this.isBrowser && window?.location?.protocol === 'https:';
-    constructor() {
-        if (this.isSecure && this.isBrowser) {
-            import('../../eb-widget').then(() => {
-                window?.['EBWidgets']?.createWidget({
-                    widgetType: 'checkout',
-                    eventId: environment.eventbriteEventId,
-                    ...eventbriteAttribution(),
-                    modal: true,
-                    modalTriggerElementId: 'global-ticket-button',
-                    onOrderComplete: trackTicketPurchase,
-                });
-            });
-        }
-    }
-}
+export class TicketsComponent {}

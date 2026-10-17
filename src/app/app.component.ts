@@ -72,13 +72,13 @@ export class AppComponent {
         }
         this.lazyLoadEBWidget();
     }
+    private widgetLoading: Promise<void> | undefined;
     lazyLoadEBWidget() {
         if (!this.isBrowser || !this.isSecure) {
             return Promise.resolve();
         }
-        return import('../eb-widget').then(() => {
-            console.log('eb-widget loaded');
-            console.log(window['EBWidgets']);
+        // Hovering, focusing and clicking can all ask for the widget; only create it once.
+        return (this.widgetLoading ??= import('../eb-widget').then(() => {
             window['EBWidgets'].createWidget({
                 widgetType: 'checkout',
                 eventId: environment.eventbriteEventId,
@@ -88,23 +88,27 @@ export class AppComponent {
                 onOrderComplete: trackTicketPurchase,
             });
             this.widgetReady = true;
-        });
+        }).catch((error) => {
+            this.widgetLoading = undefined;
+            throw error;
+        }));
     }
     /*
-     * Let the user click before the widget is loaded, then click it for them
+     * Open the checkout modal in place of following the link. The link itself goes to /tickets,
+     * which still works before the app has loaded and over http, where the widget can't run.
+     * If the user clicks before the widget is loaded, load it and then click it for them.
      */
-    lazyClickEBWidget() {
-        if (!this.isBrowser) {
+    lazyClickEBWidget(event: MouseEvent) {
+        const opensNewTab = event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0;
+        if (!this.isBrowser || !this.isSecure || opensNewTab) {
             return;
         }
-        if (!this.isSecure) {
-            alert('Eventbrite widget requires a secure (https) connection to load.');
-            return;
-        }
-        if (!this.widgetReady && this.isSecure) {
-            this.lazyLoadEBWidget().then(() => {
-                document.getElementById('global-ticket-button')?.click();
-            });
+        event.preventDefault();
+        if (!this.widgetReady) {
+            this.lazyLoadEBWidget().then(
+                () => document.getElementById('global-ticket-button')?.click(),
+                () => window.location.assign('/tickets')
+            );
         }
     }
 }
