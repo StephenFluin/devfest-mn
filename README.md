@@ -110,3 +110,20 @@ current year into that file and load it into the new project:
 ```bash
 npx firebase database:update /burndown data/burndown-history.json --project <new-project>
 ```
+
+## UTM funnel
+
+The admin UTM funnel page (`/admin/utm-funnel`) tables visits, engaged visits, and ticket sales by UTM source,
+medium, and campaign. A visit is credited to the last campaign the visitor arrived from in the past 30 days
+(the same attribution passed to Eventbrite checkout), or to the linking site when there's no campaign.
+
+The site records this itself rather than through Google Analytics. The browser sends small events to
+`/api/visit` (`src/app/visit-tracker.ts`), and the server writes them to `analytics/<year>/sessions`
+(`src/visit-analytics.ts`). Visits are anonymous: no IP address, user agent, or ID that links visits together
+is stored.
+
+Browsers can't write to `analytics`, so the server writes with its own identity, the App Hosting compute
+service account. If visits don't show up after a deploy, check the server logs for permission errors and grant
+that account (`firebase-app-hosting-compute@<project>.iam.gserviceaccount.com`) the **Firebase Realtime
+Database Admin** role. Locally, events are dropped unless `FIREBASE_DATABASE_EMULATOR_HOST` points at the
+Realtime Database emulator.

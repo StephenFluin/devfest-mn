@@ -1,9 +1,12 @@
+import { trackVisitPurchase } from './visit-tracker';
+
 declare global {
     interface Window {
         gtag: any;
     }
 }
 export const trackTicketPurchase = function (orderData: any) {
+    trackVisitPurchase(orderData.orderId);
     window.gtag('event', 'purchase', {
         transaction_id: orderData.orderId,
         value: 50.0,
@@ -46,7 +49,7 @@ export function captureAttribution() {
     } catch {}
 }
 
-function storedAttribution(): Attribution {
+export function storedAttribution(): Attribution {
     try {
         const { savedAt, ...stored } = JSON.parse(localStorage.getItem(ATTRIBUTION_KEY) ?? '{}');
         if (Date.now() - savedAt < ATTRIBUTION_DAYS * 24 * 60 * 60 * 1000) {

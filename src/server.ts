@@ -10,6 +10,7 @@ import { join } from 'node:path';
 import * as fs from 'node:fs/promises';
 import { environment } from './environments/environment';
 import { slugify } from './app/shared/slug';
+import { addVisitAnalytics } from './visit-analytics';
 
 // Set timezone to Central Time for SSR
 process.env['TZ'] = 'America/Chicago';
@@ -262,6 +263,8 @@ app.post('/api/admin/burndown/update', async (req, res) => {
         res.status(502).json({ error: 'Unable to update from Eventbrite' });
     }
 });
+
+addVisitAnalytics(app);
 
 /**
  * Serve static files from /browser. Build output with a content hash in its name (main-AB12cd34.js)

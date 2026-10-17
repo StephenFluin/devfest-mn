@@ -15,6 +15,7 @@ import { OurMeta } from './our-meta.service';
 
 import { ADirective } from './a.directive';
 import { captureAttribution, eventbriteAttribution, trackTicketPurchase } from './analytics.util';
+import { trackPageView } from './visit-tracker';
 
 @Component({
     selector: 'app-root',
@@ -48,6 +49,13 @@ export class AppComponent {
                 }
                 meta.setDescription(data['description']);
                 meta.setCanonical(n.urlAfterRedirects.split(/[?#]/)[0].slice(1));
+
+                if (this.isBrowser) {
+                    const path = n.urlAfterRedirects.split(/[?#]/)[0];
+                    if (!path.startsWith('/admin')) {
+                        trackPageView(path);
+                    }
+                }
 
                 if (typeof window !== 'undefined') {
                     // Honor in-page anchors like /#tickets; otherwise start each page at the top.

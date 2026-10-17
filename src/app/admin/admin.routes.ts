@@ -61,6 +61,13 @@ export const AdminRoutes: Routes = [
                                     import('./burndown.component').then((m) => m.BurndownComponent),
                             },
                             {
+                                path: 'utm-funnel',
+                                loadComponent: () =>
+                                    import('./utm-funnel.component').then(
+                                        (m) => m.UtmFunnelComponent
+                                    ),
+                            },
+                            {
                                 path: 'volunteers',
                                 loadComponent: () =>
                                     import('./volunteers.component').then(

@@ -10,6 +10,10 @@
             ".read": "root.child('admin/'+auth.uid).exists()",
             ".write": "root.child('admin/'+auth.uid).exists()"
         },
+        "analytics": {
+            ".read": "root.child('admin/'+auth.uid).exists()",
+            ".write": false
+        },
         "users": {
             "$user_id": {
                 ".read": "$user_id === auth.uid",
