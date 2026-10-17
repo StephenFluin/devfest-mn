@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { afterRenderEffect, Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { ref } from 'firebase/database';
 
@@ -162,7 +162,7 @@ function daysBefore(day: string, eventDate: string) {
         </table>
 
         <h3>Cumulative tickets by day</h3>
-        <div class="by-day">
+        <div class="by-day" #byDay>
             <table>
                 <thead>
                     <tr>
@@ -241,6 +241,22 @@ export class BurndownComponent {
     readonly width = WIDTH;
     readonly height = HEIGHT;
     readonly pad = PAD;
+
+    byDay = viewChild<ElementRef<HTMLElement>>('byDay');
+    private scrolledToToday = false;
+
+    constructor() {
+        // Once the by-day table first renders, scroll it (not the page) so today's row is centered.
+        afterRenderEffect(() => {
+            const table = this.byDay()?.nativeElement;
+            this.days();
+            const row = table?.querySelector<HTMLElement>('tr.today');
+            if (!table || !row || this.scrolledToToday) return;
+            const offset = row.getBoundingClientRect().top - table.getBoundingClientRect().top;
+            table.scrollTop += offset - (table.clientHeight - row.offsetHeight) / 2;
+            this.scrolledToToday = true;
+        });
+    }
 
     updating = signal(false);
     message = signal('');
