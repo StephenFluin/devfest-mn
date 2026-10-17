@@ -14,6 +14,17 @@ const GROUPINGS: { label: string; dimensions: Dimension[] }[] = [
     { label: 'Source', dimensions: ['source'] },
     { label: 'Campaign', dimensions: ['campaign'] },
 ];
+/** Shown at the bottom of the page and as hover text on the tiles and column headers. */
+const DEFINITIONS = {
+    visit:
+        'One visit to the public site. A visit ends after 30 minutes without a page view; admin pages are not counted.',
+    engaged:
+        'A visit that stayed on a page for 10 seconds while it was visible, viewed a second page, bought tickets, or clicked through to the call for papers form.',
+    sales: 'A visit that completed at least one Eventbrite ticket order on the site.',
+    cfp: 'A visit that clicked through to the external call for papers form.',
+    credit:
+        'Visits are credited to the last UTM campaign the visitor arrived from in the past 30 days (the same credit Eventbrite checkout gets). Without one, they go to the site that linked to them (medium "referral"), or to "(direct)".',
+};
 const RANGES = [
     { label: 'All time', days: 0 },
     { label: 'Last 30 days', days: 30 },
@@ -25,12 +36,6 @@ const RANGES = [
     template: `
         @if (auth.isAdmin()) {
         <h2>UTM funnel</h2>
-        <p class="muted">
-            Visits to the site, visits that engaged (10 seconds on the page, a second page, a
-            purchase, or a CFP click), visits that bought tickets, and visits that clicked through to
-            the call for papers form. Visits are credited to the last UTM campaign
-            the visitor arrived from in the past 30 days, otherwise to the linking site.
-        </p>
         <div class="toolbar">
             <label>
                 Group by
@@ -51,16 +56,16 @@ const RANGES = [
         </div>
 
         <div class="tiles">
-            <div><span>Visits</span><b>{{ total().visits | number }}</b></div>
-            <div>
+            <div [title]="definitions.visit"><span>Visits</span><b>{{ total().visits | number }}</b></div>
+            <div [title]="definitions.engaged">
                 <span>Engaged</span><b>{{ total().engaged | number }}</b>
                 <small>{{ rate(total().engaged, total().visits) | percent: '1.0-1' }} of visits</small>
             </div>
-            <div>
+            <div [title]="definitions.sales">
                 <span>Ticket sales</span><b>{{ total().sales | number }}</b>
                 <small>{{ rate(total().sales, total().engaged) | percent: '1.0-1' }} of engaged</small>
             </div>
-            <div>
+            <div [title]="definitions.cfp">
                 <span>CFP clicks</span><b>{{ total().cfp | number }}</b>
                 <small>{{ rate(total().cfp, total().engaged) | percent: '1.0-1' }} of engaged</small>
             </div>
@@ -72,15 +77,15 @@ const RANGES = [
                 <thead>
                     <tr>
                         @for (d of dimensions(); track d) {
-                        <th class="key">{{ d }}</th>
+                        <th class="key" [title]="definitions.credit">{{ d }}</th>
                         }
-                        <th>Visits</th>
-                        <th>Engaged</th>
-                        <th>Engaged %</th>
-                        <th>Sales</th>
-                        <th>Sales %</th>
-                        <th>CFP</th>
-                        <th>CFP %</th>
+                        <th [title]="definitions.visit">Visits</th>
+                        <th [title]="definitions.engaged">Engaged</th>
+                        <th title="Engaged visits as a share of visits">Engaged %</th>
+                        <th [title]="definitions.sales">Sales</th>
+                        <th title="Visits with a ticket sale as a share of visits">Sales %</th>
+                        <th [title]="definitions.cfp">CFP</th>
+                        <th title="Visits that clicked through to the call for papers form as a share of visits">CFP %</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -103,7 +108,21 @@ const RANGES = [
         </div>
         } @else {
         <p class="muted">No visits recorded for these dates yet.</p>
-        } }
+        }
+
+        <dl class="muted">
+            <dt>Visit</dt>
+            <dd>{{ definitions.visit }}</dd>
+            <dt>Engaged</dt>
+            <dd>{{ definitions.engaged }}</dd>
+            <dt>Ticket sale</dt>
+            <dd>{{ definitions.sales }}</dd>
+            <dt>CFP click</dt>
+            <dd>{{ definitions.cfp }}</dd>
+            <dt>Source, medium, campaign</dt>
+            <dd>{{ definitions.credit }}</dd>
+        </dl>
+        }
     `,
     styles: `
         :host { display: block; max-width: 960px; }
@@ -119,6 +138,10 @@ const RANGES = [
         th, td { padding: 4px 16px 4px 0; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
         .key { text-align: left; }
         tbody tr:hover td { background: #f0efec; }
+        [title] { cursor: help; }
+        dl { margin-top: 32px; max-width: 640px; }
+        dt { font-weight: 600; margin-top: 8px; }
+        dd { margin: 0; }
     `,
     imports: [DecimalPipe, PercentPipe],
 })
@@ -128,6 +151,7 @@ export class UtmFunnelComponent {
 
     readonly groupings = GROUPINGS;
     readonly ranges = RANGES;
+    readonly definitions = DEFINITIONS;
     grouping = signal(0);
     range = signal(0);
 
