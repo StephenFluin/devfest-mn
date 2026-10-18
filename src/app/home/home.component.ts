@@ -7,7 +7,7 @@ import { RouterLink } from '@angular/router';
 import { ADirective } from '../a.directive';
 
 import { TicketEmbedComponent } from '../ticket-embed/ticket-embed.component';
-import { LdJsonService } from '../ld-json.service';
+import { OurMeta } from '../our-meta.service';
 import { cfpCountdown } from '../shared/cfp-deadline';
 import { DataService } from '../shared/data.service';
 import { slugify } from '../shared/slug';
@@ -75,7 +75,7 @@ declare global {
 export class HomeComponent {
     environment = environment;
     faqSelection = 1;
-    ldJsonService = inject(LdJsonService);
+    private meta = inject(OurMeta);
     cfpCountdown = cfpCountdown();
     slugify = slugify;
     private ds = inject(DataService);
@@ -104,7 +104,7 @@ export class HomeComponent {
     /** Event structured data; re-set when the confirmed speakers (its performers) change. */
     private eventData = effect(() => {
         const performers = this.speakers();
-        this.ldJsonService.setLdJson({
+        this.meta.setStructuredData({
             '@context': 'https://schema.org',
             '@type': 'Event',
             name: 'DevFestMN 2026',

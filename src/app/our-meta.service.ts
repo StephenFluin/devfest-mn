@@ -4,6 +4,7 @@ import { Injectable, inject, DOCUMENT } from '@angular/core';
 
 const DEFAULT_IMAGE_ALT = `${environment.siteName} ${environment.year}, ${environment.eventDateDisplay}, Twin Cities developer conference`;
 
+/** What a page tells search engines and social sites about itself, all in the document head. */
 @Injectable({ providedIn: 'root' })
 export class OurMeta {
     title = inject(Title);
@@ -68,6 +69,29 @@ export class OurMeta {
     /** og:type: 'website' for most pages, 'profile' for a person. */
     setType(type: 'website' | 'profile' = 'website') {
         this.meta.updateTag({ property: 'og:type', content: type });
+    }
+
+    /** The page's schema.org structured data (JSON-LD), replacing any the page had; null removes it. */
+    setStructuredData(data: object | null) {
+        this.doc.head
+            .querySelectorAll('script[type="application/ld+json"]')
+            .forEach((script) => script.remove());
+        if (data) {
+            const script = this.doc.createElement('script');
+            script.type = 'application/ld+json';
+            script.textContent = JSON.stringify(data);
+            this.doc.head.appendChild(script);
+        }
+    }
+
+    /**
+     * Back to the site defaults for the share image, page type, and structured data, so nothing
+     * carries over from the previous page. Title, description, and canonical come from the route.
+     */
+    reset() {
+        this.setImage();
+        this.setType();
+        this.setStructuredData(null);
     }
 
     private applyTitle(title: string) {

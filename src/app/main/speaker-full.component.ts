@@ -5,7 +5,6 @@ import snarkdown from 'snarkdown';
 
 import { environment } from '../../environments/environment';
 import { ADirective } from '../a.directive';
-import { LdJsonService } from '../ld-json.service';
 import { OurMeta } from '../our-meta.service';
 import { AuthService } from '../realtime-data/auth.service';
 import { DataService, Session, Speaker } from '../shared/data.service';
@@ -41,7 +40,6 @@ export class SpeakerFullComponent {
 
     constructor() {
         const meta = inject(OurMeta);
-        const ldJson = inject(LdJsonService);
         effect(() => {
             const speaker = this.speaker();
             if (!speaker?.name) return;
@@ -67,7 +65,7 @@ export class SpeakerFullComponent {
             } else if (speaker.imageUrl) {
                 meta.setImage(absolute(speaker.imageUrl), alt);
             }
-            ldJson.setLdJson(personData(speaker, path, this.links().map((link) => link.url)));
+            meta.setStructuredData(personData(speaker, path, this.links().map((link) => link.url)));
         });
     }
 }

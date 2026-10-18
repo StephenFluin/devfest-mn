@@ -6,7 +6,7 @@ import { DataService, Session } from '../shared/data.service';
 import { AuthService } from '../realtime-data/auth.service';
 import { MatButtonModule } from '@angular/material/button';
 import { ScheduleGridComponent } from './schedule-grid.component';
-import { LdJsonService } from '../ld-json.service';
+import { OurMeta } from '../our-meta.service';
 
 export interface Schedule {
     startTimes: any[];
@@ -21,7 +21,7 @@ export interface Schedule {
 export class ScheduleComponent {
     ds = inject(DataService);
     authService = inject(AuthService);
-    ldJsonService = inject(LdJsonService);
+    private meta = inject(OurMeta);
     router = inject(Router);
 
     showAgenda = signal(false);
@@ -73,7 +73,7 @@ export class ScheduleComponent {
                     },
                 });
             }
-            this.ldJsonService.setLdJson(agendaMetadata);
+            this.meta.setStructuredData(agendaMetadata);
         });
     }
 
