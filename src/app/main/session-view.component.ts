@@ -9,6 +9,7 @@ import { DataService, Session } from '../shared/data.service';
 import { OurMeta } from '../our-meta.service';
 import { SessionDetailsComponent } from './session-details.component';
 import { environment } from '../../environments/environment';
+import { sessionEvent } from '../shared/event-data';
 
 @Component({
     templateUrl: './session-view.component.html',
@@ -51,6 +52,12 @@ export class SessionViewComponent {
                 meta.setCanonical(`schedule/${session.$key}/${slugify(session.title)}`);
                 if (session.description) {
                     meta.setDescription(summarize(session.description));
+                }
+                const talk = sessionEvent(session, (key) => this.ds.speaker(key), {
+                    standalone: true,
+                });
+                if (talk) {
+                    meta.setStructuredData({ '@context': 'https://schema.org', ...talk });
                 }
             }
         });

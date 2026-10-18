@@ -7,8 +7,7 @@ import { AuthService } from '../realtime-data/auth.service';
 import { MatButtonModule } from '@angular/material/button';
 import { ScheduleGridComponent } from './schedule-grid.component';
 import { OurMeta } from '../our-meta.service';
-import { environment } from '../../environments/environment';
-import { slugify, summarize } from '../shared/slug';
+import { conferenceEvent, scheduledSessionEvents } from '../shared/event-data';
 
 export interface Schedule {
     startTimes: any[];
@@ -34,58 +33,12 @@ export class ScheduleComponent {
     data = computed(() => (this.showAgenda() ? this.populatedAgenda() : this.allSessions()));
 
     constructor() {
-        // The schedule as a list of events, each part of the conference and linked to its page.
+        // The conference with its scheduled talks as sub-events.
         effect(() => {
-            const sessions = [...this.ds.schedule()]
-                .filter((session) => session.title)
-                .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-            if (!sessions.length) return;
-            const conference = {
-                '@type': 'Event',
-                name: `DevFestMN ${environment.year}`,
-                url: environment.siteUrl,
-            };
+            const talks = scheduledSessionEvents(this.ds.schedule(), (key) => this.ds.speaker(key));
             this.meta.setStructuredData({
                 '@context': 'https://schema.org',
-                '@type': 'ItemList',
-                name: `DevFestMN ${environment.year} Schedule`,
-                itemListElement: sessions.map((session, i) => {
-                    // A session's speakers map ids to speaker keys; only confirmed speakers are public.
-                    const performers = Object.values<string>(session.speakers ?? {})
-                        .map((key) => this.ds.speaker(key))
-                        .filter((speaker) => speaker?.confirmed && speaker.name)
-                        .map((speaker) => ({
-                            '@type': 'Person',
-                            name: speaker.name,
-                            url: `${environment.siteUrl}/speakers/${speaker.$key}/${slugify(speaker.name)}`,
-                        }));
-                    return {
-                        '@type': 'ListItem',
-                        position: i + 1,
-                        item: {
-                            '@type': 'Event',
-                            name: session.title,
-                            url: `${environment.siteUrl}/schedule/${session.$key}/${slugify(session.title)}`,
-                            ...(session.description && {
-                                description: summarize(session.description, 500),
-                            }),
-                            ...(session.startTime && { startDate: session.startTime }),
-                            location: {
-                                '@type': 'Place',
-                                name: session.room || environment.venueName,
-                                ...(session.room && {
-                                    containedInPlace: {
-                                        '@type': 'Place',
-                                        name: environment.venueName,
-                                        address: environment.venueAddress,
-                                    },
-                                }),
-                            },
-                            ...(performers.length && { performer: performers }),
-                            superEvent: conference,
-                        },
-                    };
-                }),
+                ...conferenceEvent(talks.length ? { subEvent: talks } : {}),
             });
         });
     }

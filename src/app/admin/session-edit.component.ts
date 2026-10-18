@@ -16,15 +16,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { KeyValuePipe } from '@angular/common';
 import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
 import { environment } from '../../environments/environment';
+import { eventUtcOffset } from '../shared/event-data';
 
-/** Minneapolis's UTC offset on the event date, e.g. "-06:00". */
-const eventUtcOffset = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/Chicago',
-    timeZoneName: 'longOffset',
-})
-    .formatToParts(new Date(`${environment.eventDate}T12:00:00Z`))
-    .find((part) => part.type === 'timeZoneName')
-    .value.replace('GMT', '');
 
 @Component({
     templateUrl: './session-edit.component.html',

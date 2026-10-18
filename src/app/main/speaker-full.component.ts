@@ -9,6 +9,7 @@ import { OurMeta } from '../our-meta.service';
 import { AuthService } from '../realtime-data/auth.service';
 import { DataService, Session, Speaker } from '../shared/data.service';
 import { slugify, summarize } from '../shared/slug';
+import { conferenceEvent, sessionEvent } from '../shared/event-data';
 
 /** An absolute URL for an image that may be stored as a site-relative path. */
 const absolute = (url: string) => (url.startsWith('/') ? `${environment.siteUrl}${url}` : url);
@@ -65,7 +66,14 @@ export class SpeakerFullComponent {
             } else if (speaker.imageUrl) {
                 meta.setImage(absolute(speaker.imageUrl), alt);
             }
-            meta.setStructuredData(personData(speaker, path, this.links().map((link) => link.url)));
+            const talks = sessions
+                .map((session) =>
+                    sessionEvent(session, (key) => this.ds.speaker(key), { standalone: true })
+                )
+                .filter(Boolean);
+            meta.setStructuredData(
+                personData(speaker, path, this.links().map((link) => link.url), talks)
+            );
         });
     }
 }
@@ -81,7 +89,8 @@ function describe(speaker: Speaker, sessions: Session[]) {
     return full.length <= 160 ? full : summarize(intro);
 }
 
-function personData(speaker: Speaker, path: string, sameAs: string[]) {
+/** The speaker, performing in their scheduled talks (or the conference, before talks have times). */
+function personData(speaker: Speaker, path: string, sameAs: string[], talks: object[]) {
     return {
         '@context': 'https://schema.org',
         '@type': 'Person',
@@ -91,16 +100,6 @@ function personData(speaker: Speaker, path: string, sameAs: string[]) {
         ...(speaker.bio && { description: summarize(speaker.bio) }),
         ...(speaker.company && { worksFor: { '@type': 'Organization', name: speaker.company } }),
         ...(sameAs.length && { sameAs }),
-        performerIn: {
-            '@type': 'Event',
-            name: `DevFestMN ${environment.year}`,
-            startDate: `${environment.eventDate}T09:00-06:00`,
-            url: environment.siteUrl,
-            location: {
-                '@type': 'Place',
-                name: environment.venueName,
-                address: environment.venueAddress,
-            },
-        },
+        performerIn: talks.length ? talks : conferenceEvent(),
     };
 }

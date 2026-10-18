@@ -11,6 +11,7 @@ import { OurMeta } from '../our-meta.service';
 import { cfpCountdown } from '../shared/cfp-deadline';
 import { DataService } from '../shared/data.service';
 import { slugify } from '../shared/slug';
+import { conferenceEvent, personRef } from '../shared/event-data';
 
 declare global {
     interface Window {
@@ -106,47 +107,7 @@ export class HomeComponent {
         const performers = this.speakers();
         this.meta.setStructuredData({
             '@context': 'https://schema.org',
-            '@type': 'Event',
-            name: 'DevFestMN 2026',
-            startDate: `${environment.eventDate}T09:00-06:00`,
-            endDate: `${environment.eventDate}T17:00-06:00`,
-            eventStatus: 'https://schema.org/EventScheduled',
-            eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-            location: {
-                '@type': 'Place',
-                name: environment.venueName,
-                address: {
-                    '@type': 'PostalAddress',
-                    streetAddress: '46 S 11th St',
-                    addressLocality: 'Minneapolis',
-                    postalCode: '55403',
-                    addressRegion: 'MN',
-                    addressCountry: 'US',
-                },
-            },
-            image: [`${environment.siteUrl}${environment.socialImage}`],
-            description: environment.siteDescription,
-            url: environment.siteUrl,
-            ...(environment.showRegister && {
-                offers: {
-                    '@type': 'Offer',
-                    url: `https://www.eventbrite.com/e/${environment.eventbriteEventId}`,
-                    priceCurrency: 'USD',
-                    availability: 'https://schema.org/InStock',
-                },
-            }),
-            organizer: {
-                '@type': 'Organization',
-                name: 'GDG Twin Cities',
-                url: 'https://gdg.community.dev/gdg-twin-cities/',
-            },
-            ...(performers.length && {
-                performer: performers.map((speaker) => ({
-                    '@type': 'Person',
-                    name: speaker.name,
-                    url: `${environment.siteUrl}/speakers/${speaker.$key}/${slugify(speaker.name)}`,
-                })),
-            }),
+            ...conferenceEvent(performers.length ? { performer: performers.map(personRef) } : {}),
         });
     });
 
