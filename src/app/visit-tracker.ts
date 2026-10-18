@@ -41,6 +41,14 @@ export function trackVisitPurchase(orderId: unknown) {
     send({ type: 'purchase', sid: session.sid, order: String(orderId) });
 }
 
+/** Call when the visitor follows a link to the external call for papers form. */
+export function trackVisitCfp() {
+    if (!activeSession()) startSession(location.pathname);
+    session = { ...session!, last: Date.now(), engaged: true };
+    save();
+    send({ type: 'cfp', sid: session.sid });
+}
+
 function startSession(path: string) {
     session = { sid: crypto.randomUUID().replace(/-/g, ''), last: Date.now(), pages: 1, engaged: false };
     save();

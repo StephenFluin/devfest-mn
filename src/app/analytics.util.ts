@@ -1,4 +1,4 @@
-import { trackVisitPurchase } from './visit-tracker';
+import { trackVisitCfp, trackVisitPurchase } from './visit-tracker';
 
 declare global {
     interface Window {
@@ -14,6 +14,12 @@ export const trackTicketPurchase = function (orderData: any) {
         event_label: 'Ticket Sale',
     });
 };
+
+/** A click through to the external call for papers form. */
+export function trackCfpClick() {
+    trackVisitCfp();
+    window.gtag?.('event', 'cfp_click', { event_label: 'Call for Papers' });
+}
 
 const ATTRIBUTION_KEY = 'attribution';
 const ATTRIBUTION_DAYS = 30;

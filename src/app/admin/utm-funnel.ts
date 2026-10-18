@@ -9,6 +9,8 @@ export interface FunnelRow {
     engaged: number;
     /** Visits that ended in at least one ticket order. */
     sales: number;
+    /** Visits that clicked through to the call for papers form. */
+    cfp: number;
 }
 
 /**
@@ -40,10 +42,11 @@ export function funnelRows(
         if (sinceDay && !(session.day && session.day >= sinceDay)) continue;
         const keys = dimensions.map((dimension) => dimensionValue(session, dimension));
         const id = JSON.stringify(keys);
-        const row = rows.get(id) ?? { keys, visits: 0, engaged: 0, sales: 0 };
+        const row = rows.get(id) ?? { keys, visits: 0, engaged: 0, sales: 0, cfp: 0 };
         row.visits++;
         if (session.engaged) row.engaged++;
         if (session.orders && Object.keys(session.orders).length) row.sales++;
+        if (session.cfp) row.cfp++;
         rows.set(id, row);
     }
     return [...rows.values()].sort(
@@ -58,7 +61,8 @@ export function totalRow(rows: FunnelRow[]): FunnelRow {
             visits: total.visits + row.visits,
             engaged: total.engaged + row.engaged,
             sales: total.sales + row.sales,
+            cfp: total.cfp + row.cfp,
         }),
-        { keys: [], visits: 0, engaged: 0, sales: 0 }
+        { keys: [], visits: 0, engaged: 0, sales: 0, cfp: 0 }
     );
 }

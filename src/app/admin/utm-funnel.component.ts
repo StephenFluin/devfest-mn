@@ -26,8 +26,9 @@ const RANGES = [
         @if (auth.isAdmin()) {
         <h2>UTM funnel</h2>
         <p class="muted">
-            Visits to the site, visits that engaged (10 seconds on the page, a second page, or a
-            purchase), and visits that bought tickets. Visits are credited to the last UTM campaign
+            Visits to the site, visits that engaged (10 seconds on the page, a second page, a
+            purchase, or a CFP click), visits that bought tickets, and visits that clicked through to
+            the call for papers form. Visits are credited to the last UTM campaign
             the visitor arrived from in the past 30 days, otherwise to the linking site.
         </p>
         <div class="toolbar">
@@ -59,6 +60,10 @@ const RANGES = [
                 <span>Ticket sales</span><b>{{ total().sales | number }}</b>
                 <small>{{ rate(total().sales, total().engaged) | percent: '1.0-1' }} of engaged</small>
             </div>
+            <div>
+                <span>CFP clicks</span><b>{{ total().cfp | number }}</b>
+                <small>{{ rate(total().cfp, total().engaged) | percent: '1.0-1' }} of engaged</small>
+            </div>
         </div>
 
         @if (rows().length) {
@@ -74,6 +79,8 @@ const RANGES = [
                         <th>Engaged %</th>
                         <th>Sales</th>
                         <th>Sales %</th>
+                        <th>CFP</th>
+                        <th>CFP %</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -87,6 +94,8 @@ const RANGES = [
                         <td>{{ rate(row.engaged, row.visits) | percent: '1.0-1' }}</td>
                         <td>{{ row.sales | number }}</td>
                         <td>{{ rate(row.sales, row.visits) | percent: '1.0-1' }}</td>
+                        <td>{{ row.cfp | number }}</td>
+                        <td>{{ rate(row.cfp, row.visits) | percent: '1.0-1' }}</td>
                     </tr>
                     }
                 </tbody>

@@ -37,7 +37,7 @@
         </p>
 
         <p style="margin: 40px 0 8px; text-align: center">
-            <a class="cta all-caps" [href]="environment.cfpLink">Submit Your Talk</a>
+            <a class="cta all-caps" [href]="environment.cfpLink" (click)="trackCfpClick()">Submit Your Talk</a>
         </p>
         <p class="cfp-deadline">
             Closes {{ environment.cfpCloses | date: 'EEEE, MMMM d' }}
@@ -241,7 +241,7 @@
         </p>
 
         <p style="margin: 40px 0 8px; text-align: center">
-            <a class="cta all-caps" [href]="environment.cfpLink">Submit Your Talk</a>
+            <a class="cta all-caps" [href]="environment.cfpLink" (click)="trackCfpClick()">Submit Your Talk</a>
         </p>
         <p class="cfp-deadline">
             Closes {{ environment.cfpCloses | date: 'EEEE, MMMM d' }}

@@ -20,10 +20,12 @@ export interface VisitSession {
     /** Path of the first page viewed. */
     landing?: string;
     pages: number;
-    /** At least 10 seconds on the page, a second page view, or a ticket purchase. */
+    /** At least 10 seconds on the page, a second page view, a ticket purchase, or a CFP click. */
     engaged?: boolean;
     /** Eventbrite order IDs completed during the visit. */
     orders?: Record<string, true>;
+    /** Clicked through to the external call for papers form. */
+    cfp?: boolean;
 }
 
 export const SESSION_ID = /^[a-z0-9]{16,32}$/;
@@ -43,4 +45,5 @@ export type VisitEvent =
       >)
     | { type: 'page'; sid: string; pages: number }
     | { type: 'engaged'; sid: string }
-    | { type: 'purchase'; sid: string; order: string };
+    | { type: 'purchase'; sid: string; order: string }
+    | { type: 'cfp'; sid: string };

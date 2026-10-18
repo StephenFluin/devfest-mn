@@ -3,7 +3,7 @@ import { environment } from './environments/environment';
 import { CAMPAIGN_FIELDS, ORDER_ID, SESSION_ID, VisitSession } from './app/shared/visit-session';
 
 /**
- * First-party visit analytics for the admin UTM funnel (Visit → Engaged → Ticket sale). Browsers
+ * First-party visit analytics for the admin UTM funnel (Visit → Engaged → Ticket sale or CFP click). Browsers
  * POST small events to /api/visit and this writes them to analytics/<year>/sessions/<id>.
  *
  * Writes use the server's own Google identity (the App Hosting service account, from the Cloud Run
@@ -73,6 +73,8 @@ export function sessionUpdate(event: any, now = new Date()): Partial<VisitSessio
             return ORDER_ID.test(event.order)
                 ? ({ engaged: true, [`orders/${event.order}`]: true } as Partial<VisitSession>)
                 : null;
+        case 'cfp':
+            return { engaged: true, cfp: true };
     }
     return null;
 }
