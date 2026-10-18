@@ -7,6 +7,8 @@ import { AuthService } from '../realtime-data/auth.service';
 import { MatButtonModule } from '@angular/material/button';
 import { ScheduleGridComponent } from './schedule-grid.component';
 import { OurMeta } from '../our-meta.service';
+import { environment } from '../../environments/environment';
+import { slugify, summarize } from '../shared/slug';
 
 export interface Schedule {
     startTimes: any[];
@@ -32,48 +34,59 @@ export class ScheduleComponent {
     data = computed(() => (this.showAgenda() ? this.populatedAgenda() : this.allSessions()));
 
     constructor() {
+        // The schedule as a list of events, each part of the conference and linked to its page.
         effect(() => {
-            const sessionList = [...this.ds.schedule()];
-
-            if (sessionList.length <= 0) return;
-            const agendaMetadata = {
+            const sessions = [...this.ds.schedule()]
+                .filter((session) => session.title)
+                .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+            if (!sessions.length) return;
+            const conference = {
+                '@type': 'Event',
+                name: `DevFestMN ${environment.year}`,
+                url: environment.siteUrl,
+            };
+            this.meta.setStructuredData({
                 '@context': 'https://schema.org',
                 '@type': 'ItemList',
-                name: 'DevFestMN 2026 Full Conference Schedule',
-                itemListElement: [],
-            };
-            sessionList.sort((a, b) => {
-                return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
-            });
-            for (let session of sessionList) {
-                // Process each session into a ListItem and attach to itemListElement
-                agendaMetadata.itemListElement.push({
-                    '@type': 'ListItem',
-                    position: agendaMetadata.itemListElement.length + 1,
-                    item: {
-                        '@type': 'PublicationEvent',
-                        name: session.title,
-                        description: session.description,
-                        startDate: session.startTime,
-                        location: {
-                            '@type': 'Place',
-                            name: session.room,
-                        },
-                        performer: {
+                name: `DevFestMN ${environment.year} Schedule`,
+                itemListElement: sessions.map((session, i) => {
+                    // A session's speakers map ids to speaker keys; only confirmed speakers are public.
+                    const performers = Object.values<string>(session.speakers ?? {})
+                        .map((key) => this.ds.speaker(key))
+                        .filter((speaker) => speaker?.confirmed && speaker.name)
+                        .map((speaker) => ({
                             '@type': 'Person',
-                            name: session.speakers
-                                ? Array.isArray(session.speakers)
-                                    ? session.speakers.map((s) => s.name).join(', ')
-                                    : Object.values(session.speakers)
-                                          .map((s: any) => s.name)
-                                          .join(', ')
-                                : 'TBA',
+                            name: speaker.name,
+                            url: `${environment.siteUrl}/speakers/${speaker.$key}/${slugify(speaker.name)}`,
+                        }));
+                    return {
+                        '@type': 'ListItem',
+                        position: i + 1,
+                        item: {
+                            '@type': 'Event',
+                            name: session.title,
+                            url: `${environment.siteUrl}/schedule/${session.$key}/${slugify(session.title)}`,
+                            ...(session.description && {
+                                description: summarize(session.description, 500),
+                            }),
+                            ...(session.startTime && { startDate: session.startTime }),
+                            location: {
+                                '@type': 'Place',
+                                name: session.room || environment.venueName,
+                                ...(session.room && {
+                                    containedInPlace: {
+                                        '@type': 'Place',
+                                        name: environment.venueName,
+                                        address: environment.venueAddress,
+                                    },
+                                }),
+                            },
+                            ...(performers.length && { performer: performers }),
+                            superEvent: conference,
                         },
-                        mainEntityOfPage: 'https://devfestmn.com/',
-                    },
-                });
-            }
-            this.meta.setStructuredData(agendaMetadata);
+                    };
+                }),
+            });
         });
     }
 
