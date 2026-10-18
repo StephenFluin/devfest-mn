@@ -12,6 +12,7 @@ import { environment } from '../environments/environment';
 
 import { filter } from 'rxjs/operators';
 import { OurMeta } from './our-meta.service';
+import { LdJsonService } from './ld-json.service';
 
 import { ADirective } from './a.directive';
 import { captureAttribution, eventbriteAttribution, trackTicketPurchase } from './analytics.util';
@@ -33,6 +34,7 @@ export class AppComponent {
     constructor() {
         const router = inject(Router);
         const meta = inject(OurMeta);
+        const ldJson = inject(LdJsonService);
         if (this.isBrowser) {
             captureAttribution();
         }
@@ -49,6 +51,9 @@ export class AppComponent {
                 }
                 meta.setDescription(data['description']);
                 meta.setCanonical(n.urlAfterRedirects.split(/[?#]/)[0].slice(1));
+                meta.setImage();
+                meta.setType();
+                ldJson.clear();
 
                 if (this.isBrowser) {
                     const path = n.urlAfterRedirects.split(/[?#]/)[0];

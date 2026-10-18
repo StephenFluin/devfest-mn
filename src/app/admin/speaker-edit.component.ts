@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { environment } from '../../environments/environment';
+import { slugify } from '../shared/slug';
 
 @Component({
     templateUrl: './speaker-edit.component.html',
@@ -27,6 +28,7 @@ export class SpeakerEditComponent {
     route = inject(ActivatedRoute);
     router = inject(Router);
     environment = environment;
+    slugify = slugify;
 
     private params = toSignal(this.route.paramMap, { requireSync: true });
 

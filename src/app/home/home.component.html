@@ -160,14 +160,37 @@
             </p>
         </div>
     </section>
-    } @else {
+    } @if (environment.showSpeakers || !environment.showCFP) {
     <section>
         <div>
             <h2>Speakers</h2>
             @if (environment.showSpeakers) {
+            @if (featuredSpeakers().length) {
+            <div class="featured-speakers">
+                @for (speaker of featuredSpeakers(); track speaker.$key) {
+                <a [routerLink]="['/', 'speakers', speaker.$key, slugify(speaker.name)]">
+                    @if (speaker.imageUrl) {
+                    <img
+                        [src]="speaker.imageUrl"
+                        [alt]="'Photo of ' + speaker.name"
+                        width="96"
+                        height="96"
+                        loading="lazy"
+                    />
+                    } @else {
+                    <span class="no-photo"></span>
+                    }
+                    <strong>{{ speaker.name }}</strong>
+                    @if (speaker.company) {
+                    <span>{{ speaker.company }}</span>
+                    }
+                </a>
+                }
+            </div>
+            }
             <p>
-                Check out the speakers we've announced so far on the
-                <a routerLink="/speakers">Speakers</a> page for more details.
+                Check out all the speakers we've announced so far on the
+                <a routerLink="/speakers">Speakers</a> page.
             </p>
             } @else {
             <p>We can't wait to share the speaker line-up with you! Hang tight.</p>

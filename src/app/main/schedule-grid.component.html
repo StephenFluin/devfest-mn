@@ -27,13 +27,13 @@
                     class="{{ data().gridData[time][room].track }} session"
                     [routerLink]="[
                         data().gridData[time][room].$key,
-                        data().gridData[time][room].title | encodeURI
+                        slugify(data().gridData[time][room].title)
                     ]"
                 >
                     <a
                         [routerLink]="[
                             data().gridData[time][room].$key,
-                            data().gridData[time][room].title | encodeURI
+                            slugify(data().gridData[time][room].title)
                         ]"
                     >
                         <div class="title">
@@ -84,13 +84,13 @@
                     class="{{ data().gridData[time].all.track }} session"
                     [routerLink]="[
                         data().gridData[time]['all'].$key,
-                        data().gridData[time]['all'].title | encodeURI
+                        slugify(data().gridData[time]['all'].title)
                     ]"
                 >
                     <a
                         [routerLink]="[
                             data().gridData[time]['all'].$key,
-                            data().gridData[time]['all'].title | encodeURI
+                            slugify(data().gridData[time]['all'].title)
                         ]"
                     >
                         <div class="title">
@@ -135,7 +135,7 @@
                 [routerLink]="[
                     '/schedule',
                     data().gridData[time][room].$key,
-                    data().gridData[time][room].title | encodeURI
+                    slugify(data().gridData[time][room].title)
                 ]"
             >
                 <div class="title">
@@ -177,7 +177,7 @@
                 [routerLink]="[
                     '/schedule',
                     data().gridData[time]['all'].$key,
-                    data().gridData[time]['all'].title | encodeURI
+                    slugify(data().gridData[time]['all'].title)
                 ]"
             >
                 <div class="title">

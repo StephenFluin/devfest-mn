@@ -12,6 +12,13 @@ export class LdJsonService {
         this.renderer = this.rendererFactory.createRenderer(null, null);
     }
 
+    /** Remove structured data left by the previous page. */
+    clear(): void {
+        this.doc
+            .querySelectorAll('script[type="application/ld+json"]')
+            .forEach((script) => this.renderer.removeChild(this.doc.head, script));
+    }
+
     setLdJson(data: object): void {
         // Remove any existing application/ld+json script tags
         const existingScripts = this.doc.querySelectorAll('script[type="application/ld+json"]');

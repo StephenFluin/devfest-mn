@@ -33,6 +33,16 @@
     <mat-form-field
         ><input matInput [(ngModel)]="speaker.website" placeholder="Website"
     /></mat-form-field>
+    <mat-form-field
+        ><input matInput [(ngModel)]="speaker.linkedin" placeholder="LinkedIn profile URL"
+    /></mat-form-field>
+    @if (speaker.$key && speaker.name) {
+    <p>
+        Share link for this speaker:
+        <a [href]="'/s/' + slugify(speaker.name)">{{ environment.siteUrl }}/s/{{ slugify(speaker.name) }}</a>
+        (goes to their page, tagged as a speaker referral in the UTM funnel)
+    </p>
+    }
     @if (speaker.$key) {
     <button type="submit" mat-raised-button>Save Speaker</button>
     } @if (!speaker.$key) {

@@ -40,6 +40,10 @@
                         "ssr": {
                             "entry": "src/server.ts"
                         },
+                        "loader": {
+                            ".wasm": "binary",
+                            ".woff": "binary"
+                        },
                         "namedChunks": true,
                         "sourceMap": true,
                         "outputMode": "server",

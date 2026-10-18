@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { EncodeURI } from '../shared/encode-uri.pipe';
+import { slugify } from '../shared/slug';
 
 
 @Component({
@@ -25,7 +25,7 @@ import { EncodeURI } from '../shared/encode-uri.pipe';
                     </div>
                   }
                   <div style="font-size:20px;">
-                    <a [routerLink]="['/', 'speakers', speaker().$key, speaker().name | encodeURI]">{{
+                    <a [routerLink]="['/', 'speakers', speaker().$key, slugify(speaker().name)]">{{
                       speaker().name
                     }}</a>
                     @if (showEdit()) {
@@ -49,9 +49,10 @@ import { EncodeURI } from '../shared/encode-uri.pipe';
             </div>
           }
         `,
-    imports: [RouterLink, EncodeURI]
+    imports: [RouterLink]
 })
 export class SpeakerContainerComponent {
     readonly speaker = input(undefined);
     readonly showEdit = input(false);
+    slugify = slugify;
 }

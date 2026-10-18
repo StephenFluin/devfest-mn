@@ -71,11 +71,11 @@ Each past year stays online at `https://<year>.devfest.mn` (for example the `202
 Before the new year launches on https://devfest.mn, update the archive so search engines don't mix the two:
 
 -   In the archive's `src/environments/environment.ts`, set `siteUrl` to `https://<year>.devfest.mn` and `year`
-    to the archived year. Canonical links, `og:url`, and `sitemap.txt` are all built from `siteUrl`, so pages
+    to the archived year. Canonical links, `og:url`, and `sitemap.xml` are all built from `siteUrl`, so pages
     then point at the archive instead of claiming to be the current site.
 -   Check that canonical links are absolute URLs on the subdomain, e.g. `https://2025.devfest.mn/speakers/…`,
     not relative paths like `/2025/speakers/…` or `https://devfest.mn/…`.
--   Spot-check the deployed archive with `curl -s https://<year>.devfest.mn/sitemap.txt` and the canonical tag on
+-   Spot-check the deployed archive with `curl -s https://<year>.devfest.mn/sitemap.xml` and the canonical tag on
     a speaker page.
 
 If this is skipped, Google finds last year's speaker and session URLs on devfest.mn, where they don't exist, and
@@ -143,7 +143,8 @@ npx firebase database:update /burndown data/burndown-history.json --project <new
 
 ## UTM funnel
 
-The admin UTM funnel page (`/admin/utm-funnel`) tables visits, engaged visits, and ticket sales by UTM source,
+The admin UTM funnel page (`/admin/utm-funnel`) tables visits, engaged visits, ticket sales, and clicks through
+to the external CFP form by UTM source,
 medium, and campaign. A visit is credited to the last campaign the visitor arrived from in the past 30 days
 (the same attribution passed to Eventbrite checkout), or to the linking site when there's no campaign.
 
@@ -157,3 +158,22 @@ service account. If visits don't show up after a deploy, check the server logs f
 that account (`firebase-app-hosting-compute@<project>.iam.gserviceaccount.com`) the **Firebase Realtime
 Database Admin** role. Locally, events are dropped unless `FIREBASE_DATABASE_EMULATOR_HOST` points at the
 Realtime Database emulator.
+
+## Announcing speakers
+
+Speakers are added in the admin (`/admin/speakers/new/edit`) and only appear publicly once marked
+**Confirmed**. Each speaker page sets its own title, description (leading with the talk), share image, and
+`Person` structured data, and the home page lists confirmed speakers as the event's `performer`s.
+
+1. Set `showSpeakers: true` in `src/environments/environment.ts`. This adds `/speakers` and every confirmed
+   speaker to `/sitemap.xml`, shows featured speakers on the home page, and switches the home page from
+   prerendered to rendered per request so newly confirmed speakers appear without a deploy.
+2. Each confirmed speaker's share image is a 1200x630 card (photo, name, company, talk) rendered by the server
+   at `/og/speakers/<key>.png` (`src/speaker-card.ts`). Nothing to generate: cards update when the speaker or
+   their sessions are saved, since the image URL carries their `updatedAt`.
+3. Give each speaker their short link, `https://devfest.mn/s/<name-slug>` (shown in the speaker editor). It
+   302-redirects to their page with `utm_source=speaker&utm_medium=social&utm_campaign=speaker_<name-slug>`, so
+   the UTM funnel shows which speakers drive visits, ticket sales, and CFP clicks.
+4. In Google Search Console, submit `https://devfest.mn/sitemap.xml` (it replaces `sitemap.txt`, which still
+   works) and request indexing for the new speaker pages. Each page's `lastmod` is when it was last saved in
+   the admin.

@@ -1,4 +1,4 @@
-import { Component, DOCUMENT, inject, PLATFORM_ID } from '@angular/core';
+import { Component, computed, DOCUMENT, effect, inject, PLATFORM_ID } from '@angular/core';
 import { DatePipe, isPlatformServer } from '@angular/common';
 
 import { environment } from '../../environments/environment';
@@ -9,6 +9,8 @@ import { ADirective } from '../a.directive';
 import { TicketEmbedComponent } from '../ticket-embed/ticket-embed.component';
 import { LdJsonService } from '../ld-json.service';
 import { cfpCountdown } from '../shared/cfp-deadline';
+import { DataService } from '../shared/data.service';
+import { slugify } from '../shared/slug';
 
 declare global {
     interface Window {
@@ -38,6 +40,31 @@ declare global {
         .hero-cta {
             margin-top: 16px;
         }
+        .featured-speakers {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 24px;
+            margin: 24px 0;
+        }
+        .featured-speakers a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 140px;
+            text-align: center;
+        }
+        .featured-speakers img,
+        .featured-speakers .no-photo {
+            width: 96px;
+            height: 96px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 8px;
+        }
+        .featured-speakers .no-photo {
+            background: var(--color-surface-strong);
+        }
         .hero-deadline {
             margin-top: 8px;
             font-size: 16px;
@@ -50,6 +77,14 @@ export class HomeComponent {
     faqSelection = 1;
     ldJsonService = inject(LdJsonService);
     cfpCountdown = cfpCountdown();
+    slugify = slugify;
+    private ds = inject(DataService);
+
+    /** Confirmed speakers, only loaded once speakers are announced. */
+    speakers = computed(() =>
+        environment.showSpeakers ? this.ds.speakers().filter((speaker) => speaker.confirmed) : []
+    );
+    featuredSpeakers = computed(() => this.speakers().slice(0, 6));
 
     constructor() {
         // The hero photo is the largest thing on screen, but as a CSS background the browser only
@@ -66,7 +101,9 @@ export class HomeComponent {
         }
     }
 
-    ngOnInit() {
+    /** Event structured data; re-set when the confirmed speakers (its performers) change. */
+    private eventData = effect(() => {
+        const performers = this.speakers();
         this.ldJsonService.setLdJson({
             '@context': 'https://schema.org',
             '@type': 'Event',
@@ -103,8 +140,15 @@ export class HomeComponent {
                 name: 'GDG Twin Cities',
                 url: 'https://gdg.community.dev/gdg-twin-cities/',
             },
+            ...(performers.length && {
+                performer: performers.map((speaker) => ({
+                    '@type': 'Person',
+                    name: speaker.name,
+                    url: `${environment.siteUrl}/speakers/${speaker.$key}/${slugify(speaker.name)}`,
+                })),
+            }),
         });
-    }
+    });
 
     setFaqSelection(question) {
         this.faqSelection = question;

@@ -1,5 +1,14 @@
 import { Injectable, computed, inject } from '@angular/core';
-import { ref, query, orderByChild, push, update, remove, set } from 'firebase/database';
+import {
+    ref,
+    query,
+    orderByChild,
+    push,
+    update,
+    remove,
+    set,
+    serverTimestamp,
+} from 'firebase/database';
 import { environment } from '../../environments/environment';
 import { DATABASE, listResource } from '../realtime-data/firebase';
 
@@ -17,6 +26,8 @@ export interface Session {
     notes?: string;
     /** Only in the session editor; stored separately at adminNotes/<session>. */
     adminNotes?: string;
+    /** Server time (ms) of the last save in the admin. */
+    updatedAt?: number;
 }
 
 export interface Speaker {
@@ -30,6 +41,10 @@ export interface Speaker {
     twitter?: string;
     imageUrl?: string;
     website?: string;
+    /** Full LinkedIn profile URL. */
+    linkedin?: string;
+    /** Server time (ms) of the last save in the admin. */
+    updatedAt?: number;
 }
 
 export interface Feedback {
@@ -61,6 +76,14 @@ export class DataService {
 
     speaker(key: string): Speaker | undefined {
         return this.speakerMap().get(key);
+    }
+
+    /** Sessions the speaker is presenting, from each session's speakers map (id -> speaker key). */
+    sessionsFor(speakerKey: string | undefined): Session[] {
+        if (!speakerKey) return [];
+        return this.schedule().filter((session) =>
+            Object.values(session.speakers ?? {}).includes(speakerKey)
+        );
     }
 
     agendaRef(uid: string, session: string) {
@@ -109,27 +132,22 @@ export class DataService {
         }
     }
 
-    save(path: 'schedule' | 'speakers', item) {
+    /** Saves an edited item, or creates one; for a new item the result's key is its id. */
+    save(path: 'schedule' | 'speakers', item): PromiseLike<unknown> & { key?: string | null } {
         console.log('Attempting to save', path, item);
-        const dbRef = ref(this.db, `devfest${environment.year}/${path}`);
-        let result;
-        if (item.$key) {
-            let key = item.$key;
-            delete item.$key;
-            const itemRef = ref(this.db, `devfest${environment.year}/${path}/${key}`);
-            result = update(itemRef, item);
-            item.$key = key;
-        } else {
-            console.log('Pushing new item to', path, item);
-            // check item for any undefined properties and set them to null
-            Object.keys(item).forEach((prop) => {
-                if (item[prop] === undefined) {
-                    item[prop] = null;
-                }
-            });
-            result = push(dbRef, item);
+        // updatedAt (server time) drives the sitemap's lastmod and busts cached share cards.
+        const { $key: key, ...data } = { ...item, updatedAt: serverTimestamp() };
+        // Firebase rejects undefined values, so send null (which also clears the field).
+        Object.keys(data).forEach((prop) => {
+            if (data[prop] === undefined) {
+                data[prop] = null;
+            }
+        });
+        if (key) {
+            return update(ref(this.db, `devfest${environment.year}/${path}/${key}`), data);
         }
-        return result;
+        console.log('Pushing new item to', path, data);
+        return push(ref(this.db, `devfest${environment.year}/${path}`), data);
     }
 
     delete(path: 'schedule' | 'speakers', item) {

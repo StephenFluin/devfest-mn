@@ -2,7 +2,7 @@ import { Component, inject, input } from '@angular/core';
 import { DataService } from '../shared/data.service';
 import { AuthService } from '../realtime-data/auth.service';
 import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
-import { EncodeURI } from '../shared/encode-uri.pipe';
+import { slugify } from '../shared/slug';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
 import { JsonPipe, KeyValuePipe } from '@angular/common';
@@ -15,11 +15,11 @@ import { JsonPipe, KeyValuePipe } from '@angular/common';
     MatButtonModule,
     JsonPipe,
     KeyValuePipe,
-    EncodeURI,
     GetSpeakerPipe
 ]
 })
 export class ScheduleGridComponent {
+    slugify = slugify;
     ds = inject(DataService);
     auth = inject(AuthService);
 
