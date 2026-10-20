@@ -415,6 +415,23 @@ footer a:hover {
     text-decoration: underline;
 }
 
+/* Bluesky, Mastodon and GitHub: spaced apart, each with a comfortable tap target. */
+footer .social-links {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+
+footer .social-links a {
+    display: inline-flex;
+    padding: 8px;
+    border-radius: 50%;
+}
+
+footer .social-links a:hover {
+    background: rgb(255 255 255 / 0.15);
+}
+
 footer .blocks {
     display: flex;
     flex-wrap: wrap;
