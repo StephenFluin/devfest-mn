@@ -1,5 +1,5 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -66,7 +66,7 @@ interface Row {
             <table class="data">
                 <thead>
                     <tr>
-                        <th scope="col" class="text">Admin</th>
+                        <th scope="col" class="text">{{ noun() | titlecase }}</th>
                         <th scope="col" class="text">Status</th>
                         <th scope="col" class="text">Added</th>
                         <th scope="col"><span class="visually-hidden">Actions</span></th>
@@ -150,7 +150,7 @@ interface Row {
             color: var(--admin-success);
         }
     `,
-    imports: [DatePipe, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule],
+    imports: [DatePipe, TitleCasePipe, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule],
 })
 export class EmailInvitesComponent {
     private db = inject(DATABASE);
