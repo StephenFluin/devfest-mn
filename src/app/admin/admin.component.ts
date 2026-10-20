@@ -15,6 +15,7 @@ const NAV = [
             { path: '/admin/utm-funnel', label: 'UTM funnel' },
             { path: '/admin/rooms', label: 'Rooms' },
             { path: '/admin/volunteers', label: 'Volunteers' },
+            { path: '/admin/admins', label: 'Admins' },
             { path: '/admin/reports', label: 'Feedback' },
             { path: '/admin/session-report', label: 'Session scores' },
         ],

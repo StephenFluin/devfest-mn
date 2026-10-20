@@ -3,7 +3,22 @@
         "admin": {
             ".read": "root.child('admin/'+auth.uid).exists()",
             "$user_id": {
-                ".read": "$user_id === auth.uid"
+                ".read": "$user_id === auth.uid",
+                ".write": "($user_id === auth.uid && newData.exists() && auth.token.email_verified === true && root.child('adminEmails/' + auth.token.email.toLowerCase().replace('.', ',')).exists()) || (root.child('admin/'+auth.uid).exists() && $user_id !== auth.uid && !newData.exists())",
+                ".validate": "!newData.exists() || newData.child('email').val() === auth.token.email"
+            }
+        },
+        "adminEmails": {
+            ".read": "root.child('admin/'+auth.uid).exists()",
+            "$email_key": {
+                ".read": "auth.token.email_verified === true && auth.token.email.toLowerCase().replace('.', ',') === $email_key",
+                ".write": "root.child('admin/'+auth.uid).exists()",
+                ".validate": "newData.hasChildren(['email', 'addedAt']) && newData.child('email').isString() && newData.child('email').val().toLowerCase().replace('.', ',') === $email_key",
+                "email": { ".validate": "newData.isString() && newData.val().length <= 254" },
+                "name": { ".validate": "newData.isString() && newData.val().length <= 100" },
+                "addedBy": { ".validate": "newData.isString() && newData.val().length <= 254" },
+                "addedAt": { ".validate": "newData.val() === now || newData.isNumber()" },
+                "$other": { ".validate": false }
             }
         },
         "burndown": {

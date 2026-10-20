@@ -50,8 +50,10 @@ import { environment } from '../../environments/environment';
         } @else {
         <section class="card">
             <h2>You're not an admin yet</h2>
-            <p class="muted">Ask an organizer to add your account. They'll need your user ID:</p>
-            <p><code>{{ auth.uid() }}</code></p>
+            <p class="muted">
+                Ask an organizer to add <strong>{{ auth.email() }}</strong> on the Admins page, then
+                reload this page.
+            </p>
         </section>
         }
     `,
@@ -121,6 +123,7 @@ export class AdminHomeComponent {
         { path: '/admin/utm-funnel', title: 'UTM funnel', description: 'Where visitors come from and what they do.' },
         { path: '/admin/rooms', title: 'Rooms', description: 'Names, directions and schedule order.' },
         { path: '/admin/volunteers', title: 'Volunteers', description: 'Who can edit the schedule.' },
+        { path: '/admin/admins', title: 'Admins', description: 'Add or remove admins by email.' },
         { path: '/schedule', title: 'Schedule', description: 'Edit sessions and add new ones.' },
         { path: '/speakers', title: 'Speakers', description: 'Edit speaker profiles and photos.' },
     ];

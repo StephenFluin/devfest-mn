@@ -63,6 +63,11 @@ export const AdminRoutes: Routes = [
                                     ),
                             },
                             {
+                                path: 'admins',
+                                loadComponent: () =>
+                                    import('./admins.component').then((m) => m.AdminsComponent),
+                            },
+                            {
                                 path: 'rooms',
                                 loadComponent: () =>
                                     import('./rooms.component').then((m) => m.RoomsComponent),
