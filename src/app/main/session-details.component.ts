@@ -11,10 +11,24 @@ import { SpeakerContainerComponent } from './speaker-container.component';
 import { KeyValuePipe } from '@angular/common';
 import { objectResource } from '../realtime-data/firebase';
 import { environment } from '../../environments/environment';
+import { calendarEvent, googleCalendarUrl, icsPath } from '../shared/calendar';
 
 @Component({
     selector: 'session-details',
     templateUrl: 'session-details.component.html',
+    styles: `
+        .add-to-calendar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .add-to-calendar .cta {
+            display: inline-block;
+            margin: 0;
+            border: 1px solid #19a9e5;
+        }
+    `,
     imports: [
         RouterLink,
         SpeakerContainerComponent,
@@ -30,6 +44,13 @@ export class SessionDetailsComponent {
     environment = environment;
 
     readonly session = input<Session>(undefined);
+
+    /** Links to add this session to a calendar, once it has a time. */
+    calendar = computed(() => {
+        const session = this.session();
+        const event = session && calendarEvent(session, this.ds.schedule());
+        return event && { google: googleCalendarUrl(event), ics: icsPath(session) };
+    });
 
     private agendaRef = computed(() => {
         const uid = this.auth.uid();

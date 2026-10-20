@@ -32,6 +32,14 @@
             }
             <div style="font-weight: bold; margin-bottom: 8px">{{ session().room }}</div>
             <div style="margin-bottom: 24px">{{ ds.customDateFormatter(session().startTime) }}</div>
+            @if (calendar(); as calendar) {
+            <div class="add-to-calendar" role="group" aria-label="Add to calendar">
+                <a [href]="calendar.google" target="_blank" rel="noopener" class="cta-unselected cta"
+                    >Add to Google Calendar</a
+                >
+                <a [href]="calendar.ics" class="cta-unselected cta">Add to Apple or Outlook</a>
+            </div>
+            }
             @if (session().notes) {
             <div style="margin-bottom: 24px">
                 <strong>

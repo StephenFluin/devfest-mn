@@ -12,6 +12,8 @@ import { environment } from './environments/environment';
 import { slugify } from './app/shared/slug';
 import { addVisitAnalytics } from './visit-analytics';
 import { renderSpeakerCard } from './speaker-card';
+import { calendarEvent, icsFile } from './app/shared/calendar';
+import type { Session } from './app/shared/data.service';
 
 // Set timezone to Central Time for SSR
 process.env['TZ'] = 'America/Chicago';
@@ -198,6 +200,43 @@ app.get('/s/:slug', async (req, res) => {
         speakerSlugs = undefined;
         console.error('Error resolving speaker link:', error);
         res.redirect(302, '/speakers');
+    }
+});
+
+/**
+ * A session as a calendar file, /calendar/<key>.ics, for Apple Calendar and Outlook. iOS opens it
+ * straight into an "Add to Calendar" sheet. Built from the whole schedule, because a session's end
+ * is the next session in its room.
+ */
+app.get('/calendar/:file', async (req, res) => {
+    const key = req.params.file.match(/^([A-Za-z0-9_-]{1,40})\.ics$/)?.[1];
+    if (!key) {
+        res.status(404).end();
+        return;
+    }
+    try {
+        const response = await fetch(
+            `${environment.firebaseConfig.databaseURL}/devfest${environment.year}/schedule.json`
+        );
+        if (!response.ok) {
+            throw new Error(`Firebase responded with ${response.status}`);
+        }
+        const schedule: Session[] = Object.entries<Session>((await response.json()) ?? {}).map(
+            ([$key, session]) => ({ ...session, $key })
+        );
+        const session = schedule.find((item) => item.$key === key);
+        const event = session && calendarEvent(session, schedule);
+        if (!event) {
+            res.status(404).end();
+            return;
+        }
+        // Short, so a moved session reaches people who add it later.
+        res.set('Cache-Control', 'public, max-age=300');
+        res.set('Content-Disposition', `inline; filename="${slugify(session.title)}.ics"`);
+        res.type('text/calendar; charset=utf-8').send(icsFile(event));
+    } catch (error) {
+        console.error('Error building calendar file:', error);
+        res.status(500).end();
     }
 });
 

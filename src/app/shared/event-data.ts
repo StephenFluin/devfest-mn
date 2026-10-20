@@ -20,7 +20,7 @@ export const eventUtcOffset = new Intl.DateTimeFormat('en-US', {
     .value.replace('GMT', '');
 
 /** A session start time with its time zone; older sessions were saved without one. */
-const withOffset = (time: string) =>
+export const withOffset = (time: string) =>
     /(Z|[+-]\d\d:\d\d)$/.test(time) ? time : `${time.length === 16 ? `${time}:00` : time}${eventUtcOffset}`;
 
 const venue = {
