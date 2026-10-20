@@ -1,12 +1,17 @@
 import { inject } from '@angular/core';
 import { CanMatchFn, Routes } from '@angular/router';
 import { AuthService } from '../realtime-data/auth.service';
+import { environment } from '../../environments/environment';
+import { eventUtcOffset } from '../shared/event-data';
 
 /**
  * The database rules are what actually protect admin data; this keeps non-admins from loading
  * the admin pages at all. Returning false (not a redirect) lets /admin fall through to the home
  * page, which shows the login button.
  */
+/** Midnight in Minneapolis at the start of the event day. */
+const eventDayStart = new Date(`${environment.eventDate}T00:00:00${eventUtcOffset}`).getTime();
+
 const isAdmin: CanMatchFn = () => inject(AuthService).checkAdmin();
 
 export const AdminRoutes: Routes = [
@@ -18,6 +23,20 @@ export const AdminRoutes: Routes = [
                 path: '',
                 loadComponent: () => import('./admin.component').then((m) => m.AdminComponent),
                 children: [
+                    // /admin opens on ticket sales until the event, then on the overview. This has to
+                    // come first: the guarded group below has an empty path, so for admins it would
+                    // otherwise match /admin with no page to show.
+                    {
+                        path: '',
+                        pathMatch: 'full',
+                        redirectTo: () => (Date.now() < eventDayStart ? 'burndown' : 'overview'),
+                    },
+                    // Not guarded: it tells non-admins they aren't one yet.
+                    {
+                        path: 'overview',
+                        loadComponent: () =>
+                            import('./admin-home.component').then((m) => m.AdminHomeComponent),
+                    },
                     {
                         path: '',
                         canMatch: [isAdmin],
@@ -86,12 +105,9 @@ export const AdminRoutes: Routes = [
                             },
                         ],
                     },
-                    {
-                        path: '',
-                        loadComponent: () =>
-                            import('./admin-home.component').then((m) => m.AdminHomeComponent),
-                    },
-                    { path: '**', redirectTo: './' },
+                    // Pages someone can't open (or that don't exist) go to the overview, not /admin,
+                    // which for a non-admin before the event would loop through ticket sales.
+                    { path: '**', redirectTo: 'overview' },
                 ],
             },
         ],

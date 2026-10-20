@@ -1,7 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+import { ref } from 'firebase/database';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../realtime-data/auth.service';
 import { DataService } from '../shared/data.service';
+import { DATABASE, objectResource } from '../realtime-data/firebase';
+import { environment } from '../../environments/environment';
 
 @Component({
     selector: 'app-admin-home',
@@ -15,6 +19,11 @@ import { DataService } from '../shared/data.service';
         </div>
 
         <div class="tiles">
+            <a class="tile link" routerLink="/admin/burndown">
+                <span class="label">Tickets sold</span>
+                <span class="value">{{ ticketsSold() | number }}</span>
+                <span class="note">{{ daysLeft() }} days to go</span>
+            </a>
             <div class="tile">
                 <span class="label">Sessions</span>
                 <span class="value">{{ ds.schedule().length }}</span>
@@ -47,6 +56,14 @@ import { DataService } from '../shared/data.service';
         }
     `,
     styles: `
+        .tile.link {
+            color: inherit !important;
+            text-decoration: none !important;
+            border: 1px solid transparent;
+        }
+        .tile.link:hover {
+            border-color: var(--mat-sys-primary);
+        }
         .links {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -77,20 +94,34 @@ import { DataService } from '../shared/data.service';
             }
         }
     `,
-    imports: [RouterLink],
+    imports: [RouterLink, DecimalPipe],
 })
 export class AdminHomeComponent {
     auth = inject(AuthService);
     ds = inject(DataService);
 
+    private db = inject(DATABASE);
+
+    /** This year's orders, as copied from Eventbrite for the burndown. */
+    private orders = objectResource<Record<string, { tickets: number }> | null>(
+        () => (this.auth.isAdmin() ? ref(this.db, `burndown/${environment.year}/orders`) : undefined),
+        { initialValue: null }
+    );
+    ticketsSold = computed(() =>
+        Object.values(this.orders() ?? {}).reduce((sum, order) => sum + (order.tickets ?? 0), 0)
+    );
+    daysLeft = computed(() =>
+        Math.max(0, Math.ceil((Date.parse(`${environment.eventDate}T00:00:00-06:00`) - Date.now()) / 86_400_000))
+    );
+
     confirmed = () => this.ds.speakers().filter((speaker) => speaker.confirmed).length;
 
     readonly links = [
-        { path: '/schedule', title: 'Schedule', description: 'Edit sessions and add new ones.' },
-        { path: '/admin/sessions/new/edit', title: 'New session', description: 'Start a session from scratch.' },
-        { path: '/speakers', title: 'Speakers', description: 'Edit speaker profiles and photos.' },
-        { path: '/admin/speakers/new/edit', title: 'New speaker', description: 'Add someone to the lineup.' },
-        { path: '/admin/rooms', title: 'Rooms', description: 'Names, directions and schedule order.' },
         { path: '/admin/burndown', title: 'Ticket sales', description: 'Burndown compared with past years.' },
+        { path: '/admin/utm-funnel', title: 'UTM funnel', description: 'Where visitors come from and what they do.' },
+        { path: '/admin/rooms', title: 'Rooms', description: 'Names, directions and schedule order.' },
+        { path: '/admin/volunteers', title: 'Volunteers', description: 'Who can edit the schedule.' },
+        { path: '/schedule', title: 'Schedule', description: 'Edit sessions and add new ones.' },
+        { path: '/speakers', title: 'Speakers', description: 'Edit speaker profiles and photos.' },
     ];
 }
