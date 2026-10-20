@@ -3,6 +3,7 @@ import { User, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from 'f
 import { get, ref, serverTimestamp, set } from 'firebase/database';
 
 import { AUTH, DATABASE, objectResource } from './firebase';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -50,7 +51,7 @@ export class AuthService {
     constructor() {
         if (this.auth) {
             const unsubscribe = onAuthStateChanged(this.auth, (user) => {
-                this.claim = user ? this.claimAdminInvite(user) : Promise.resolve();
+                this.claim = user ? this.claimInvites(user) : Promise.resolve();
                 this.user.set(user);
             });
             inject(DestroyRef).onDestroy(unsubscribe);
@@ -58,23 +59,27 @@ export class AuthService {
     }
 
     /**
-     * Admins are invited by email at /admin/admins (adminEmails/<email key>). When someone signs in
-     * with an invited, Google-verified email, this records them at admin/<uid>, which is what every
-     * database rule checks. The rules only allow it for an invited email matching the sign-in.
+     * Admins and volunteers are invited by email (/admin/admins, /admin/volunteers). When someone
+     * signs in with an invited, Google-verified email, this records them under their uid, which is
+     * what the database rules check. The rules only allow it for an invite matching the sign-in.
      */
-    private async claimAdminInvite(user: User) {
+    private async claimInvites(user: User) {
         if (!user.email || !user.emailVerified) return;
-        try {
-            const invite = await get(ref(this.db, `adminEmails/${adminEmailKey(user.email)}`));
-            if (!invite.exists()) return;
-            await set(ref(this.db, `admin/${user.uid}`), {
-                email: user.email,
-                name: user.displayName ?? null,
-                claimedAt: serverTimestamp(),
-            });
-        } catch (error) {
-            console.error('Could not accept admin invite', error);
-        }
+        await Promise.all(
+            INVITES.map(async ({ invites, records }) => {
+                try {
+                    const invite = await get(ref(this.db, `${invites}/${inviteKey(user.email)}`));
+                    if (!invite.exists()) return;
+                    await set(ref(this.db, `${records}/${user.uid}`), {
+                        email: user.email,
+                        name: user.displayName ?? null,
+                        claimedAt: serverTimestamp(),
+                    });
+                } catch (error) {
+                    console.error(`Could not accept invite at ${invites}`, error);
+                }
+            })
+        );
     }
 
     login() {
@@ -101,7 +106,16 @@ export class AuthService {
     }
 }
 
-/** adminEmails/ key for an email: lowercase, with dots (not allowed in keys) as commas. */
-export function adminEmailKey(email: string) {
+/** Where invites are kept, and where someone is recorded once they accept by signing in. */
+export const INVITES = [
+    { invites: 'adminEmails', records: 'admin' },
+    {
+        invites: `devfest${environment.year}/volunteerEmails`,
+        records: `devfest${environment.year}/volunteers`,
+    },
+];
+
+/** Invite key for an email: lowercase, with dots (not allowed in keys) as commas. */
+export function inviteKey(email: string) {
     return email.trim().toLowerCase().replace(/\./g, ',');
 }

@@ -122,7 +122,7 @@ export class AdminHomeComponent {
         { path: '/admin/burndown', title: 'Ticket sales', description: 'Burndown compared with past years.' },
         { path: '/admin/utm-funnel', title: 'UTM funnel', description: 'Where visitors come from and what they do.' },
         { path: '/admin/rooms', title: 'Rooms', description: 'Names, directions and schedule order.' },
-        { path: '/admin/volunteers', title: 'Volunteers', description: 'Who can edit the schedule.' },
+        { path: '/admin/volunteers', title: 'Volunteers', description: 'Add or remove volunteers by email.' },
         { path: '/admin/admins', title: 'Admins', description: 'Add or remove admins by email.' },
         { path: '/schedule', title: 'Schedule', description: 'Edit sessions and add new ones.' },
         { path: '/speakers', title: 'Speakers', description: 'Edit speaker profiles and photos.' },
