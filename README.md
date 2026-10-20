@@ -59,7 +59,7 @@ We keep the same codebase every year but move to a new Firebase project.
 1. Create the new Firebase project and an App Hosting backend connected to this repo.
 2. Point `.firebaserc` at the new project, and update the `backendId` in `firebase.json`.
 3. Update `src/environments/environment.ts` with the new Firebase config, event date, CFP dates, venue, and
-   feature flags (`showSchedule`, `showSpeakers`, and so on). The call for speakers shows while `cfpCloses` is set and hasn't passed; set it to `null` for a new year until the CFP is announced.
+   feature flags (`showSchedule`, `showRegister`, and so on). The call for speakers shows while `cfpCloses` is set and hasn't passed; set it to `null` for a new year until the CFP is announced.
 4. Find and replace the old year and date throughout the code.
 5. Update the date in `scripts/og-image.sh` and run it to regenerate the social share image.
 6. Carry the ticket history forward (see [Ticket burndown](#ticket-burndown)).
@@ -165,9 +165,9 @@ Speakers are added in the admin (`/admin/speakers/new/edit`) and only appear pub
 **Confirmed**. Each speaker page sets its own title, description (leading with the talk), share image, and
 `Person` structured data, and the home page lists confirmed speakers as the event's `performer`s.
 
-1. Set `showSpeakers: true` in `src/environments/environment.ts`. This adds `/speakers` and every confirmed
-   speaker to `/sitemap.xml`, shows featured speakers on the home page, and switches the home page from
-   prerendered to rendered per request so newly confirmed speakers appear without a deploy.
+1. Mark speakers **Confirmed** in the admin. Once at least one is, the site adds the Speakers nav link, the
+   home page's speakers section, and `/speakers` plus every confirmed speaker in `/sitemap.xml`, with no
+   deploy. Confirming a speaker publishes them, so confirm everyone together to announce the lineup at once.
 2. Each confirmed speaker's share image is a 1200x630 card (photo, name, company, talk) rendered by the server
    at `/og/speakers/<key>.png` (`src/speaker-card.ts`). Nothing to generate: cards update when the speaker or
    their sessions are saved, since the image URL carries their `updatedAt`.

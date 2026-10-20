@@ -8,11 +8,9 @@ export const serverRoutes: ServerRoute[] = [
     { path: 'admin/**', renderMode: RenderMode.Client },
     { path: 'speakers', renderMode: RenderMode.Server },
     { path: 'schedule', renderMode: RenderMode.Server },
-    // Once speakers are announced the home page lists them, so render it per request to pick up
-    // speakers added after the last deploy.
-    environment.showSpeakers
-        ? { path: '', renderMode: RenderMode.Server }
-        : { path: '', renderMode: RenderMode.Prerender },
+    // Rendered per request: it lists confirmed speakers and opens and closes the CFP by date, so a
+    // copy built at deploy time would go stale.
+    { path: '', renderMode: RenderMode.Server },
     { path: '**', renderMode: RenderMode.Server },
     { path: 'tickets', renderMode: RenderMode.Client },
 ];

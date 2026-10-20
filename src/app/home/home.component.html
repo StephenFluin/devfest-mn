@@ -146,11 +146,10 @@
             </p>
         </div>
     </section>
-    } @if (environment.showSpeakers || cfp() !== 'open') {
+    } @if (speakers().length) {
     <section>
         <div>
             <h2>Speakers</h2>
-            @if (environment.showSpeakers) {
             @if (featuredSpeakers().length) {
             <div class="featured-speakers">
                 @for (speaker of featuredSpeakers(); track speaker.$key) {
@@ -178,9 +177,6 @@
                 Check out all the speakers we've announced so far on the
                 <a routerLink="/speakers">Speakers</a> page.
             </p>
-            } @else {
-            <p>We can't wait to share the speaker line-up with you! Hang tight.</p>
-            }
         </div>
     </section>
     }

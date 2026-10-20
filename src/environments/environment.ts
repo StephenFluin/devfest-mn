@@ -26,7 +26,6 @@ export const environment = {
     },
     showRegister: true,
     showSchedule: false,
-    showSpeakers: false,
     showSponsor: true,
     showFeedback: false,
     showVolunteer: false,//'https://signup.com/go/wWAHYET',

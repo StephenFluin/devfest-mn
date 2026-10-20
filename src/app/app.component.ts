@@ -17,6 +17,7 @@ import { ADirective } from './a.directive';
 import { captureAttribution, eventbriteAttribution, trackTicketPurchase } from './analytics.util';
 import { trackPageView } from './visit-tracker';
 import { cfpState } from './shared/cfp-deadline';
+import { DataService } from './shared/data.service';
 
 @Component({
     selector: 'app-root',
@@ -26,6 +27,8 @@ import { cfpState } from './shared/cfp-deadline';
 export class AppComponent {
     environment = environment;
     cfp = cfpState();
+    /** For the Speakers nav link, which appears once any speakers are confirmed. */
+    ds = inject(DataService);
     private platformId = inject(PLATFORM_ID);
     private isBrowser = isPlatformBrowser(this.platformId);
     isSecure = this.isBrowser && window?.location?.protocol === 'https:';

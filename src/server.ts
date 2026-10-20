@@ -70,7 +70,6 @@ async function sitemapEntries(): Promise<SitemapEntry[]> {
     const latest = (items: SitemapEntry[]) =>
         Math.max(0, ...items.map((item) => item.updated ?? 0)) || undefined;
 
-    if (!environment.showSchedule && !environment.showSpeakers) return entries;
     const [schedule, speakers] = await Promise.all([fetchPublic('schedule'), fetchPublic('speakers')]);
     // Speaker pages show their talks and session pages show their speakers, so each page changes
     // when either side is saved.
@@ -93,17 +92,18 @@ async function sitemapEntries(): Promise<SitemapEntry[]> {
             }));
         entries.push({ path: 'schedule', updated: latest(sessions) }, ...sessions);
     }
-    if (environment.showSpeakers) {
-        const speakerPages = speakers
-            .filter(([, speaker]) => speaker.name && speaker.confirmed)
-            .map(([key, speaker]) => ({
-                path: `speakers/${key}/${slugify(speaker.name)}`,
-                updated:
-                    Math.max(
-                        speaker.updatedAt ?? 0,
-                        ...sessionsOf(key).map(([, session]) => session.updatedAt ?? 0)
-                    ) || undefined,
-            }));
+    const speakerPages = speakers
+        .filter(([, speaker]) => speaker.name && speaker.confirmed)
+        .map(([key, speaker]) => ({
+            path: `speakers/${key}/${slugify(speaker.name)}`,
+            updated:
+                Math.max(
+                    speaker.updatedAt ?? 0,
+                    ...sessionsOf(key).map(([, session]) => session.updatedAt ?? 0)
+                ) || undefined,
+        }));
+    // Speakers are public once any are confirmed.
+    if (speakerPages.length) {
         entries.push({ path: 'speakers', updated: latest(speakerPages) }, ...speakerPages);
         // The home page lists the speakers too.
         entries[0].updated = latest(speakerPages);

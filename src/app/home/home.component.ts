@@ -85,10 +85,8 @@ export class HomeComponent {
     slugify = slugify;
     private ds = inject(DataService);
 
-    /** Confirmed speakers, only loaded once speakers are announced. */
-    speakers = computed(() =>
-        environment.showSpeakers ? this.ds.speakers().filter((speaker) => speaker.confirmed) : []
-    );
+    /** Confirmed speakers; the home page's speakers section appears once there are any. */
+    speakers = this.ds.confirmedSpeakers;
     featuredSpeakers = computed(() => this.speakers().slice(0, 6));
 
     constructor() {

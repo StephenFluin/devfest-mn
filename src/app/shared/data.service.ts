@@ -140,6 +140,14 @@ export class DataService {
         return this.venueLayout();
     }
 
+    /**
+     * Speakers marked Confirmed in the admin, which are the public ones. The speakers page, nav link,
+     * home page section and sitemap entries all appear once there's at least one.
+     */
+    confirmedSpeakers = computed(() =>
+        this.speakers().filter((speaker) => speaker.confirmed && speaker.name)
+    );
+
     private speakerMap = computed(() => new Map(this.speakers().map((s) => [s.$key, s])));
 
     speaker(key: string): Speaker | undefined {
