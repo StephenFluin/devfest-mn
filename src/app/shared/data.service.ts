@@ -86,10 +86,6 @@ export class DataService {
         );
     }
 
-    agendaRef(uid: string, session: string) {
-        return this.ref(`agendas/${uid}/${session}`);
-    }
-
     private venueLayout = {
         rooms: environment.venueRooms.map((room) => room.name),
         floors: {},

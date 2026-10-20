@@ -51,29 +51,29 @@
                 [innerHTML]="session().renderedDescription"
                 style="max-width: 500px; display: inline-block"
             ></div>
-            } @if (auth.uid()) {
+            }
             <div>
-                @if (!inAgenda()?.value) {
-                <button (click)="addToAgenda()" class="cta" style="display: inline">
+                @if (!inAgenda()) {
+                <button (click)="agenda.add(session().$key)" class="cta" style="display: inline">
                     Add to My Agenda
                 </button>
                 } @else {
-                <button (click)="removeFromAgenda()" class="cta" style="display: inline">
+                <button (click)="agenda.remove(session().$key)" class="cta" style="display: inline">
                     Remove from My Agenda
                 </button>
-                } @if(environment.showFeedback) {
-                <div>
-                    <h3 style="margin-top: 32px">Provide Feedback</h3>
-                    <user-feedback [session]="session()"></user-feedback>
-                </div>
                 }
             </div>
-            } @else {
+            @if (auth.uid()) { @if(environment.showFeedback) {
+            <div>
+                <h3 style="margin-top: 32px">Provide Feedback</h3>
+                <user-feedback [session]="session()"></user-feedback>
+            </div>
+            } } @else {
             <div style="margin-top: 64px">
                 <h3>Login for More</h3>
                 <p>
-                    Login to save this session to your agenda, or to provide feedback after the
-                    session ends.
+                    Your agenda is saved in this browser. Login to keep it on all your devices, or
+                    to provide feedback after the session ends.
                 </p>
                 <button (click)="auth.login()" class="cta" style="display: inline">Login</button>
             </div>

@@ -2,8 +2,7 @@ import { Injectable, inject, signal, computed, Signal, DestroyRef } from '@angul
 import { User, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from 'firebase/auth';
 import { get, ref } from 'firebase/database';
 
-import { environment } from '../../environments/environment';
-import { AUTH, DATABASE, listResource, objectResource } from './firebase';
+import { AUTH, DATABASE, objectResource } from './firebase';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -18,11 +17,6 @@ export class AuthService {
     name: Signal<string | null> = computed(
         () => this.user()?.displayName || this.user()?.providerData[0]?.displayName
     );
-
-    agenda = listResource<{ key: string; value?: boolean }>(() => {
-        const uid = this.uid();
-        return uid ? ref(this.db, `devfest${environment.year}/agendas/${uid}`) : undefined;
-    }, 'key');
 
     // Non-admins get permission denied reading /admin, which resolves to false.
     isAdmin = objectResource<boolean>(

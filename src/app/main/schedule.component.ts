@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { DataService, Session } from '../shared/data.service';
 
 import { AuthService } from '../realtime-data/auth.service';
+import { AgendaService } from '../shared/agenda.service';
 import { MatButtonModule } from '@angular/material/button';
 import { ScheduleGridComponent } from './schedule-grid.component';
 import { OurMeta } from '../our-meta.service';
@@ -22,13 +23,14 @@ export interface Schedule {
 export class ScheduleComponent {
     ds = inject(DataService);
     authService = inject(AuthService);
+    agenda = inject(AgendaService);
     private meta = inject(OurMeta);
     router = inject(Router);
 
     showAgenda = signal(false);
     allSessions = computed(() => this.buildGrid(this.ds.schedule()));
     populatedAgenda = computed(() =>
-        this.filterToMyAgenda(this.allSessions(), this.authService.agenda())
+        this.filterToMyAgenda(this.allSessions(), this.agenda.keys())
     );
     data = computed(() => (this.showAgenda() ? this.populatedAgenda() : this.allSessions()));
 
@@ -113,17 +115,12 @@ export class ScheduleComponent {
     /**
      * Take in a full schedule and a set of agenda keys, return a new schedule of just those sessions the user has selected.
      */
-    filterToMyAgenda(allData: Schedule, rawAgenda: any[]): Schedule {
+    filterToMyAgenda(allData: Schedule, myAgendaKeys: Set<string>): Schedule {
         let result: Schedule = { startTimes: allData.startTimes, gridData: {}, rooms: [] };
 
         let resultSessions = {};
         let allSessions = allData.gridData;
         let rooms = [];
-        let myAgendaKeys = [];
-
-        for (let session of rawAgenda) {
-            myAgendaKeys.push(session.key);
-        }
 
         for (let time in allSessions) {
             if (allSessions.hasOwnProperty(time)) {
@@ -134,7 +131,7 @@ export class ScheduleComponent {
                     for (let room in slot) {
                         if (slot.hasOwnProperty(room)) {
                             let session = slot[room];
-                            if (myAgendaKeys.indexOf(session.$key) !== -1) {
+                            if (myAgendaKeys.has(session.$key)) {
                                 // Track which rooms we actually need.
                                 if (!(room in rooms)) {
                                     rooms.push(room);

@@ -5,7 +5,6 @@
         accurate.
     </p>
 
-    @if (authService.uid()) {
     <div class="button-container" style="margin: 40px 0; line-height: 40px">
         <button
             type="button"
@@ -28,8 +27,12 @@
             Full Schedule
         </button>
     </div>
+    @if (showAgenda() && !agenda.keys().size) {
+    <p class="schedule-announcement">
+        Your agenda is empty. Open a session and choose <strong>Add to My Agenda</strong> to save
+        it here.
+    </p>
     }
-    <div></div>
     <schedule-grid
         [data]="data()"
         [forceMobile]="showAgenda()"
