@@ -27,13 +27,28 @@ export const environment = {
     showSponsor: true,
     showFeedback: false,
     showVolunteer: false,//'https://signup.com/go/wWAHYET',
-    dayOf: false,
     surveyLink: 'https://forms.gle/73k2ZXYqiGpRabkv6',
     eventbriteEventId: '1996529152440',
     venueName: 'University of St. Thomas | Schulze Hall',
     venueAddress: '46 S 11th St, Minneapolis, MN 55403',
     venueMapUrl:
         'https://www.google.com/maps/place/Schulze+Hall/@44.974195,-93.279928,17z/data=!3m1!4b1!4m2!3m1!1s0x52b332944d7d30f9:0x169d5a902717f38e?hl=en',
+    parkingName: '11th & Harmon Parking Ramp',
+    parkingAddress: '25 S 11th St, Minneapolis, MN 55403',
+    /**
+     * Rooms in schedule-column order. `name` must match the room set on each session in the admin.
+     * `directions` is shown on the venue section and on each session in that room.
+     */
+    venueRooms: [
+        {
+            name: 'Main Auditorium',
+            directions: 'The main conference hall. From registration on the ground floor, follow the DevFestMN signs.',
+        },
+        {
+            name: 'Classroom',
+            directions: 'Down the hallway from the main conference hall. Follow the DevFestMN signs.',
+        },
+    ],
     sponsors: [
         {
             type: 'Premiere',

@@ -9,6 +9,8 @@ import { ADirective } from '../a.directive';
 import { TicketEmbedComponent } from '../ticket-embed/ticket-embed.component';
 import { OurMeta } from '../our-meta.service';
 import { cfpCountdown } from '../shared/cfp-deadline';
+import { dayOf } from '../shared/day-of';
+import { VenueComponent } from './venue.component';
 import { DataService } from '../shared/data.service';
 import { slugify } from '../shared/slug';
 import { conferenceEvent, personRef } from '../shared/event-data';
@@ -22,7 +24,7 @@ declare global {
 
 @Component({
     templateUrl: './home.component.html',
-    imports: [RouterLink, ADirective, TicketEmbedComponent, DatePipe],
+    imports: [RouterLink, ADirective, TicketEmbedComponent, DatePipe, VenueComponent],
     styles: `
         .hero-title {
             margin: 0;
@@ -78,6 +80,7 @@ export class HomeComponent {
     faqSelection = 1;
     private meta = inject(OurMeta);
     cfpCountdown = cfpCountdown();
+    dayOf = dayOf();
     slugify = slugify;
     private ds = inject(DataService);
 

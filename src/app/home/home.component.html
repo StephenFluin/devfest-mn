@@ -53,32 +53,18 @@
         </p>
         }
     </div>
-    @if(environment.dayOf) {
-    <section class="">
+    @if (dayOf()) {
+    <section>
         <div>
             <h2>Important Details for Attendees</h2>
-
             <div class="callout"><a [href]="environment.surveyLink">Survey</a></div>
             <div class="cta-block">
                 <a [href]="environment.surveyLink" class="cta all-caps">Please fill out the participant survey here</a>
             </div>
-            <div class="callout">Venue</div>
+            <div class="callout">Getting There</div>
             <p>
-                <a [href]="environment.venueMapUrl">{{ environment.venueName }}</a>,
-                {{ environment.venueAddress }}, at the corner of 11th Street South and Harmon Place
-                in downtown Minneapolis. Follow the DevFestMN signs to the registration table.
-            </p>
-            <div class="callout">Parking</div>
-            <p>
-                Park in the St. Thomas
-                <strong
-                    ><a href="https://www.stthomas.edu/parking-transportation/minneapolis-campus/parking-ramp/"
-                        >11th &amp; Harmon Parking Ramp</a
-                    ></strong
-                >
-                at 25 S 11th St, across 11th Street from Schulze Hall. Take a ticket when you
-                enter and pay by card at a pay station or the exit; the ramp doesn't take cash.
-                There's a flat weekend rate, and some paid street parking nearby.
+                See <a href="#venue">the venue map, parking, and directions to the rooms</a> below.
+                Follow the DevFestMN signs to the registration table on the ground floor.
             </p>
             <div class="callout">Wi-Fi</div>
             <p>Guest Wi-Fi details will be posted at the registration table.</p>
@@ -363,28 +349,10 @@
     </section>
     }
 
-    <section>
+    <section id="venue">
         <div>
-            <h2>Map</h2>
-            <p>
-                DevFestMN will be hosted at the University of St. Thomas Schulze Hall in downtown
-                Minneapolis, MN.
-            </p>
-            <div id="map">
-                <a
-                    [href]="environment.venueMapUrl"
-                    target="map"
-                    aria-label="Visit the map on Google Maps"
-                >
-                    <img
-                        src="/a/images/map-ust.webp"
-                        width="1090"
-                        height="484"
-                        loading="lazy"
-                        alt="Map of University of St. Thomas Minneapolis Campus"
-                    />
-                </a>
-            </div>
+            <h2>Getting There</h2>
+            <venue-info></venue-info>
         </div>
     </section>
 </div>

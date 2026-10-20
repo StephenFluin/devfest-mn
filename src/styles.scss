@@ -278,11 +278,6 @@ section li a:not(.cta):not(.button) {
     text-align: center;
 }
 
-#home #map img {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-}
 
 .split-column {
     display: flex;
@@ -825,10 +820,6 @@ button.button.warn {
 
 /* Small Screens */
 @media screen and (max-width: 480px) {
-    #home #map img {
-        width: 100%;
-        height: auto;
-    }
     .split-column {
         flex-direction: column;
     }

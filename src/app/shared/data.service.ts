@@ -90,17 +90,15 @@ export class DataService {
         return this.ref(`agendas/${uid}/${session}`);
     }
 
-    // @TODO this method is called much too often
-    // We should get this from the data, but then how to control ordering?
+    private venueLayout = {
+        rooms: environment.venueRooms.map((room) => room.name),
+        floors: {},
+        hasFloors: false,
+    };
+
+    /** Schedule columns, in order, from environment.venueRooms. */
     getVenueLayout() {
-        let rooms, floors;
-
-        rooms = ['Main Auditorium'];
-        floors = {
-            'Main Auditorium': 1,
-        };
-
-        return { floors: floors, rooms: rooms, hasFloors: false };
+        return this.venueLayout;
     }
 
     /**
