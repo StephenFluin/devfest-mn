@@ -1,6 +1,6 @@
 import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { TextFieldModule } from '@angular/cdk/text-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -23,123 +23,159 @@ interface RoomDraft {
  */
 @Component({
     template: `
-        <h2>Rooms</h2>
-        <p>
-            Rooms are the schedule's columns, in this order, and their directions show on the home
-            page and on each session in the room. Renaming a room moves its sessions too.
-        </p>
+        <div class="page-header">
+            <div>
+                <h2>Rooms</h2>
+                <p class="muted">
+                    The schedule's columns, in this order. Directions show on the home page and on
+                    each session in the room. Renaming a room moves its sessions too.
+                </p>
+            </div>
+            <button mat-stroked-button type="button" (click)="add()">Add room</button>
+        </div>
         @if (!ds.roomsSaved()) {
-        <p class="note">
+        <p class="notice">
             These are the defaults from <code>environment.ts</code>. Save to start managing rooms
             here.
         </p>
         }
 
         <form (submit)="save($event)" autocomplete="off">
-            @for (room of draft(); track $index; let i = $index, first = $first, last = $last) {
-            <fieldset class="room">
-                <legend>{{ room.name || 'New room' }}</legend>
-                <mat-form-field>
-                    <mat-label>Name</mat-label>
-                    <input
-                        matInput
-                        [ngModel]="room.name"
-                        (ngModelChange)="edit(i, { name: $event })"
-                        [name]="'name' + i"
-                        required
-                        maxlength="80"
-                    />
-                    @if (room.originalName && room.name.trim() !== room.originalName) {
-                    <mat-hint
-                        >Renamed from "{{ room.originalName }}"; moves
-                        {{ sessionCount(room.originalName) }} session(s)</mat-hint
-                    >
-                    } @else {
-                    <mat-hint>{{ sessionCount(room.name.trim()) }} session(s)</mat-hint>
+            <ol class="rooms">
+                @for (room of draft(); track $index; let i = $index, first = $first, last = $last) {
+                <li class="card room" [attr.aria-label]="room.name || 'New room'">
+                    <span class="order" aria-hidden="true">{{ i + 1 }}</span>
+                    <div class="field-grid">
+                        <mat-form-field>
+                            <mat-label>Name</mat-label>
+                            <input
+                                matInput
+                                [ngModel]="room.name"
+                                (ngModelChange)="edit(i, { name: $event })"
+                                [name]="'name' + i"
+                                required
+                                maxlength="80"
+                            />
+                            @if (room.originalName && room.name.trim() !== room.originalName) {
+                            <mat-hint
+                                >Renamed from "{{ room.originalName }}"; moves
+                                {{ sessionLabel(sessionCount(room.originalName)) }}</mat-hint
+                            >
+                            } @else {
+                            <mat-hint>{{ sessionLabel(sessionCount(room.name.trim())) }}</mat-hint>
+                            }
+                        </mat-form-field>
+                        <mat-form-field>
+                            <mat-label>Directions</mat-label>
+                            <textarea
+                                matInput
+                                [ngModel]="room.directions"
+                                (ngModelChange)="edit(i, { directions: $event })"
+                                [name]="'directions' + i"
+                                maxlength="500"
+                                cdkTextareaAutosize
+                                cdkAutosizeMinRows="1"
+                                placeholder="e.g. Down the hallway from the Auditorium."
+                            ></textarea>
+                        </mat-form-field>
+                    </div>
+                    <div class="row-actions">
+                        <button
+                            mat-button
+                            type="button"
+                            (click)="move(i, -1)"
+                            [disabled]="first"
+                            [attr.aria-label]="'Move ' + (room.name || 'room') + ' up'"
+                        >
+                            ↑ Up
+                        </button>
+                        <button
+                            mat-button
+                            type="button"
+                            (click)="move(i, 1)"
+                            [disabled]="last"
+                            [attr.aria-label]="'Move ' + (room.name || 'room') + ' down'"
+                        >
+                            ↓ Down
+                        </button>
+                        <button
+                            mat-button
+                            class="danger"
+                            type="button"
+                            (click)="removeRoom(i)"
+                            [attr.aria-label]="'Remove ' + (room.name || 'room')"
+                        >
+                            Remove
+                        </button>
+                    </div>
+                    @if (room.originalName && sessionCount(room.originalName) && removedWarning() === i) {
+                    <p class="notice warn" role="alert">
+                        {{ sessionLabel(sessionCount(room.originalName)) }} in this room keep it and
+                        show in their own column until you move them. Click Remove again to remove
+                        it anyway.
+                    </p>
                     }
-                </mat-form-field>
-                <mat-form-field class="directions">
-                    <mat-label>Directions</mat-label>
-                    <textarea
-                        matInput
-                        [ngModel]="room.directions"
-                        (ngModelChange)="edit(i, { directions: $event })"
-                        [name]="'directions' + i"
-                        maxlength="500"
-                        rows="2"
-                        placeholder="e.g. Down the hallway from the Auditorium."
-                    ></textarea>
-                </mat-form-field>
-                <div class="row-actions">
-                    <button mat-button type="button" (click)="move(i, -1)" [disabled]="first">
-                        Move up
-                    </button>
-                    <button mat-button type="button" (click)="move(i, 1)" [disabled]="last">
-                        Move down
-                    </button>
-                    <button mat-button type="button" (click)="removeRoom(i)">Remove</button>
-                </div>
-                @if (room.originalName && sessionCount(room.originalName) && removedWarning() === i) {
-                <p class="warning">
-                    {{ sessionCount(room.originalName) }} session(s) are in this room. They keep it
-                    and show in their own column until you move them. Click Remove again to remove
-                    it anyway.
-                </p>
+                </li>
                 }
-            </fieldset>
-            }
+            </ol>
 
             @if (unlisted().length) {
-            <p>
-                Sessions also use these rooms, which aren't listed:
-                @for (name of unlisted(); track name) {
-                <button mat-stroked-button type="button" (click)="add(name)">Add "{{ name }}"</button>
-                }
-            </p>
+            <div class="notice">
+                <p>Sessions also use these rooms, which aren't listed:</p>
+                <div class="actions">
+                    @for (name of unlisted(); track name) {
+                    <button mat-stroked-button type="button" (click)="add(name)">Add "{{ name }}"</button>
+                    }
+                </div>
+            </div>
             }
 
-            <div class="form-actions">
-                <button mat-stroked-button type="button" (click)="add()">Add room</button>
+            <div class="actions sticky">
                 <button mat-flat-button type="submit" [disabled]="!!problem() || saving()">
                     {{ saving() ? 'Saving…' : 'Save rooms' }}
                 </button>
                 <button mat-button type="button" (click)="draft.set(loaded())">Discard changes</button>
-                @if (problem(); as problem) {
-                <span class="warning">{{ problem }}</span>
-                } @else if (status(); as status) {
-                <span>{{ status }}</span>
-                }
+                <span class="status" [class.error]="problem() || failed()" [class.ok]="!problem() && !failed() && status()" role="status">
+                    {{ problem() || status() }}
+                </span>
             </div>
         </form>
-        <p><a routerLink="/schedule">View the schedule</a></p>
     `,
     styles: `
+        .rooms {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
         .room {
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            margin: 16px 0;
-            padding: 8px 16px;
+            position: relative;
+            padding-left: 64px;
+            margin-bottom: 16px;
         }
-        mat-form-field {
-            display: block;
-            max-width: 600px;
+        .order {
+            position: absolute;
+            left: 20px;
+            top: 28px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font: var(--mat-sys-label-large);
+            background: var(--mat-sys-primary-container);
+            color: var(--mat-sys-on-primary-container);
         }
-        .row-actions,
-        .form-actions {
+        .row-actions {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
         }
-        .note {
-            background: #fff8e1;
-            padding: 8px 12px;
-        }
-        .warning {
-            color: #b00020;
+        .notice p {
+            margin-bottom: 8px;
         }
     `,
-    imports: [FormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatInputModule],
+    imports: [FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, TextFieldModule],
 })
 export class RoomsComponent {
     ds = inject(DataService);
@@ -159,6 +195,7 @@ export class RoomsComponent {
 
     saving = signal(false);
     status = signal('');
+    failed = signal(false);
     /** Index of a room in use that Remove was clicked on once. */
     removedWarning = signal<number | null>(null);
 
@@ -169,6 +206,10 @@ export class RoomsComponent {
         }
         return counts;
     });
+
+    sessionLabel(count: number) {
+        return count === 1 ? '1 session' : `${count} sessions`;
+    }
 
     sessionCount(name: string) {
         return this.sessionsPerRoom().get(name) ?? 0;
@@ -240,11 +281,13 @@ export class RoomsComponent {
         }
 
         this.saving.set(true);
+        this.failed.set(false);
         try {
             await update(ref(this.ds.db, `devfest${environment.year}`), updates);
             this.status.set('Saved.');
         } catch (error) {
             console.error('Error saving rooms', error);
+            this.failed.set(true);
             this.status.set(`Couldn't save: ${error.message ?? error}`);
         } finally {
             this.saving.set(false);

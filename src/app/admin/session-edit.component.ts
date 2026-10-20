@@ -13,6 +13,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { TextFieldModule } from '@angular/cdk/text-field';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { KeyValuePipe } from '@angular/common';
 import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
@@ -22,6 +23,20 @@ import { eventUtcOffset } from '../shared/event-data';
 
 @Component({
     templateUrl: './session-edit.component.html',
+    styles: `
+        .new-room {
+            display: grid;
+            grid-template-columns: minmax(240px, 1fr) auto;
+            gap: 8px 16px;
+            align-items: start;
+        }
+        .new-room .actions {
+            padding-top: 8px;
+        }
+        .chips {
+            margin-bottom: 16px;
+        }
+    `,
     imports: [
         MatFormFieldModule,
         MatInputModule,
@@ -34,6 +49,7 @@ import { eventUtcOffset } from '../shared/event-data';
         GetSpeakerPipe,
         RouterLink,
         MatSelectModule,
+        TextFieldModule,
     ],
 })
 export class SessionEditComponent {
@@ -63,6 +79,11 @@ export class SessionEditComponent {
     });
 
     environment = environment;
+
+    /** Older sessions saved their length as text ("2"). */
+    sameNumber = (a: unknown, b: unknown) => Number(a || 1) === Number(b || 1);
+
+    readonly tracks = ['all', 'Keynote', 'AI', 'Web', 'Android', 'Cloud', 'Design', 'IoT', 'General'];
 
     /**
      * Rooms are picked from the list at /admin/rooms, never typed, so names always match. A session
@@ -128,6 +149,7 @@ export class SessionEditComponent {
     }
 
     delete(session) {
+        if (!confirm(`Delete "${session.title || 'this session'}"? This can't be undone.`)) return;
         this.ds.delete('schedule', session);
         set(this.ds.ref(`adminNotes/${session.$key}`), null);
         this.router.navigate(['/', 'schedule']);

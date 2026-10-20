@@ -18,6 +18,9 @@ export class SessionReportComponent {
     private schedule = objectResource<any>(() => this.ds.ref('schedule'), { initialValue: {} });
     private speakers = objectResource<any>(() => this.ds.ref('speakers'), { initialValue: {} });
 
+    /** Sessions with speakers; the others (breaks, registration) aren't rated. */
+    rated = computed(() => this.sessions().filter((session) => session.speakers.length > 0));
+
     sessions = computed(() => {
         const data = {
             feedback: this.feedback(),

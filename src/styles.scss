@@ -6,8 +6,7 @@
     font-display: swap;
 }
 
-/* Colors. Pages follow the device's light/dark preference; admin pages stay light because the
-   Material theme they use is light-only. */
+/* Colors. Pages follow the device's light/dark preference, admin pages included (src/admin.scss). */
 @mixin light-colors {
     --color-bg: #fff;
     --color-text: #333;
@@ -44,18 +43,14 @@
 }
 
 @media (prefers-color-scheme: dark) {
-    :root:not(:has(.light-only)) {
+    :root {
         @include dark-colors;
     }
 
     /* Black line icons, only shown to admins on public pages. */
-    :root:not(:has(.light-only)) img[src$='edit.svg'] {
+    img[src$='edit.svg'] {
         filter: invert(1);
     }
-}
-
-:root:has(.light-only) {
-    color-scheme: light;
 }
 
 * {

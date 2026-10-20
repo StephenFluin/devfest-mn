@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TextFieldModule } from '@angular/cdk/text-field';
 
 import { DataService, Speaker } from '../shared/data.service';
 import { UploaderComponent } from './sffb/uploader.component';
@@ -14,7 +15,36 @@ import { slugify } from '../shared/slug';
 
 @Component({
     templateUrl: './speaker-edit.component.html',
+    styles: `
+        .profile {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+        @media (max-width: 640px) {
+            .profile {
+                grid-template-columns: 1fr;
+            }
+        }
+        .photo img,
+        .avatar.big {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            object-fit: cover;
+            font: var(--mat-sys-display-medium);
+        }
+        .share {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin: 8px 0 0;
+        }
+    `,
     imports: [
+        RouterLink,
+        TextFieldModule,
         MatFormFieldModule,
         MatInputModule,
         FormsModule,
@@ -42,16 +72,14 @@ export class SpeakerEditComponent {
         return item && { ...item };
     });
 
-    save(speaker) {
-        console.log('Saving speaker', speaker);
+    save(speaker: Speaker, event: Event) {
         event.preventDefault();
         this.ds.save('speakers', speaker);
-        console.log('rerouting to', environment.year);
         this.router.navigate(['/', 'speakers']);
     }
 
     delete(speaker) {
-        if (confirm('Are you sure you want to delete this speaker?')) {
+        if (confirm(`Delete ${speaker.name || 'this speaker'}? This can't be undone.`)) {
             this.ds.delete('speakers', speaker);
             this.router.navigate(['/', 'speakers']);
         }

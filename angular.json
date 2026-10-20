@@ -30,7 +30,7 @@
                         "styles": [
                             "src/styles.scss",
                             {
-                                "input": "node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
+                                "input": "src/admin.scss",
                                 "bundleName": "material-theme",
                                 "inject": false
                             }

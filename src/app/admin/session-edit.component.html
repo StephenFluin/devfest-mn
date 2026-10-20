@@ -1,155 +1,172 @@
-<style>
-  mat-form-field {
-  display: block;
-  margin: 16px 0;
-  min-width: 400px;
-}
-.new-room {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-</style>
-
 @if (sessionData(); as session) {
-  <h1>{{ session.$key ? 'Edit' : 'New' }} Session</h1>
-  <form ngNoForm (submit)="save(session, $event)" autocomplete="off">
-    <mat-form-field
-      ><input matInput [(ngModel)]="session.title" placeholder="Title" style="width: 100%"
-    /></mat-form-field>
-    <br />
-    <textarea
-      [(ngModel)]="session.description"
-      placeholder="Description"
-      style="width: 100%; height: 24em"
-    ></textarea>
-    <br />
-    @if (newRoom() === null) {
-      <mat-form-field>
-        <mat-label>Room</mat-label>
-        <mat-select [ngModel]="session.room" (ngModelChange)="pickRoom(session, $event)">
-          @for (room of ds.rooms(); track room.name) {
-            <mat-option [value]="room.name">{{ room.name }}</mat-option>
-          }
-          @if (session.room && !isKnownRoom(session.room)) {
-            <mat-option [value]="session.room">{{ session.room }} (not in Rooms)</mat-option>
-          }
-          <mat-option [value]="NEW_ROOM"><em>New room…</em></mat-option>
-        </mat-select>
-        <mat-hint><a routerLink="/admin/rooms">Manage rooms</a></mat-hint>
-      </mat-form-field>
-    } @else {
-      <div class="new-room">
-        <mat-form-field>
-          <mat-label>New room name</mat-label>
-          <input
-            matInput
-            [ngModel]="newRoom()"
-            (ngModelChange)="newRoom.set($event)"
-            (keydown.enter)="$event.preventDefault(); createRoom(session)"
-            maxlength="80"
-            autofocus
-          />
-          <mat-hint>Added to the end of the schedule. Set its directions and order in <a routerLink="/admin/rooms">Rooms</a>.</mat-hint>
-        </mat-form-field>
-        <button mat-flat-button type="button" (click)="createRoom(session)" [disabled]="!newRoom()?.trim() || creatingRoom()">
-          {{ creatingRoom() ? 'Adding…' : 'Add room' }}
-        </button>
-        <button mat-button type="button" (click)="newRoom.set(null)">Cancel</button>
-        @if (roomError(); as error) {
-          <span style="color: #b00020">{{ error }}</span>
-        }
-      </div>
-    }
-    <label>Track</label>
-    <mat-form-field
-      ><input
-      matInput
-      [(ngModel)]="session.track"
-      placeholder="Track"
-      [matAutocomplete]="trackAuto"
-      autocomplete="off"
-    /></mat-form-field>
-    <mat-autocomplete #trackAuto="matAutocomplete">
-      @for (
-        track of [
-        'all',
-        'Web',
-        'Android',
-        'AI',
-        'Design',
-        'Cloud',
-        'IoT',
-        'General',
-        'Keynote'
-        ]
-        ; track
-        track) {
-        <mat-option
-          [value]="track"
-          >{{ track }}</mat-option
-          >
-        }
-      </mat-autocomplete>
-      <label>Start Time</label><em> on {{ environment.eventDateDisplay }}, Minneapolis time</em>
-      <mat-form-field
-        ><input
-        matInput
-        type="time"
-        step="300"
-        [ngModel]="timeOf(session.startTime)"
-        (ngModelChange)="setTime(session, $event)"
-        placeholder="Start Time"
-      /></mat-form-field>
-      <mat-form-field
-        ><input matInput [(ngModel)]="session.blocks" placeholder="# of Blocks"
-      /></mat-form-field>
-      <mat-form-field>
-        <input matInput [(ngModel)]="session.notes" placeholder="Last Minute Notes" />
-      </mat-form-field>
-      <mat-form-field>
-        <input matInput [(ngModel)]="session.adminNotes" placeholder="Internal Admin Notes (admins only)" />
-      </mat-form-field>
-      <div>
-        <em>speakers</em>
-        <ul class="speakerlist">
-          @for (speaker of session.speakers | keyvalue; track speaker) {
-            <li>
-              <img
-                        src="{{
-                            (
-                                speaker.value
-                                | getSpeaker
-                            )?.['imageUrl']
-                        }}"
-                style="max-height: 50px"
+<form ngNoForm (submit)="save(session, $event)" autocomplete="off">
+    <div class="page-header">
+        <div>
+            <h2>{{ session.$key ? 'Edit session' : 'New session' }}</h2>
+            <p class="muted">{{ session.title || 'Untitled' }}</p>
+        </div>
+        <a mat-button routerLink="/schedule">Back to schedule</a>
+    </div>
+
+    <section class="card" aria-labelledby="details-heading">
+        <h3 id="details-heading">Details</h3>
+        <div class="field-grid">
+            <mat-form-field class="span-all">
+                <mat-label>Title</mat-label>
+                <input matInput [(ngModel)]="session.title" required />
+            </mat-form-field>
+            <mat-form-field class="span-all">
+                <mat-label>Description</mat-label>
+                <textarea
+                    matInput
+                    [(ngModel)]="session.description"
+                    cdkTextareaAutosize
+                    cdkAutosizeMinRows="8"
+                ></textarea>
+                <mat-hint>Markdown</mat-hint>
+            </mat-form-field>
+        </div>
+    </section>
+
+    <section class="card" aria-labelledby="when-heading">
+        <h3 id="when-heading">When and where</h3>
+        <div class="field-grid">
+            @if (newRoom() === null) {
+            <mat-form-field>
+                <mat-label>Room</mat-label>
+                <mat-select [ngModel]="session.room" (ngModelChange)="pickRoom(session, $event)">
+                    @for (room of ds.rooms(); track room.name) {
+                    <mat-option [value]="room.name">{{ room.name }}</mat-option>
+                    } @if (session.room && !isKnownRoom(session.room)) {
+                    <mat-option [value]="session.room">{{ session.room }} (not in Rooms)</mat-option>
+                    }
+                    <mat-option [value]="NEW_ROOM"><em>New room…</em></mat-option>
+                </mat-select>
+                <mat-hint><a routerLink="/admin/rooms">Manage rooms</a></mat-hint>
+            </mat-form-field>
+            } @else {
+            <div class="new-room span-all">
+                <mat-form-field>
+                    <mat-label>New room name</mat-label>
+                    <input
+                        matInput
+                        [ngModel]="newRoom()"
+                        (ngModelChange)="newRoom.set($event)"
+                        (keydown.enter)="$event.preventDefault(); createRoom(session)"
+                        maxlength="80"
+                        cdkFocusInitial
+                    />
+                    <mat-hint
+                        >Added to the end of the schedule. Set its directions and order in
+                        <a routerLink="/admin/rooms">Rooms</a>.</mat-hint
+                    >
+                </mat-form-field>
+                <div class="actions">
+                    <button
+                        mat-flat-button
+                        type="button"
+                        (click)="createRoom(session)"
+                        [disabled]="!newRoom()?.trim() || creatingRoom()"
+                    >
+                        {{ creatingRoom() ? 'Adding…' : 'Add room' }}
+                    </button>
+                    <button mat-button type="button" (click)="newRoom.set(null)">Cancel</button>
+                    @if (roomError(); as error) {
+                    <span class="status error" role="alert">{{ error }}</span>
+                    }
+                </div>
+            </div>
+            }
+            <mat-form-field>
+                <mat-label>Track</mat-label>
+                <input matInput [(ngModel)]="session.track" [matAutocomplete]="trackAuto" />
+                <mat-hint>"all" spans every room</mat-hint>
+            </mat-form-field>
+            <mat-autocomplete #trackAuto="matAutocomplete">
+                @for (track of tracks; track track) {
+                <mat-option [value]="track">{{ track }}</mat-option>
+                }
+            </mat-autocomplete>
+            <mat-form-field>
+                <mat-label>Start time</mat-label>
+                <input
+                    matInput
+                    type="time"
+                    step="300"
+                    [ngModel]="timeOf(session.startTime)"
+                    (ngModelChange)="setTime(session, $event)"
                 />
-              {{ (speaker.value | getSpeaker)?.name }}
-              <button type="button" (click)="deleteSpeakerFromSession(session, speaker.key)">
-                -X-
-              </button>
+                <mat-hint>{{ environment.eventDateDisplay }}, Minneapolis time</mat-hint>
+            </mat-form-field>
+            <mat-form-field>
+                <mat-label>Length</mat-label>
+                <mat-select [(ngModel)]="session.blocks" [compareWith]="sameNumber">
+                    @for (blocks of [1, 2, 3, 4]; track blocks) {
+                    <mat-option [value]="blocks">{{ blocks }} {{ blocks === 1 ? 'block' : 'blocks' }}</mat-option>
+                    }
+                </mat-select>
+                <mat-hint>One block is an hour slot</mat-hint>
+            </mat-form-field>
+        </div>
+    </section>
+
+    <section class="card" aria-labelledby="speakers-heading">
+        <h3 id="speakers-heading">Speakers</h3>
+        @if (session.speakers | keyvalue; as speakers) { @if (speakers.length) {
+        <ul class="chips" aria-label="Speakers in this session">
+            @for (speaker of speakers; track speaker.key) {
+            @let profile = speaker.value | getSpeaker;
+            <li class="chip">
+                @if (profile?.imageUrl) {
+                <img [src]="profile.imageUrl" alt="" />
+                } @else {
+                <span class="avatar" aria-hidden="true">{{ profile?.name?.[0] ?? '?' }}</span>
+                }
+                {{ profile?.name ?? 'Unknown speaker' }}
+                <button
+                    type="button"
+                    class="remove"
+                    (click)="deleteSpeakerFromSession(session, speaker.key)"
+                    [attr.aria-label]="'Remove ' + (profile?.name ?? 'speaker') + ' from this session'"
+                >
+                    ×
+                </button>
             </li>
-          }
+            }
         </ul>
-      </div>
-      @if (!session.$key) {
-        <button mat-raised-button type="submit">Create Session</button>
-      }
-      @if (session.$key) {
-        <button mat-raised-button type="submit">Save Session</button>
-      }
-      <br />
-      <em>Add speakers from the list below</em>
-      <speaker-selector
-        [session]="session"
-        style="overflow: scroll; max-height: 300px; display: flex; flex-flow: wrap row"
-      ></speaker-selector>
-      <button type="submit" mat-raised-button>
-        {{ session.$key ? 'Save' : 'Create' }} Session
-      </button>
-      <button (click)="delete(session)" mat-button color="secondary">Delete</button>
-    </form>
-  } @else {
-    Loading session data...
-  }
+        } @else {
+        <p class="muted">No speakers yet.</p>
+        } }
+        <speaker-selector [session]="session" />
+    </section>
+
+    <section class="card" aria-labelledby="notes-heading">
+        <h3 id="notes-heading">Notes</h3>
+        <div class="field-grid">
+            <mat-form-field>
+                <mat-label>Last-minute note</mat-label>
+                <input matInput [(ngModel)]="session.notes" />
+                <mat-hint>Shown to attendees on the schedule</mat-hint>
+            </mat-form-field>
+            <mat-form-field>
+                <mat-label>Internal note</mat-label>
+                <input matInput [(ngModel)]="session.adminNotes" />
+                <mat-hint>Only admins see this</mat-hint>
+            </mat-form-field>
+        </div>
+    </section>
+
+    <div class="actions sticky">
+        <button mat-flat-button type="submit">{{ session.$key ? 'Save session' : 'Create session' }}</button>
+        <a mat-button routerLink="/schedule">Cancel</a>
+        <span class="spacer"></span>
+        @if (session.$key) {
+        <button mat-stroked-button class="danger" type="button" (click)="delete(session)">
+            Delete session
+        </button>
+        }
+    </div>
+</form>
+} @else {
+<p class="muted" role="status">Loading session…</p>
+}

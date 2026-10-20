@@ -1,6 +1,8 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { DecimalPipe, PercentPipe } from '@angular/common';
 import { ref } from 'firebase/database';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 
 import { environment } from '../../environments/environment';
 import { AuthService } from '../realtime-data/auth.service';
@@ -35,64 +37,71 @@ const RANGES = [
 @Component({
     template: `
         @if (auth.isAdmin()) {
-        <h2>UTM funnel</h2>
-        <div class="toolbar">
-            <label>
-                Group by
-                <select (change)="grouping.set(+$any($event.target).value)">
-                    @for (g of groupings; track g.label; let i = $index) {
-                    <option [value]="i">{{ g.label }}</option>
-                    }
-                </select>
-            </label>
-            <label>
-                Dates
-                <select (change)="range.set(+$any($event.target).value)">
-                    @for (r of ranges; track r.label; let i = $index) {
-                    <option [value]="i">{{ r.label }}</option>
-                    }
-                </select>
-            </label>
+        <div class="page-header">
+            <div>
+                <h2>UTM funnel</h2>
+                <p class="muted">Visits to the public site and what they led to, by where they came from.</p>
+            </div>
+            <div class="filters">
+                <mat-form-field subscriptSizing="dynamic">
+                    <mat-label>Group by</mat-label>
+                    <mat-select [value]="grouping()" (valueChange)="grouping.set($event)">
+                        @for (g of groupings; track g.label; let i = $index) {
+                        <mat-option [value]="i">{{ g.label }}</mat-option>
+                        }
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field subscriptSizing="dynamic">
+                    <mat-label>Dates</mat-label>
+                    <mat-select [value]="range()" (valueChange)="range.set($event)">
+                        @for (r of ranges; track r.label; let i = $index) {
+                        <mat-option [value]="i">{{ r.label }}</mat-option>
+                        }
+                    </mat-select>
+                </mat-form-field>
+            </div>
         </div>
 
         <div class="tiles">
-            <div [title]="definitions.visit"><span>Visits</span><b>{{ total().visits | number }}</b></div>
-            <div [title]="definitions.engaged">
-                <span>Engaged</span><b>{{ total().engaged | number }}</b>
-                <small>{{ rate(total().engaged, total().visits) | percent: '1.0-1' }} of visits</small>
+            <div class="tile" [title]="definitions.visit">
+                <span class="label">Visits</span><span class="value">{{ total().visits | number }}</span>
             </div>
-            <div [title]="definitions.sales">
-                <span>Ticket sales</span><b>{{ total().sales | number }}</b>
-                <small>{{ rate(total().sales, total().engaged) | percent: '1.0-1' }} of engaged</small>
+            <div class="tile" [title]="definitions.engaged">
+                <span class="label">Engaged</span><span class="value">{{ total().engaged | number }}</span>
+                <span class="note">{{ rate(total().engaged, total().visits) | percent: '1.0-1' }} of visits</span>
             </div>
-            <div [title]="definitions.cfp">
-                <span>CFP clicks</span><b>{{ total().cfp | number }}</b>
-                <small>{{ rate(total().cfp, total().engaged) | percent: '1.0-1' }} of engaged</small>
+            <div class="tile" [title]="definitions.sales">
+                <span class="label">Ticket sales</span><span class="value">{{ total().sales | number }}</span>
+                <span class="note">{{ rate(total().sales, total().engaged) | percent: '1.0-1' }} of engaged</span>
+            </div>
+            <div class="tile" [title]="definitions.cfp">
+                <span class="label">CFP clicks</span><span class="value">{{ total().cfp | number }}</span>
+                <span class="note">{{ rate(total().cfp, total().engaged) | percent: '1.0-1' }} of engaged</span>
             </div>
         </div>
 
         @if (rows().length) {
-        <div class="scroll">
-            <table>
+        <div class="table-wrap">
+            <table class="data">
                 <thead>
                     <tr>
                         @for (d of dimensions(); track d) {
-                        <th class="key" [title]="definitions.credit">{{ d }}</th>
+                        <th scope="col" class="text key" [title]="definitions.credit">{{ d }}</th>
                         }
-                        <th [title]="definitions.visit">Visits</th>
-                        <th [title]="definitions.engaged">Engaged</th>
-                        <th title="Engaged visits as a share of visits">Engaged %</th>
-                        <th [title]="definitions.sales">Sales</th>
-                        <th title="Visits with a ticket sale as a share of visits">Sales %</th>
-                        <th [title]="definitions.cfp">CFP</th>
-                        <th title="Visits that clicked through to the call for papers form as a share of visits">CFP %</th>
+                        <th scope="col" [title]="definitions.visit">Visits</th>
+                        <th scope="col" [title]="definitions.engaged">Engaged</th>
+                        <th scope="col" title="Engaged visits as a share of visits">Engaged %</th>
+                        <th scope="col" [title]="definitions.sales">Sales</th>
+                        <th scope="col" title="Visits with a ticket sale as a share of visits">Sales %</th>
+                        <th scope="col" [title]="definitions.cfp">CFP</th>
+                        <th scope="col" title="Visits that clicked through to the call for papers form as a share of visits">CFP %</th>
                     </tr>
                 </thead>
                 <tbody>
                     @for (row of rows(); track row.keys.join()) {
                     <tr>
                         @for (key of row.keys; track $index) {
-                        <td class="key">{{ key }}</td>
+                        <td class="text">{{ key }}</td>
                         }
                         <td>{{ row.visits | number }}</td>
                         <td>{{ row.engaged | number }}</td>
@@ -110,40 +119,36 @@ const RANGES = [
         <p class="muted">No visits recorded for these dates yet.</p>
         }
 
-        <dl class="muted">
-            <dt>Visit</dt>
-            <dd>{{ definitions.visit }}</dd>
-            <dt>Engaged</dt>
-            <dd>{{ definitions.engaged }}</dd>
-            <dt>Ticket sale</dt>
-            <dd>{{ definitions.sales }}</dd>
-            <dt>CFP click</dt>
-            <dd>{{ definitions.cfp }}</dd>
-            <dt>Source, medium, campaign</dt>
-            <dd>{{ definitions.credit }}</dd>
-        </dl>
+        <section class="card definitions" aria-labelledby="definitions-heading">
+            <h3 id="definitions-heading">What these mean</h3>
+            <dl>
+                <dt>Visit</dt>
+                <dd>{{ definitions.visit }}</dd>
+                <dt>Engaged</dt>
+                <dd>{{ definitions.engaged }}</dd>
+                <dt>Ticket sale</dt>
+                <dd>{{ definitions.sales }}</dd>
+                <dt>CFP click</dt>
+                <dd>{{ definitions.cfp }}</dd>
+                <dt>Source, medium, campaign</dt>
+                <dd>{{ definitions.credit }}</dd>
+            </dl>
+        </section>
         }
     `,
     styles: `
-        :host { display: block; max-width: 960px; }
-        .muted, span, small { color: #52514e; font-size: 13px; }
-        .toolbar { display: flex; flex-wrap: wrap; gap: 16px; margin: 12px 0; }
-        select { margin-left: 4px; font: inherit; }
-        .tiles { display: flex; flex-wrap: wrap; gap: 32px; margin: 16px 0; }
-        .tiles div { display: flex; flex-direction: column; }
-        .tiles b { font-size: 28px; font-weight: 600; }
-        .scroll { overflow-x: auto; }
-        table { border-collapse: collapse; font-size: 14px; }
-        th { text-transform: capitalize; }
-        th, td { padding: 4px 16px 4px 0; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-        .key { text-align: left; }
-        tbody tr:hover td { background: #f0efec; }
+        :host { display: block; }
+        .filters { display: flex; flex-wrap: wrap; gap: 12px; }
+        .filters mat-form-field { width: 220px; }
+        .key { text-transform: capitalize; }
         [title] { cursor: help; }
-        dl { margin-top: 32px; max-width: 640px; }
-        dt { font-weight: 600; margin-top: 8px; }
-        dd { margin: 0; }
+        .definitions { margin-top: 32px; }
+        dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 24px; margin: 0; max-width: 820px; }
+        dt { font: var(--mat-sys-title-small); }
+        dd { margin: 0; color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-medium); }
+        @media (max-width: 640px) { dl { grid-template-columns: 1fr; } dd { margin-bottom: 8px; } }
     `,
-    imports: [DecimalPipe, PercentPipe],
+    imports: [DecimalPipe, PercentPipe, MatFormFieldModule, MatSelectModule],
 })
 export class UtmFunnelComponent {
     auth = inject(AuthService);

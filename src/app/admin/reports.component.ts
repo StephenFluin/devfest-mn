@@ -5,7 +5,6 @@ import { listResource } from '../realtime-data/firebase';
 
 import { AuthService } from '../realtime-data/auth.service';
 import { DecimalPipe } from '@angular/common';
-import { AdminNavComponent } from './admin-nav.component';
 
 interface SessionFeedback {
     speaker: number;
@@ -28,55 +27,82 @@ interface SessionReport {
 
 @Component({
     template: `
-        <admin-nav></admin-nav>
-        @if (auth.isAdmin()) { @if (sessions(); as sessionList) {
-        <div>
-            <h2>Session Feedback Report</h2>
-            @for (session of sessionList; track session.key) {
-            <div style="margin-bottom: 2rem;">
-                <div>
-                    <strong>{{ session.title }}</strong>
-                </div>
-                @if (session.numReviews > 0) {
-                <div>
-                    <div>{{ session.numReviews }} Reviews</div>
-                    <div>
-                        Avg Speaker: {{ session.avgSpeaker | number : '1.1-1' }} / Avg Content:
-                        {{ session.avgContent | number : '1.1-1' }} / Avg Recommendation:
-                        {{ session.avgRecommendation | number : '1.1-1' }}
-                    </div>
-                    <table border="1" style="margin-top: 0.5rem;">
-                        <thead>
-                            <tr>
-                                <th>Speaker</th>
-                                <th>Content</th>
-                                <th>Recommendation</th>
-                                <th>Comment</th>
-                                <th>User ID</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (fb of session.feedback; track fb.uid) {
-                            <tr>
-                                <td>{{ fb.speaker || '-' }}</td>
-                                <td>{{ fb.content || '-' }}</td>
-                                <td>{{ fb.recommendation || '-' }}</td>
-                                <td>{{ fb.comment || '' }}</td>
-                                <td>{{ fb.uid }}</td>
-                            </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-                } @else {
-                <div style="color: #999;">No reviews yet</div>
-                }
+        @if (auth.isAdmin()) {
+        <div class="page-header">
+            <div>
+                <h2>Session feedback</h2>
+                <p class="muted">Every rating and comment attendees left, by session, in schedule order. Ratings are out of 5.</p>
             </div>
-            }
         </div>
+        @for (session of sessions(); track session.key) {
+        <section class="card" [attr.aria-labelledby]="'fb-' + session.key">
+            <div class="session-head">
+                <h3 [id]="'fb-' + session.key">{{ session.title }}</h3>
+                <span class="muted">{{ session.numReviews }} {{ session.numReviews === 1 ? 'review' : 'reviews' }}</span>
+            </div>
+            @if (session.numReviews > 0) {
+            <div class="scores">
+                <div class="tile"><span class="label">Speaker</span><span class="value">{{ session.avgSpeaker | number: '1.1-1' }}</span></div>
+                <div class="tile"><span class="label">Content</span><span class="value">{{ session.avgContent | number: '1.1-1' }}</span></div>
+                <div class="tile"><span class="label">Recommend</span><span class="value">{{ session.avgRecommendation | number: '1.1-1' }}</span></div>
+            </div>
+            <div class="table-wrap">
+                <table class="data">
+                    <thead>
+                        <tr>
+                            <th scope="col">Speaker</th>
+                            <th scope="col">Content</th>
+                            <th scope="col">Recommend</th>
+                            <th scope="col" class="text">Comment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (fb of session.feedback; track fb.uid) {
+                        <tr>
+                            <td>{{ fb.speaker || '–' }}</td>
+                            <td>{{ fb.content || '–' }}</td>
+                            <td>{{ fb.recommendation || '–' }}</td>
+                            <td class="text" [title]="'From user ' + fb.uid">{{ fb.comment }}</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            } @else {
+            <p class="muted">No reviews yet.</p>
+            }
+        </section>
+        } @empty {
+        <p class="muted">No sessions yet.</p>
         } }
     `,
-    imports: [AdminNavComponent, DecimalPipe],
+    styles: `
+        .session-head {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 16px;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .session-head h3 {
+            margin: 0;
+        }
+        .scores {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 160px));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .scores .value {
+            font: var(--mat-sys-headline-medium);
+            font-weight: 600;
+        }
+        .data .text {
+            min-width: 240px;
+        }
+    `,
+    imports: [DecimalPipe],
 })
 export class ReportsComponent {
     auth = inject(AuthService);
