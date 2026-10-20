@@ -1,7 +1,6 @@
-import { afterNextRender, inject, makeStateKey, PLATFORM_ID, signal, TransferState } from '@angular/core';
-import { isPlatformServer } from '@angular/common';
 import { environment } from '../../environments/environment';
 import { eventUtcOffset } from './event-data';
+import { serverAgreedClock } from './server-clock';
 
 const DAY = 86_400_000;
 
@@ -16,22 +15,7 @@ export function isDayOf(now = Date.now()) {
     return now >= showFrom && now < showUntil;
 }
 
-const DAY_OF_KEY = makeStateKey<boolean>('dayOf');
-
-/**
- * Whether to show day-of details. The server decides when it renders the page and hands its answer
- * to the browser, so hydration sees the same page the server sent; the browser then checks its own
- * clock, which matters when the page was prerendered at build time.
- */
+/** Whether to show day-of details, agreed between server and browser. */
 export function dayOf() {
-    const transferState = inject(TransferState);
-    const value = signal(false);
-    if (isPlatformServer(inject(PLATFORM_ID))) {
-        value.set(isDayOf());
-        transferState.set(DAY_OF_KEY, value());
-    } else {
-        value.set(transferState.get(DAY_OF_KEY, false));
-        afterNextRender(() => value.set(isDayOf()));
-    }
-    return value.asReadonly();
+    return serverAgreedClock('dayOf', () => isDayOf(), false);
 }

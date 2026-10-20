@@ -16,6 +16,7 @@ import { OurMeta } from './our-meta.service';
 import { ADirective } from './a.directive';
 import { captureAttribution, eventbriteAttribution, trackTicketPurchase } from './analytics.util';
 import { trackPageView } from './visit-tracker';
+import { cfpState } from './shared/cfp-deadline';
 
 @Component({
     selector: 'app-root',
@@ -24,6 +25,7 @@ import { trackPageView } from './visit-tracker';
 })
 export class AppComponent {
     environment = environment;
+    cfp = cfpState();
     private platformId = inject(PLATFORM_ID);
     private isBrowser = isPlatformBrowser(this.platformId);
     isSecure = this.isBrowser && window?.location?.protocol === 'https:';

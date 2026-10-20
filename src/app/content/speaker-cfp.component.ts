@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ADirective } from '../a.directive';
 import { environment } from '../../environments/environment';
-import { cfpCountdown } from '../shared/cfp-deadline';
+import { cfpCountdown, cfpState } from '../shared/cfp-deadline';
 import { trackCfpClick } from '../analytics.util';
 
 @Component({
@@ -13,5 +13,6 @@ import { trackCfpClick } from '../analytics.util';
 export class SpeakerCfpComponent {
     environment = environment;
     countdown = cfpCountdown();
+    cfp = cfpState();
     trackCfpClick = trackCfpClick;
 }

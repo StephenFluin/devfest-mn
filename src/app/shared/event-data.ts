@@ -10,14 +10,15 @@ import { slugify, summarize } from './slug';
  */
 export const EVENT_ID = `${environment.siteUrl}/#event`;
 
+/** Minneapolis's UTC offset on a YYYY-MM-DD date, e.g. "-06:00" (or "-05:00" in summer time). */
+export const centralUtcOffset = (date: string) =>
+    new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', timeZoneName: 'longOffset' })
+        .formatToParts(new Date(`${date}T12:00:00Z`))
+        .find((part) => part.type === 'timeZoneName')
+        .value.replace('GMT', '');
+
 /** Minneapolis's UTC offset on the event date, e.g. "-06:00". */
-export const eventUtcOffset = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/Chicago',
-    timeZoneName: 'longOffset',
-})
-    .formatToParts(new Date(`${environment.eventDate}T12:00:00Z`))
-    .find((part) => part.type === 'timeZoneName')
-    .value.replace('GMT', '');
+export const eventUtcOffset = centralUtcOffset(environment.eventDate);
 
 /** A session start time with its time zone; older sessions were saved without one. */
 export const withOffset = (time: string) =>

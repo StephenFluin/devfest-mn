@@ -9,7 +9,11 @@ export const environment = {
     eventDate: '2026-12-05',
     eventDateDisplay: 'Saturday, December 5th',
     cfpOpens: '2026-09-29',
-    cfpCloses: '2026-10-20',
+    /**
+     * Last day to submit a talk (until 11:59pm Central). The call for speakers shows only while this
+     * is set and hasn't passed; set it to null for a new year until the CFP is announced.
+     */
+    cfpCloses: '2026-10-20' as string | null,
     cfpLink: 'https://forms.gle/ogepGnFYvvc68Wup6',
     firebaseConfig: {
         apiKey: 'AIzaSyC6c2soUhewnosbGiLJJLoF3a7Q54InVk0',
@@ -22,7 +26,6 @@ export const environment = {
     },
     showRegister: true,
     showSchedule: false,
-    showCFP: true,
     showSpeakers: false,
     showSponsor: true,
     showFeedback: false,

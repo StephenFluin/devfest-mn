@@ -8,7 +8,7 @@ import { ADirective } from '../a.directive';
 
 import { TicketEmbedComponent } from '../ticket-embed/ticket-embed.component';
 import { OurMeta } from '../our-meta.service';
-import { cfpCountdown } from '../shared/cfp-deadline';
+import { cfpCountdown, cfpState } from '../shared/cfp-deadline';
 import { dayOf } from '../shared/day-of';
 import { VenueComponent } from './venue.component';
 import { DataService } from '../shared/data.service';
@@ -80,6 +80,7 @@ export class HomeComponent {
     faqSelection = 1;
     private meta = inject(OurMeta);
     cfpCountdown = cfpCountdown();
+    cfp = cfpState();
     dayOf = dayOf();
     slugify = slugify;
     private ds = inject(DataService);

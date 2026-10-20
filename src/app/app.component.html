@@ -24,7 +24,7 @@
             >
             } @if (environment.showSchedule) {
             <a [routerLink]="['/schedule']">Schedule</a>
-            } @if (environment.showCFP) {
+            } @if (cfp() === 'open') {
             <a [routerLink]="['speaker-cfp']">Be a Speaker</a>
             } @if (environment.showSpeakers) {
             <a [routerLink]="['/speakers']">Speakers</a>

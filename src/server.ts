@@ -13,6 +13,7 @@ import { slugify } from './app/shared/slug';
 import { addVisitAnalytics } from './visit-analytics';
 import { renderSpeakerCard } from './speaker-card';
 import { calendarEvent, icsFile } from './app/shared/calendar';
+import { cfpStateAt } from './app/shared/cfp-deadline';
 import type { Session } from './app/shared/data.service';
 
 // Set timezone to Central Time for SSR
@@ -53,7 +54,7 @@ async function sitemapEntries(): Promise<SitemapEntry[]> {
     const entries: SitemapEntry[] = ['', 'gallery', 'past', 'conduct', 'refunds'].map((path) => ({
         path,
     }));
-    if (environment.showCFP) entries.push({ path: 'speaker-cfp' });
+    if (cfpStateAt() === 'open') entries.push({ path: 'speaker-cfp' });
     if (environment.showSponsor) entries.push({ path: 'sponsors' });
 
     // Only schedule and speakers are public; the rest of the year is admin-only.

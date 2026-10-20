@@ -59,7 +59,7 @@ We keep the same codebase every year but move to a new Firebase project.
 1. Create the new Firebase project and an App Hosting backend connected to this repo.
 2. Point `.firebaserc` at the new project, and update the `backendId` in `firebase.json`.
 3. Update `src/environments/environment.ts` with the new Firebase config, event date, CFP dates, venue, and
-   feature flags (`showCFP`, `showSchedule`, `showSpeakers`, and so on).
+   feature flags (`showSchedule`, `showSpeakers`, and so on). The call for speakers shows while `cfpCloses` is set and hasn't passed; set it to `null` for a new year until the CFP is announced.
 4. Find and replace the old year and date throughout the code.
 5. Update the date in `scripts/og-image.sh` and run it to regenerate the social share image.
 6. Carry the ticket history forward (see [Ticket burndown](#ticket-burndown)).

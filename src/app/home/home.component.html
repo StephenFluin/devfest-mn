@@ -36,15 +36,15 @@
         </div>
 
         <!-- Call to Action Buttons -->
-        @if (environment.showCFP || environment.showRegister) {
+        @if (cfp() === 'open' || environment.showRegister) {
         <div class="cta-block hero-cta">
-            @if (environment.showCFP) {
+            @if (cfp() === 'open') {
             <a routerLink="/speaker-cfp" class="cta all-caps">Submit a Talk</a>
             } @if (environment.showRegister) {
             <a href="#tickets" class="cta all-caps">Get Tickets</a>
             }
         </div>
-        } @if (environment.showCFP) {
+        } @if (cfp() === 'open') {
         <p class="hero-deadline">
             Call for speakers closes {{ environment.cfpCloses | date: 'MMMM d' }}
             @if (cfpCountdown(); as countdown) {
@@ -130,7 +130,7 @@
         </div>
     </section>
 
-    @if(environment.showCFP) {
+    @if (cfp() === 'open') {
     <section>
         <div>
             <h2>Speakers Welcome!</h2>
@@ -146,7 +146,7 @@
             </p>
         </div>
     </section>
-    } @if (environment.showSpeakers || !environment.showCFP) {
+    } @if (environment.showSpeakers || cfp() !== 'open') {
     <section>
         <div>
             <h2>Speakers</h2>
@@ -228,7 +228,7 @@
             <div class="cta-block">
                 @if(environment.showSponsor) {
                 <a routerLink="/sponsors" class="cta all-caps">Sponsor</a>
-                } @if(environment.showCFP) {
+                } @if (cfp() === 'open') {
                 <a routerLink="/speaker-cfp" class="cta all-caps">Speak</a>
                 } @if(environment.showRegister) {
                 <a routerLink="/tickets" class="cta all-caps">Register</a>
@@ -300,9 +300,9 @@
                 @if (faqSelection == 1) {
                 <div id="faq-answer" aria-live="polite">
                     <p>
-                        @if(environment.showCFP) { The CFP is open until
+                        @if (cfp() === 'open') { The CFP is open until
                         {{ environment.cfpCloses | date: 'MMMM d' }}!
-                        <a routerLink="/speaker-cfp">Submit a talk</a>. } @else if(environment.showSpeakers) { The call for
+                        <a routerLink="/speaker-cfp">Submit a talk</a>. } @else if (cfp() === 'closed') { The call for
                         speakers is now closed. Please try again next year. } @else { We haven't announced the CFP yet, stay tuned in the coming weeks! }
                     </p>
                 </div>
