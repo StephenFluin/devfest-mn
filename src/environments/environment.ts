@@ -41,12 +41,12 @@ export const environment = {
      */
     venueRooms: [
         {
-            name: 'Main Auditorium',
+            name: 'Auditorium',
             directions: 'The main conference hall. From registration on the ground floor, follow the DevFestMN signs.',
         },
         {
-            name: 'Classroom',
-            directions: 'Down the hallway from the main conference hall. Follow the DevFestMN signs.',
+            name: 'Schulze 127',
+            directions: 'Room 127, down the hallway from the Auditorium. Follow the DevFestMN signs.',
         },
     ],
     sponsors: [
