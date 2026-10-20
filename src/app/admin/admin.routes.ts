@@ -44,6 +44,11 @@ export const AdminRoutes: Routes = [
                                     ),
                             },
                             {
+                                path: 'rooms',
+                                loadComponent: () =>
+                                    import('./rooms.component').then((m) => m.RoomsComponent),
+                            },
+                            {
                                 path: 'session-report',
                                 loadComponent: () =>
                                     import('./session-report.component').then(

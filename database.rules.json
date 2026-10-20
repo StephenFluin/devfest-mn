@@ -33,6 +33,26 @@
                 ".indexOn": "name",
                 ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()"
             },
+            "rooms": {
+                ".read": true,
+                ".indexOn": "order",
+                ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()",
+                "$room_id": {
+                    ".validate": "newData.hasChildren(['name'])",
+                    "name": {
+                        ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+                    },
+                    "directions": {
+                        ".validate": "newData.isString() && newData.val().length <= 500"
+                    },
+                    "order": {
+                        ".validate": "newData.isNumber()"
+                    },
+                    "$other": {
+                        ".validate": false
+                    }
+                }
+            },
             "agendas": {
                 "$user_id": {
                     ".read": "$user_id === auth.uid",

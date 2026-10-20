@@ -4,6 +4,12 @@
   margin: 16px 0;
   min-width: 400px;
 }
+.new-room {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
 </style>
 
 @if (sessionData(); as session) {
@@ -19,21 +25,43 @@
       style="width: 100%; height: 24em"
     ></textarea>
     <br />
-    <mat-form-field
-      ><input
-      matInput
-      [(ngModel)]="session.room"
-      placeholder="Room"
-      [matAutocomplete]="roomAuto"
-      autocomplete="off"
-    /></mat-form-field>
-    <mat-autocomplete #roomAuto="matAutocomplete">
-      @for (room of ds.getVenueLayout().rooms; track room) {
-        <mat-option [value]="room">
-          {{ room }}
-        </mat-option>
-      }
-    </mat-autocomplete>
+    @if (newRoom() === null) {
+      <mat-form-field>
+        <mat-label>Room</mat-label>
+        <mat-select [ngModel]="session.room" (ngModelChange)="pickRoom(session, $event)">
+          @for (room of ds.rooms(); track room.name) {
+            <mat-option [value]="room.name">{{ room.name }}</mat-option>
+          }
+          @if (session.room && !isKnownRoom(session.room)) {
+            <mat-option [value]="session.room">{{ session.room }} (not in Rooms)</mat-option>
+          }
+          <mat-option [value]="NEW_ROOM"><em>New room…</em></mat-option>
+        </mat-select>
+        <mat-hint><a routerLink="/admin/rooms">Manage rooms</a></mat-hint>
+      </mat-form-field>
+    } @else {
+      <div class="new-room">
+        <mat-form-field>
+          <mat-label>New room name</mat-label>
+          <input
+            matInput
+            [ngModel]="newRoom()"
+            (ngModelChange)="newRoom.set($event)"
+            (keydown.enter)="$event.preventDefault(); createRoom(session)"
+            maxlength="80"
+            autofocus
+          />
+          <mat-hint>Added to the end of the schedule. Set its directions and order in <a routerLink="/admin/rooms">Rooms</a>.</mat-hint>
+        </mat-form-field>
+        <button mat-flat-button type="button" (click)="createRoom(session)" [disabled]="!newRoom()?.trim() || creatingRoom()">
+          {{ creatingRoom() ? 'Adding…' : 'Add room' }}
+        </button>
+        <button mat-button type="button" (click)="newRoom.set(null)">Cancel</button>
+        @if (roomError(); as error) {
+          <span style="color: #b00020">{{ error }}</span>
+        }
+      </div>
+    }
     <label>Track</label>
     <mat-form-field
       ><input

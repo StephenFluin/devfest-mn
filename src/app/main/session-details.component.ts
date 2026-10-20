@@ -44,6 +44,11 @@ export class SessionDetailsComponent {
 
     readonly session = input<Session>(undefined);
 
+    /** How to find this session's room, if it's one of the event's rooms. */
+    roomDirections = computed(
+        () => this.ds.rooms().find((room) => room.name === this.session()?.room)?.directions
+    );
+
     /** Links to add this session to a calendar, once it has a time. */
     calendar = computed(() => {
         const session = this.session();

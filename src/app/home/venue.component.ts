@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { DataService } from '../shared/data.service';
 
 const mapsSearch = (query: string) =>
     `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
@@ -57,7 +58,7 @@ const mapsSearch = (query: string) =>
                 <strong>Registration</strong>
                 <span>Ground floor of Schulze Hall. Check in here first.</span>
             </li>
-            @for (room of environment.venueRooms; track room.name) {
+            @for (room of ds.rooms(); track room.name) {
             <li>
                 <strong>{{ room.name }}</strong>
                 <span>{{ room.directions }}</span>
@@ -98,6 +99,7 @@ const mapsSearch = (query: string) =>
 })
 export class VenueComponent {
     environment = environment;
+    ds = inject(DataService);
     parkingDirections = mapsSearch(`${environment.parkingName}, ${environment.parkingAddress}`);
     venueDirections = mapsSearch(`Schulze Hall, ${environment.venueAddress}`);
 }

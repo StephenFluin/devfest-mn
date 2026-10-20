@@ -47,6 +47,16 @@ export interface Speaker {
     updatedAt?: number;
 }
 
+export interface Room {
+    $key?: string;
+    /** What sessions store in their `room`, and the schedule column heading. */
+    name: string;
+    /** How to find the room from registration, shown on the home page and session pages. */
+    directions?: string;
+    /** Schedule column order, lowest first. */
+    order?: number;
+}
+
 export interface Feedback {
     $key?: string;
     speaker: number;
@@ -72,6 +82,64 @@ export class DataService {
         { transferKey: `schedule-${this.year}`, localStorageKey: `sessionsCache${this.year}` }
     );
 
+    private savedRooms = listResource<Room>(() => query(this.ref('rooms'), orderByChild('order')), '$key', {
+        transferKey: `rooms-${this.year}`,
+        localStorageKey: `roomsCache${this.year}`,
+    });
+
+    /**
+     * The event's rooms, in schedule order, as edited at /admin/rooms. Until any are saved there,
+     * the defaults from environment.venueRooms.
+     */
+    rooms = computed<Room[]>(() =>
+        this.savedRooms().length ? this.savedRooms() : environment.venueRooms
+    );
+
+    /** Whether rooms come from the database rather than the environment defaults. */
+    roomsSaved = computed(() => this.savedRooms().length > 0);
+
+    /**
+     * Adds a room at the end of the schedule, or returns the existing one with that name (ignoring
+     * case). If rooms are still the environment defaults, those are saved first so they're kept.
+     */
+    async addRoom(name: string): Promise<string> {
+        name = name.trim();
+        const existing = this.rooms().find((room) => room.name.toLowerCase() === name.toLowerCase());
+        if (existing) return existing.name;
+        const saved = this.savedRooms();
+        const toWrite: Room[] = saved.length
+            ? [{ name, order: Math.max(...saved.map((room, i) => room.order ?? i)) + 1 }]
+            : [...environment.venueRooms, { name }].map((room, order) => ({ ...room, order }));
+        const updates = {};
+        for (const room of toWrite) {
+            updates[push(this.ref('rooms')).key] = {
+                name: room.name,
+                directions: room.directions || null,
+                order: room.order,
+            };
+        }
+        await update(this.ref('rooms'), updates);
+        return name;
+    }
+
+    /**
+     * Schedule columns: the event's rooms, then any other room a session has been given, so a
+     * session in a room nobody has added yet still shows up.
+     */
+    private venueLayout = computed(() => {
+        const rooms = this.rooms().map((room) => room.name);
+        const others = this.schedule()
+            .filter((session) => session.room && session.track !== 'all' && session.track !== 'Keynote')
+            .map((session) => session.room)
+            .filter((room) => !rooms.includes(room));
+        return { rooms: [...new Set([...rooms, ...others])], floors: {}, hasFloors: false };
+    });
+
+    /** Schedule columns, in order. */
+    getVenueLayout() {
+        return this.venueLayout();
+    }
+
     private speakerMap = computed(() => new Map(this.speakers().map((s) => [s.$key, s])));
 
     speaker(key: string): Speaker | undefined {
@@ -84,17 +152,6 @@ export class DataService {
         return this.schedule().filter((session) =>
             Object.values(session.speakers ?? {}).includes(speakerKey)
         );
-    }
-
-    private venueLayout = {
-        rooms: environment.venueRooms.map((room) => room.name),
-        floors: {},
-        hasFloors: false,
-    };
-
-    /** Schedule columns, in order, from environment.venueRooms. */
-    getVenueLayout() {
-        return this.venueLayout;
     }
 
     /**

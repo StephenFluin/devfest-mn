@@ -36,8 +36,8 @@ export const environment = {
     parkingName: '11th & Harmon Parking Ramp',
     parkingAddress: '25 S 11th St, Minneapolis, MN 55403',
     /**
-     * Rooms in schedule-column order. `name` must match the room set on each session in the admin.
-     * `directions` is shown on the venue section and on each session in that room.
+     * Default rooms, used until rooms are saved at /admin/rooms (which then take over). In
+     * schedule-column order; `directions` shows on the home page and on sessions in that room.
      */
     venueRooms: [
         {

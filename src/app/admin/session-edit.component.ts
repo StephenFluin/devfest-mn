@@ -1,6 +1,6 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 
 import { set } from 'firebase/database';
@@ -12,6 +12,7 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { KeyValuePipe } from '@angular/common';
 import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
@@ -31,6 +32,8 @@ import { eventUtcOffset } from '../shared/event-data';
         SpeakerSelectorComponent,
         KeyValuePipe,
         GetSpeakerPipe,
+        RouterLink,
+        MatSelectModule,
     ],
 })
 export class SessionEditComponent {
@@ -60,6 +63,46 @@ export class SessionEditComponent {
     });
 
     environment = environment;
+
+    /**
+     * Rooms are picked from the list at /admin/rooms, never typed, so names always match. A session
+     * whose room isn't in that list keeps it as an extra option rather than losing it on save.
+     */
+    isKnownRoom(name: string) {
+        return this.ds.rooms().some((room) => room.name === name);
+    }
+
+    /** The dropdown's "New room…" option. */
+    readonly NEW_ROOM = '\u0000new-room';
+    /** The name being typed for a new room, or null when picking from the list. */
+    newRoom = signal<string | null>(null);
+    creatingRoom = signal(false);
+    roomError = signal('');
+
+    pickRoom(session: Session, value: string) {
+        if (value === this.NEW_ROOM) {
+            this.roomError.set('');
+            this.newRoom.set('');
+        } else {
+            session.room = value;
+        }
+    }
+
+    /** Adds the room to the event's rooms (or finds it, if it exists) and puts the session in it. */
+    async createRoom(session: Session) {
+        const name = this.newRoom()?.trim();
+        if (!name || this.creatingRoom()) return;
+        this.creatingRoom.set(true);
+        try {
+            session.room = await this.ds.addRoom(name);
+            this.newRoom.set(null);
+        } catch (error) {
+            console.error('Error adding room', error);
+            this.roomError.set(`Couldn't add the room: ${error.message ?? error}`);
+        } finally {
+            this.creatingRoom.set(false);
+        }
+    }
 
     /** The wall-clock time of a stored start time, e.g. "13:40". */
     timeOf(startTime?: string) {
