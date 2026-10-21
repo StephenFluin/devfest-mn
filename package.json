@@ -7,7 +7,10 @@
     "build": "ng build",
     "start": "ng serve",
     "serve": "ng serve",
-    "publish": "firebase deploy"
+    "publish": "firebase deploy",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "private": true,
   "dependencies": {
@@ -40,15 +43,14 @@
   },
   "devDependencies": {
     "@angular/build": "^22.2.1",
+    "@eslint/js": "^10.0.1",
     "@types/express": "^5.0.1",
+    "angular-eslint": "^22.6.0",
     "baseline-browser-mapping": "^2.8.31",
-    "firebase-tools": "^15.32.1"
-  },
-  "prettier": {
-    "trailingComma": "es5",
-    "tabWidth": 4,
-    "singleQuote": true,
-    "printWidth": 100
+    "eslint": "^10.13.0",
+    "firebase-tools": "^15.32.1",
+    "prettier": "^3.9.10",
+    "typescript-eslint": "^8.71.0"
   },
   "overrides": {
     "piscina": "^5.3.2",
