@@ -1,6 +1,7 @@
 import express, { type Express } from 'express';
 import { environment } from './environments/environment';
 import { CAMPAIGN_FIELDS, ORDER_ID, SESSION_ID, VisitSession } from './app/shared/visit-session';
+import { UntypedJson } from './app/shared/untyped-json';
 
 /**
  * First-party visit analytics for the admin UTM funnel (Visit → Engaged → Ticket sale or CFP click). Browsers
@@ -18,10 +19,12 @@ export function addVisitAnalytics(app: Express) {
         res.status(204).end();
         return;
       }
-      let event: any;
+      let event: UntypedJson;
       try {
         event = JSON.parse(req.body);
-      } catch {}
+      } catch {
+        // Not JSON; sessionUpdate rejects it below.
+      }
       const update = sessionUpdate(event);
       if (!update) {
         res.status(400).end();
@@ -41,7 +44,7 @@ const clean = (value: unknown, max = 100) =>
   typeof value === 'string' ? value.trim().slice(0, max) || undefined : undefined;
 
 /** The fields to merge into the stored session for one event, or null if the event is invalid. */
-export function sessionUpdate(event: any, now = new Date()): Partial<VisitSession> | null {
+export function sessionUpdate(event: UntypedJson, now = new Date()): Partial<VisitSession> | null {
   if (!event || typeof event !== 'object' || !SESSION_ID.test(event.sid)) {
     return null;
   }

@@ -2,8 +2,6 @@
 // https://github.com/typings/typings
 // https://www.typescriptlang.org/docs/handbook/writing-declaration-files.html
 
-declare var System: any;
-
 // Bundled as bytes by the "loader" option in angular.json, for server-side share cards.
 declare module '*.wasm' {
   const bytes: Uint8Array;

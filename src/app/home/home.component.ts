@@ -15,13 +15,6 @@ import { DataService } from '../shared/data.service';
 import { slugify } from '../shared/slug';
 import { conferenceEvent, personRef } from '../shared/event-data';
 
-declare global {
-  interface Window {
-    EBWidgets: any;
-    gtag: any;
-  }
-}
-
 @Component({
   templateUrl: './home.component.html',
   imports: [RouterLink, ADirective, TicketEmbedComponent, DatePipe, VenueComponent],

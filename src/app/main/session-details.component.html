@@ -10,7 +10,7 @@
       {{ session().title }}
       @if (auth.isAdmin()) {
         <a [routerLink]="['/', 'admin', 'sessions', session().$key, 'edit']">
-          <img src="/a/edit.svg" />
+          <img src="/a/edit.svg" alt="Edit session" />
         </a>
       }
     </h1>

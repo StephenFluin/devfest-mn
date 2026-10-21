@@ -91,7 +91,9 @@ function activeSession(): Session | undefined {
   let stored: Session | undefined;
   try {
     stored = JSON.parse(localStorage.getItem(SESSION_KEY) ?? 'null') ?? undefined;
-  } catch {}
+  } catch {
+    // Storage is unavailable (private mode or blocked); carry on without it.
+  }
   const latest = stored ?? session;
   return latest && Date.now() - latest.last < SESSION_TIMEOUT ? latest : undefined;
 }
@@ -99,7 +101,9 @@ function activeSession(): Session | undefined {
 function save() {
   try {
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-  } catch {}
+  } catch {
+    // Storage is unavailable (private mode or blocked); carry on without it.
+  }
 }
 
 function referrerHost() {

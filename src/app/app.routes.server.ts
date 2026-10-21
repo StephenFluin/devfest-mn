@@ -1,5 +1,4 @@
 import { RenderMode, ServerRoute } from '@angular/ssr';
-import { environment } from '../environments/environment';
 
 export const serverRoutes: ServerRoute[] = [
   { path: 'admin', renderMode: RenderMode.Client },

@@ -48,7 +48,7 @@
                               data().gridData[time][room].$key,
                               'edit',
                             ]"
-                            ><img src="/a/edit.svg"
+                            ><img src="/a/edit.svg" alt="Edit session"
                           /></a>
                         }
                       </div>
@@ -110,7 +110,7 @@
                           data().gridData[time]['all'].$key,
                           'edit',
                         ]"
-                        ><img src="/a/edit.svg"
+                        ><img src="/a/edit.svg" alt="Edit session"
                       /></a>
                     }
                   </div>
@@ -158,7 +158,7 @@
                           data().gridData[time][room].$key,
                           'edit',
                         ]"
-                        ><img src="/a/edit.svg"
+                        ><img src="/a/edit.svg" alt="Edit session"
                       /></a>
                     }
                   </div>
@@ -171,7 +171,7 @@
                       {{ (speaker.value | getSpeaker)?.['name'] }}
                     </div>
                   }
-                  @if (data().gridData[time][room].blocks == 2) {
+                  @if (data().gridData[time][room].blocks === 2) {
                     <div>
                       <em>Note: This session is 2 hours long.</em>
                     </div>
@@ -206,7 +206,7 @@
                       data().gridData[time]['all'].$key,
                       'edit',
                     ]"
-                    ><img src="/a/edit.svg"
+                    ><img src="/a/edit.svg" alt="Edit session"
                   /></a>
                 }
               </div>
@@ -231,7 +231,7 @@
               <div class="title">
                 {{ slot.title }}
                 <a [routerLink]="['/', 'admin', 'sessions', slot.$key, 'edit']"
-                  ><img src="/a/edit.svg"
+                  ><img src="/a/edit.svg" alt="Edit session"
                 /></a>
               </div>
               @for (speaker of $any(slot.speakers | keyvalue); track speaker) {

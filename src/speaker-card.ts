@@ -141,7 +141,7 @@ export async function renderSpeakerCard(speaker: CardSpeaker, imagesFolder: stri
     ],
   );
 
-  const svg = await satori(card as any, {
+  const svg = await satori(card, {
     width: WIDTH,
     height: HEIGHT,
     fonts: [

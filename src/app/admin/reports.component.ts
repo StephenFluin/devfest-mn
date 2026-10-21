@@ -132,9 +132,9 @@ export class ReportsComponent {
 
     // Process feedback data
     if (Array.isArray(feedbackData)) {
-      for (let user of feedbackData) {
+      for (const user of feedbackData) {
         const userId = user.$key;
-        for (let sessionKey of Object.keys(user)) {
+        for (const sessionKey of Object.keys(user)) {
           if (sessionKey === '$key') continue;
 
           if (!feedbackBySession.has(sessionKey)) {
@@ -157,7 +157,7 @@ export class ReportsComponent {
     // Create session reports
     const sessionReports: SessionReport[] = [];
 
-    for (let session of originalSessions) {
+    for (const session of originalSessions) {
       const sessionKey = session.$key;
       const feedbackList = feedbackBySession.get(sessionKey) || [];
 
@@ -167,7 +167,7 @@ export class ReportsComponent {
         totalRecommendation = 0;
       let validCount = 0;
 
-      for (let fb of feedbackList) {
+      for (const fb of feedbackList) {
         if (fb.speaker > 0 && fb.content > 0 && fb.recommendation > 0) {
           totalSpeaker += fb.speaker;
           totalContent += fb.content;

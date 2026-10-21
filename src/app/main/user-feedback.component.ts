@@ -57,7 +57,7 @@ export class UserFeedbackComponent {
       const dataToSave = { ...feedbackData };
       delete dataToSave.$key;
       const feedbackRef = ref(this.db, path);
-      set(feedbackRef, dataToSave).then((result) => {
+      set(feedbackRef, dataToSave).then(() => {
         this.saved.set(true);
         setTimeout(() => {
           this.saved.set(false);

@@ -260,7 +260,7 @@
             <button
               type="button"
               (click)="setFaqSelection(1)"
-              [attr.aria-expanded]="faqSelection == 1"
+              [attr.aria-expanded]="faqSelection === 1"
               aria-controls="faq-answer"
             >
               How can I speak at DevFestMN?
@@ -270,7 +270,7 @@
             <button
               type="button"
               (click)="setFaqSelection(2)"
-              [attr.aria-expanded]="faqSelection == 2"
+              [attr.aria-expanded]="faqSelection === 2"
               aria-controls="faq-answer"
             >
               How do I become a DevFestMN sponsor?
@@ -280,7 +280,7 @@
             <button
               type="button"
               (click)="setFaqSelection(3)"
-              [attr.aria-expanded]="faqSelection == 3"
+              [attr.aria-expanded]="faqSelection === 3"
               aria-controls="faq-answer"
             >
               How can I volunteer at DevFestMN events?
@@ -290,7 +290,7 @@
             <button
               type="button"
               (click)="setFaqSelection(4)"
-              [attr.aria-expanded]="faqSelection == 4"
+              [attr.aria-expanded]="faqSelection === 4"
               aria-controls="faq-answer"
             >
               What do I wear?
@@ -298,7 +298,7 @@
           </li>
         </ul>
 
-        @if (faqSelection == 1) {
+        @if (faqSelection === 1) {
           <div id="faq-answer" aria-live="polite">
             <p>
               @if (cfp() === 'open') {
@@ -312,7 +312,7 @@
             </p>
           </div>
         }
-        @if (faqSelection == 2) {
+        @if (faqSelection === 2) {
           <div id="faq-answer" aria-live="polite">
             <p>
               We offer a variety of sponsorship levels and love to work with companies to find the
@@ -324,7 +324,7 @@
             </p>
           </div>
         }
-        @if (faqSelection == 3) {
+        @if (faqSelection === 3) {
           <div id="faq-answer" aria-live="polite">
             <p>
               @if (environment.showVolunteer) {
@@ -337,7 +337,7 @@
             </p>
           </div>
         }
-        @if (faqSelection == 4) {
+        @if (faqSelection === 4) {
           <div id="faq-answer" aria-live="polite">
             <p>
               We like to keep things casual at DevFestMN but wear whatever makes you feel

@@ -2,10 +2,11 @@ import { trackVisitCfp, trackVisitPurchase } from './visit-tracker';
 
 declare global {
   interface Window {
-    gtag: any;
+    gtag: (...args: unknown[]) => void;
+    EBWidgets: { createWidget(options: Record<string, unknown>): void };
   }
 }
-export const trackTicketPurchase = function (orderData: any) {
+export const trackTicketPurchase = function (orderData: { orderId: string }) {
   trackVisitPurchase(orderData.orderId);
   window.gtag('event', 'purchase', {
     transaction_id: orderData.orderId,
@@ -52,7 +53,9 @@ export function captureAttribution() {
   }
   try {
     localStorage.setItem(ATTRIBUTION_KEY, JSON.stringify({ ...found, savedAt: Date.now() }));
-  } catch {}
+  } catch {
+    // Storage is unavailable (private mode or blocked); carry on without it.
+  }
 }
 
 export function storedAttribution(): Attribution {
@@ -61,7 +64,9 @@ export function storedAttribution(): Attribution {
     if (Date.now() - savedAt < ATTRIBUTION_DAYS * 24 * 60 * 60 * 1000) {
       return stored;
     }
-  } catch {}
+  } catch {
+    // Storage is unavailable (private mode or blocked); carry on without it.
+  }
   return {};
 }
 

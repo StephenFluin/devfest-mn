@@ -134,5 +134,7 @@ function readLocal<T>(key: string | undefined): T | undefined {
 function writeLocal(key: string | undefined, value: unknown) {
   try {
     if (key) localStorage[key] = JSON.stringify(value);
-  } catch {}
+  } catch {
+    // Storage is unavailable (private mode or blocked); carry on without it.
+  }
 }

@@ -15,6 +15,7 @@ import { renderSpeakerCard } from './speaker-card';
 import { calendarEvent, icsFile } from './app/shared/calendar';
 import { cfpStateAt } from './app/shared/cfp-deadline';
 import type { Session } from './app/shared/data.service';
+import { UntypedJson } from './app/shared/untyped-json';
 
 // Set timezone to Central Time for SSR
 process.env['TZ'] = 'America/Chicago';
@@ -65,7 +66,7 @@ async function sitemapEntries(): Promise<SitemapEntry[]> {
     if (!response.ok) {
       throw new Error(`Firebase responded with ${response.status}`);
     }
-    return Object.entries<any>((await response.json()) ?? {});
+    return Object.entries<UntypedJson>((await response.json()) ?? {});
   };
   const latest = (items: SitemapEntry[]) =>
     Math.max(0, ...items.map((item) => item.updated ?? 0)) || undefined;
@@ -267,7 +268,7 @@ async function speakerCardData(key: string) {
     ),
   );
   if (!speaker?.confirmed || !speaker.name) return null;
-  const sessions = Object.values<any>(schedule ?? {}).filter((session) =>
+  const sessions = Object.values<UntypedJson>(schedule ?? {}).filter((session) =>
     Object.values(session.speakers ?? {}).includes(key),
   );
   return {
@@ -430,7 +431,9 @@ app.post('/api/admin/burndown/update', async (req, res) => {
     if (!process.env['EVENTBRITE_TOKEN']) {
       try {
         process.loadEnvFile();
-      } catch {}
+      } catch {
+        // No .env file; the token check below reports what's missing.
+      }
     }
     const ebToken = process.env['EVENTBRITE_TOKEN'];
     if (!ebToken) {

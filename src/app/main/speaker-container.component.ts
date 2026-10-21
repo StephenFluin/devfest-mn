@@ -29,7 +29,7 @@ import { slugify } from '../shared/slug';
                 }}</a>
                 @if (showEdit()) {
                   <a [routerLink]="['/', 'admin', 'speakers', speaker().$key, 'edit']"
-                    ><img src="/a/edit.svg"
+                    ><img src="/a/edit.svg" alt="Edit speaker"
                   /></a>
                 }
               </div>

@@ -9,11 +9,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { ScheduleGridComponent } from './schedule-grid.component';
 import { OurMeta } from '../our-meta.service';
 import { conferenceEvent, scheduledSessionEvents } from '../shared/event-data';
+import { UntypedJson } from '../shared/untyped-json';
 
 export interface Schedule {
-  startTimes: any[];
-  gridData: any;
-  rooms: any[];
+  startTimes: string[];
+  /** Start time → room (or "all") → session, or 'placeholder' for an empty slot. */
+  gridData: UntypedJson;
+  rooms: string[];
 }
 
 @Component({
@@ -47,9 +49,9 @@ export class ScheduleComponent {
    * Session data should look like data[time][room] = session;
    */
   buildGrid(list: Session[]): Schedule {
-    let data = {};
-    for (let session of list) {
-      let time = session.startTime;
+    const data = {};
+    for (const session of list) {
+      const time = session.startTime;
       if (typeof data[time] !== 'object') {
         data[time] = {};
       }
@@ -65,17 +67,17 @@ export class ScheduleComponent {
       }
     }
 
-    let pad = (n) => (n < 10 ? '0' + n : n);
+    const pad = (n) => (n < 10 ? '0' + n : n);
     // Look for holes
-    for (let time in data) {
-      if (data.hasOwnProperty(time)) {
-        let slot = data[time];
+    for (const time in data) {
+      if (Object.hasOwn(data, time)) {
+        const slot = data[time];
         // Holes can only exist if there isn't an "all" session
         if (!slot.all) {
-          for (let room of this.ds.getVenueLayout().rooms) {
+          for (const room of this.ds.getVenueLayout().rooms) {
             if (!slot[room]) {
               // Found a hole in this room, checking previous time slot
-              let previous =
+              const previous =
                 time.substr(0, 11) + pad(parseInt(time.substr(11, 2), 10) - 1) + time.substr(13);
 
               if (!data[previous]) {
@@ -89,7 +91,6 @@ export class ScheduleComponent {
               } else if (!data[previous][room].blocks || data[previous][room].blocks < 2) {
                 // This room has nothing in it!
                 data[time][room] = 'placeholder';
-              } else {
               }
             }
           }
@@ -97,7 +98,7 @@ export class ScheduleComponent {
       }
     }
 
-    let startTimes = Object.keys(data).sort();
+    const startTimes = Object.keys(data).sort();
     return {
       startTimes: startTimes,
       gridData: data,
@@ -109,21 +110,21 @@ export class ScheduleComponent {
    * Take in a full schedule and a set of agenda keys, return a new schedule of just those sessions the user has selected.
    */
   filterToMyAgenda(allData: Schedule, myAgendaKeys: Set<string>): Schedule {
-    let result: Schedule = { startTimes: allData.startTimes, gridData: {}, rooms: [] };
+    const result: Schedule = { startTimes: allData.startTimes, gridData: {}, rooms: [] };
 
-    let resultSessions = {};
-    let allSessions = allData.gridData;
-    let rooms = [];
+    const resultSessions = {};
+    const allSessions = allData.gridData;
+    const rooms = [];
 
-    for (let time in allSessions) {
-      if (allSessions.hasOwnProperty(time)) {
+    for (const time in allSessions) {
+      if (Object.hasOwn(allSessions, time)) {
         resultSessions[time] = {};
 
-        let slot = allSessions[time];
+        const slot = allSessions[time];
         if (!slot.all) {
-          for (let room in slot) {
-            if (slot.hasOwnProperty(room)) {
-              let session = slot[room];
+          for (const room in slot) {
+            if (Object.hasOwn(slot, room)) {
+              const session = slot[room];
               if (myAgendaKeys.has(session.$key)) {
                 // Track which rooms we actually need.
                 if (!(room in rooms)) {
@@ -141,8 +142,8 @@ export class ScheduleComponent {
     }
 
     // We do this to maintain the original order of the rooms
-    let returnRooms = [];
-    for (let room of this.ds.getVenueLayout().rooms) {
+    const returnRooms = [];
+    for (const room of this.ds.getVenueLayout().rooms) {
       if (rooms.indexOf(room) !== -1) {
         returnRooms.push(room);
       }

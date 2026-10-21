@@ -3,6 +3,7 @@ import { AuthService } from '../realtime-data/auth.service';
 import { objectResource } from '../realtime-data/firebase';
 import { DataService } from '../shared/data.service';
 import { environment } from '../../environments/environment';
+import { UntypedJson } from '../shared/untyped-json';
 
 @Component({
   templateUrl: 'session-report.component.html',
@@ -14,9 +15,15 @@ export class SessionReportComponent {
   private ds = inject(DataService);
 
   // Read through the SDK so the request carries the admin's credentials; feedback is admin-only.
-  private feedback = objectResource<any>(() => this.ds.ref('feedback'), { initialValue: {} });
-  private schedule = objectResource<any>(() => this.ds.ref('schedule'), { initialValue: {} });
-  private speakers = objectResource<any>(() => this.ds.ref('speakers'), { initialValue: {} });
+  private feedback = objectResource<UntypedJson>(() => this.ds.ref('feedback'), {
+    initialValue: {},
+  });
+  private schedule = objectResource<UntypedJson>(() => this.ds.ref('schedule'), {
+    initialValue: {},
+  });
+  private speakers = objectResource<UntypedJson>(() => this.ds.ref('speakers'), {
+    initialValue: {},
+  });
 
   /** Sessions with speakers; the others (breaks, registration) aren't rated. */
   rated = computed(() => this.sessions().filter((session) => session.speakers.length > 0));
@@ -27,15 +34,15 @@ export class SessionReportComponent {
       schedule: this.schedule(),
       speakers: this.speakers(),
     };
-    let tenthsRound = (x) => Math.round(x * 10) / 10;
-    let feedback = data.feedback ?? {};
-    let collectedFeedback = {};
-    let sessions = data.schedule ?? {};
+    const tenthsRound = (x) => Math.round(x * 10) / 10;
+    const feedback = data.feedback ?? {};
+    const collectedFeedback = {};
+    const sessions = data.schedule ?? {};
     let result = [];
 
     // Invert the array so we can do session lookups
-    for (let user of Object.keys(feedback)) {
-      for (let session of Object.keys(feedback[user])) {
+    for (const user of Object.keys(feedback)) {
+      for (const session of Object.keys(feedback[user])) {
         if (!collectedFeedback[session]) {
           collectedFeedback[session] = [];
         }
@@ -44,8 +51,8 @@ export class SessionReportComponent {
     }
 
     // Generate Session Objects
-    for (let session of Object.keys(sessions)) {
-      let sessionData = {
+    for (const session of Object.keys(sessions)) {
+      const sessionData = {
         name: sessions[session].title,
         speakers: [],
         ratingsCount: 0,
@@ -57,8 +64,8 @@ export class SessionReportComponent {
 
       // Speakers
       if (sessions[session].speakers) {
-        for (let lookupKey of Object.keys(sessions[session].speakers)) {
-          let speakerKey = sessions[session].speakers[lookupKey];
+        for (const lookupKey of Object.keys(sessions[session].speakers)) {
+          const speakerKey = sessions[session].speakers[lookupKey];
           // Have to do this if check because some speaker lists look like arrays
           // and firebase fills in missing numbers with nulls
           // Have to do second check because we had some pointers that pointed at speakers that didn't exist
@@ -78,7 +85,7 @@ export class SessionReportComponent {
           recommendation = 0,
           speaker = 0;
 
-        for (let feedbackItem of collectedFeedback[session]) {
+        for (const feedbackItem of collectedFeedback[session]) {
           count++;
           if (feedbackItem.content !== undefined) {
             content += feedbackItem.content;

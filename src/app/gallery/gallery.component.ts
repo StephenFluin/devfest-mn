@@ -23,14 +23,14 @@ interface Photo {
             <h2 class="year-header">{{ yearGroup.year }}</h2>
             <div class="photo-grid">
               @for (photo of yearGroup.photos; track photo.url) {
-                <div class="photo-item" (click)="selectedPhoto = photo">
+                <button type="button" class="photo-item" (click)="selectedPhoto = photo">
                   <img
                     [src]="photo.thumbnail"
                     loading="lazy"
                     alt="Gallery photo from {{ yearGroup.year }}"
                     class="thumbnail"
                   />
-                </div>
+                </button>
               }
             </div>
           </div>
@@ -39,9 +39,19 @@ interface Photo {
 
       <!-- Fullscreen Modal -->
       @if (selectedPhoto) {
+        <!-- Clicking the backdrop closes the photo; keyboard users have Escape and the close button. -->
+        <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
         <div class="fullscreen-overlay" (click)="closeFullscreen()">
+          <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
           <div class="fullscreen-content" (click)="$event.stopPropagation()">
-            <button class="close-button" (click)="closeFullscreen()">×</button>
+            <button
+              class="close-button"
+              type="button"
+              aria-label="Close photo"
+              (click)="closeFullscreen()"
+            >
+              ×
+            </button>
             <img
               loading="lazy"
               [src]="selectedPhoto.url"
@@ -103,6 +113,12 @@ interface Photo {
     }
 
     .photo-item {
+      display: block;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      background: none;
+      font: inherit;
       position: relative;
       cursor: pointer;
       border-radius: 8px;
@@ -213,7 +229,7 @@ interface Photo {
 export class GalleryComponent {
   photoData = httpResource<Photo[]>(() => '/api/gallery');
   photosByYear = computed(() => {
-    let photos = this.photoData.value();
+    const photos = this.photoData.value();
     if (!photos || photos.length === 0) {
       return [];
     }
@@ -226,11 +242,11 @@ export class GalleryComponent {
         acc[year].push(photo);
         return acc;
       },
-      {} as { [key: number]: Photo[] },
+      {} as Record<number, Photo[]>,
     );
 
     // Convert to array format and sort by highest year first
-    let photosByYear = Object.entries(photoGroups)
+    const photosByYear = Object.entries(photoGroups)
       .map(([year, photos]) => ({
         year: parseInt(year),
         photos: photos,

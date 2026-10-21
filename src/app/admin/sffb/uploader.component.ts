@@ -205,7 +205,7 @@ export class UploaderComponent {
         console.log('File deleted from storage successfully');
       })
       .catch((error) => {
-        console.error('Error deleting stored file', storagePath);
+        console.error('Error deleting stored file', storagePath, error);
       });
 
     // Delete references

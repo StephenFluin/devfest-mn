@@ -1,14 +1,5 @@
 import { Injectable, computed, inject } from '@angular/core';
-import {
-  ref,
-  query,
-  orderByChild,
-  push,
-  update,
-  remove,
-  set,
-  serverTimestamp,
-} from 'firebase/database';
+import { ref, query, orderByChild, push, update, remove, serverTimestamp } from 'firebase/database';
 import { environment } from '../../environments/environment';
 import { DATABASE, listResource } from '../realtime-data/firebase';
 
@@ -19,7 +10,8 @@ export interface Session {
   title?: string;
   description?: string;
   track?: string;
-  speakers?: any[];
+  /** Speaker keys. Firebase may return this map as a sparse array. */
+  speakers?: Record<string, string>;
   blocks?: number;
   /** Markdown rendered to HTML. Left for Angular to sanitize when bound to [innerHTML]. */
   renderedDescription?: string;
@@ -171,13 +163,13 @@ export class DataService {
    * returns a friendly time e.g. "8 PM" in Minnesota Time
    */
   customDateFormatter(isoDateTime) {
-    let dateTime = new Date(isoDateTime);
+    const dateTime = new Date(isoDateTime);
     if (dateTime.toString() != 'Invalid Date') {
       //Check if is actually a DATE.... otherwise look for AMPM
       let time = dateTime.getHours();
-      let min = dateTime.getMinutes();
+      const min = dateTime.getMinutes();
       time -= 6 - dateTime.getTimezoneOffset() / 60;
-      let indicator = time >= 12 && time < 24 ? 'PM' : 'AM';
+      const indicator = time >= 12 && time < 24 ? 'PM' : 'AM';
       if (time > 12) {
         time -= 12;
       }

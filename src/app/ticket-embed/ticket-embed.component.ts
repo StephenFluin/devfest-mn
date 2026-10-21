@@ -1,5 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Component, inject, PLATFORM_ID } from '@angular/core';
+import { Component, inject, PLATFORM_ID, AfterViewInit } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { eventbriteAttribution, trackTicketPurchase } from '../analytics.util';
 
@@ -12,7 +12,7 @@ import { eventbriteAttribution, trackTicketPurchase } from '../analytics.util';
     }`,
   styles: ``,
 })
-export class TicketEmbedComponent {
+export class TicketEmbedComponent implements AfterViewInit {
   environment = environment;
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
