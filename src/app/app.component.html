@@ -1,110 +1,112 @@
 <div>
-    <div id="header-bar" role="banner">
-        <a class="logo" routerLink="/">
-            <img
-                src="/a/images/devfestmn-icon.svg"
-                width="24"
-                height="24"
-                style="height: 24px; margin-right: 12px"
-                alt="DevFestMN Logo"
-            />
-            <span>DevFest<strong>MN</strong></span></a
+  <div id="header-bar" role="banner">
+    <a class="logo" routerLink="/">
+      <img
+        src="/a/images/devfestmn-icon.svg"
+        width="24"
+        height="24"
+        style="height: 24px; margin-right: 12px"
+        alt="DevFestMN Logo"
+      />
+      <span>DevFest<strong>MN</strong></span></a
+    >
+    <span style="flex-grow: 1"></span>
+    <div id="header-menu" role="navigation">
+      @if (environment.showRegister) {
+        <a
+          id="global-ticket-button"
+          href="/tickets"
+          (mouseenter)="loadEBWidget()"
+          (focus)="loadEBWidget()"
+          (click)="lazyClickEBWidget($event)"
+          class="button"
+          >Tickets</a
         >
-        <span style="flex-grow: 1"></span>
-        <div id="header-menu" role="navigation">
-            @if (environment.showRegister) {
-            <a
-                id="global-ticket-button"
-                href="/tickets"
-                (mouseenter)="loadEBWidget()"
-                (focus)="loadEBWidget()"
-                (click)="lazyClickEBWidget($event)"
-                class="button"
-                >Tickets</a
-            >
-            } @if (environment.showSchedule) {
-            <a [routerLink]="['/schedule']">Schedule</a>
-            } @if (cfp() === 'open') {
-            <a [routerLink]="['speaker-cfp']">Be a Speaker</a>
-            } @if (ds.confirmedSpeakers().length) {
-            <a [routerLink]="['/speakers']">Speakers</a>
-            } @if (environment.showSponsor) {
-            <a [routerLink]="['/sponsors']">Sponsor</a>
-            }
-            <a [routerLink]="['/gallery']">Gallery</a>
-        </div>
+      }
+      @if (environment.showSchedule) {
+        <a [routerLink]="['/schedule']">Schedule</a>
+      }
+      @if (cfp() === 'open') {
+        <a [routerLink]="['speaker-cfp']">Be a Speaker</a>
+      }
+      @if (ds.confirmedSpeakers().length) {
+        <a [routerLink]="['/speakers']">Speakers</a>
+      }
+      @if (environment.showSponsor) {
+        <a [routerLink]="['/sponsors']">Sponsor</a>
+      }
+      <a [routerLink]="['/gallery']">Gallery</a>
     </div>
-    <div class="routeContainer" role="main">
-        <router-outlet #routerOutlet="outlet"></router-outlet>
+  </div>
+  <div class="routeContainer" role="main">
+    <router-outlet #routerOutlet="outlet"></router-outlet>
+  </div>
+  <footer>
+    <div class="blocks">
+      <div>
+        <h2>Links</h2>
+        <a href="http://gdgtc.com" target="_blank">GDG Twin Cities</a>
+        <a href="https://developers.google.com/" target="_blank">Google Developers</a>
+        <a href="https://github.com/stephenfluin/devfest-mn" target="_blank">GitHub</a>
+        <a routerLink="/admin/">Admin</a>
+        <a routerLink="/past/">Previous Years</a>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <a [href]="'mailto:' + environment.contactEmail">{{ environment.contactEmail }}</a>
+      </div>
+      <div>
+        <h2>FAQ</h2>
+        <a href="https://developers.google.com/groups/" target="_blank">Google Developer Groups</a>
+        <a href="https://developers.google.com/events/devfest/" target="_blank"
+          >GDG DevFest Season</a
+        >
+        <a routerLink="/conduct">GDG Code of Conduct</a>
+        <a routerLink="/refunds">Refund Policy</a>
+      </div>
     </div>
-    <footer>
-        <div class="blocks">
-            <div>
-                <h2>Links</h2>
-                <a href="http://gdgtc.com" target="_blank">GDG Twin Cities</a>
-                <a href="https://developers.google.com/" target="_blank">Google Developers</a>
-                <a href="https://github.com/stephenfluin/devfest-mn" target="_blank">GitHub</a>
-                <a routerLink="/admin/">Admin</a>
-                <a routerLink="/past/">Previous Years</a>
-            </div>
-            <div>
-                <h2>Contact</h2>
-                <a [href]="'mailto:' + environment.contactEmail">{{ environment.contactEmail }}</a>
-            </div>
-            <div>
-                <h2>FAQ</h2>
-                <a href="https://developers.google.com/groups/" target="_blank"
-                    >Google Developer Groups</a
-                >
-                <a href="https://developers.google.com/events/devfest/" target="_blank"
-                    >GDG DevFest Season</a
-                >
-                <a routerLink="/conduct">GDG Code of Conduct</a>
-                <a routerLink="/refunds">Refund Policy</a>
-            </div>
-        </div>
-        <section class="social-links">
-            <a
-                href="https://bsky.app/profile/devfestmn.bsky.social"
-                target="_blank"
-                aria-label="DevFestMN on Bluesky"
-            >
-                <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
-                    <path
-                        fill="#FFFFFF"
-                        d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"
-                    ></path>
-                </svg>
-            </a>
-            <a
-                href="https://developers.live/@devfestmn"
-                target="_blank"
-                aria-label="DevFestMN on Mastodon"
-            >
-                <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
-                    <path
-                        fill="#FFFFFF"
-                        d="M23.268 5.313c-.35-2.578-2.617-4.61-5.304-5.004C17.51.242 15.792 0 11.813 0h-.03c-3.98 0-4.835.242-5.288.309C3.882.692 1.496 2.518.917 5.127.64 6.412.61 7.837.661 9.143c.074 1.874.088 3.745.26 5.611.118 1.24.325 2.47.62 3.68.55 2.237 2.777 4.098 4.96 4.857 2.336.792 4.849.923 7.256.38.265-.061.527-.132.786-.213.585-.184 1.27-.39 1.774-.753a.057.057 0 0 0 .023-.043v-1.809a.052.052 0 0 0-.02-.041.053.053 0 0 0-.046-.01 20.282 20.282 0 0 1-4.709.545c-2.73 0-3.463-1.284-3.674-1.818a5.593 5.593 0 0 1-.319-1.433.053.053 0 0 1 .066-.054c1.517.363 3.072.546 4.632.546.376 0 .75 0 1.125-.01 1.57-.044 3.224-.124 4.768-.422.038-.008.077-.015.11-.024 2.435-.464 4.753-1.92 4.989-5.604.008-.145.03-1.52.03-1.67.002-.512.167-3.63-.024-5.545zm-3.748 9.195h-2.561V8.29c0-1.309-.55-1.976-1.67-1.976-1.23 0-1.846.79-1.846 2.35v3.403h-2.546V8.663c0-1.56-.617-2.35-1.848-2.35-1.112 0-1.668.668-1.67 1.977v6.218H4.822V8.102c0-1.31.337-2.35 1.011-3.12.696-.77 1.608-1.164 2.74-1.164 1.311 0 2.302.5 2.962 1.498l.638 1.06.638-1.06c.66-.999 1.65-1.498 2.96-1.498 1.13 0 2.043.395 2.74 1.164.675.77 1.012 1.81 1.012 3.12z"
-                    ></path>
-                </svg>
-            </a>
-            <a
-                href="https://github.com/stephenfluin/devfest-mn"
-                target="_blank"
-                aria-label="See DevFestMN on GitHub"
-            >
-                <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
-                    <path
-                        fill="#FFFFFF"
-                        d="M4,2H20A2,2 0 0,1 22,4V20A2,2 0 0,1 20,22H14.85C14.5,21.92 14.5,21.24 14.5,21V18.26C14.5,17.33 14.17,16.72 13.81,16.41C16.04,16.16 18.38,15.32 18.38,11.5C18.38,10.39 18,9.5 17.35,8.79C17.45,8.54 17.8,7.5 17.25,6.15C17.25,6.15 16.41,5.88 14.5,7.17C13.71,6.95 12.85,6.84 12,6.84C11.15,6.84 10.29,6.95 9.5,7.17C7.59,5.88 6.75,6.15 6.75,6.15C6.2,7.5 6.55,8.54 6.65,8.79C6,9.5 5.62,10.39 5.62,11.5C5.62,15.31 7.95,16.17 10.17,16.42C9.89,16.67 9.63,17.11 9.54,17.76C8.97,18 7.5,18.45 6.63,16.93C6.63,16.93 6.1,15.97 5.1,15.9C5.1,15.9 4.12,15.88 5,16.5C5,16.5 5.68,16.81 6.14,17.97C6.14,17.97 6.73,19.91 9.5,19.31V21C9.5,21.24 9.5,21.92 9.14,22H4A2,2 0 0,1 2,20V4A2,2 0 0,1 4,2Z"
-                    ></path>
-                </svg>
-            </a>
-        </section>
-        <section>
-            &copy; 2026 GDG Twin Cities<br />
-            Built by <a href="//twitter.com/littlelloyd">Lloyd Lentz</a> and
-            <a href="https://developers.live/@StephenFluin">Stephen Fluin</a>.
-        </section>
-    </footer>
+    <section class="social-links">
+      <a
+        href="https://bsky.app/profile/devfestmn.bsky.social"
+        target="_blank"
+        aria-label="DevFestMN on Bluesky"
+      >
+        <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
+          <path
+            fill="#FFFFFF"
+            d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"
+          ></path>
+        </svg>
+      </a>
+      <a
+        href="https://developers.live/@devfestmn"
+        target="_blank"
+        aria-label="DevFestMN on Mastodon"
+      >
+        <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
+          <path
+            fill="#FFFFFF"
+            d="M23.268 5.313c-.35-2.578-2.617-4.61-5.304-5.004C17.51.242 15.792 0 11.813 0h-.03c-3.98 0-4.835.242-5.288.309C3.882.692 1.496 2.518.917 5.127.64 6.412.61 7.837.661 9.143c.074 1.874.088 3.745.26 5.611.118 1.24.325 2.47.62 3.68.55 2.237 2.777 4.098 4.96 4.857 2.336.792 4.849.923 7.256.38.265-.061.527-.132.786-.213.585-.184 1.27-.39 1.774-.753a.057.057 0 0 0 .023-.043v-1.809a.052.052 0 0 0-.02-.041.053.053 0 0 0-.046-.01 20.282 20.282 0 0 1-4.709.545c-2.73 0-3.463-1.284-3.674-1.818a5.593 5.593 0 0 1-.319-1.433.053.053 0 0 1 .066-.054c1.517.363 3.072.546 4.632.546.376 0 .75 0 1.125-.01 1.57-.044 3.224-.124 4.768-.422.038-.008.077-.015.11-.024 2.435-.464 4.753-1.92 4.989-5.604.008-.145.03-1.52.03-1.67.002-.512.167-3.63-.024-5.545zm-3.748 9.195h-2.561V8.29c0-1.309-.55-1.976-1.67-1.976-1.23 0-1.846.79-1.846 2.35v3.403h-2.546V8.663c0-1.56-.617-2.35-1.848-2.35-1.112 0-1.668.668-1.67 1.977v6.218H4.822V8.102c0-1.31.337-2.35 1.011-3.12.696-.77 1.608-1.164 2.74-1.164 1.311 0 2.302.5 2.962 1.498l.638 1.06.638-1.06c.66-.999 1.65-1.498 2.96-1.498 1.13 0 2.043.395 2.74 1.164.675.77 1.012 1.81 1.012 3.12z"
+          ></path>
+        </svg>
+      </a>
+      <a
+        href="https://github.com/stephenfluin/devfest-mn"
+        target="_blank"
+        aria-label="See DevFestMN on GitHub"
+      >
+        <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
+          <path
+            fill="#FFFFFF"
+            d="M4,2H20A2,2 0 0,1 22,4V20A2,2 0 0,1 20,22H14.85C14.5,21.92 14.5,21.24 14.5,21V18.26C14.5,17.33 14.17,16.72 13.81,16.41C16.04,16.16 18.38,15.32 18.38,11.5C18.38,10.39 18,9.5 17.35,8.79C17.45,8.54 17.8,7.5 17.25,6.15C17.25,6.15 16.41,5.88 14.5,7.17C13.71,6.95 12.85,6.84 12,6.84C11.15,6.84 10.29,6.95 9.5,7.17C7.59,5.88 6.75,6.15 6.75,6.15C6.2,7.5 6.55,8.54 6.65,8.79C6,9.5 5.62,10.39 5.62,11.5C5.62,15.31 7.95,16.17 10.17,16.42C9.89,16.67 9.63,17.11 9.54,17.76C8.97,18 7.5,18.45 6.63,16.93C6.63,16.93 6.1,15.97 5.1,15.9C5.1,15.9 4.12,15.88 5,16.5C5,16.5 5.68,16.81 6.14,17.97C6.14,17.97 6.73,19.91 9.5,19.31V21C9.5,21.24 9.5,21.92 9.14,22H4A2,2 0 0,1 2,20V4A2,2 0 0,1 4,2Z"
+          ></path>
+        </svg>
+      </a>
+    </section>
+    <section>
+      &copy; 2026 GDG Twin Cities<br />
+      Built by <a href="//twitter.com/littlelloyd">Lloyd Lentz</a> and
+      <a href="https://developers.live/@StephenFluin">Stephen Fluin</a>.
+    </section>
+  </footer>
 </div>

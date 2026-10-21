@@ -8,14 +8,14 @@ import { DataService, Speaker } from './data.service';
  * {{ (speakerKey | getSpeaker)?.name }}
  */
 @Pipe({
-    name: 'getSpeaker',
-    // Impure so it picks up changes to the live speakers signal.
-    pure: false,
+  name: 'getSpeaker',
+  // Impure so it picks up changes to the live speakers signal.
+  pure: false,
 })
 export class GetSpeakerPipe implements PipeTransform {
-    private ds = inject(DataService);
+  private ds = inject(DataService);
 
-    transform(value: string): Speaker | undefined {
-        return value ? this.ds.speaker(value) : undefined;
-    }
+  transform(value: string): Speaker | undefined {
+    return value ? this.ds.speaker(value) : undefined;
+  }
 }

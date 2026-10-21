@@ -1,104 +1,108 @@
 @if (speakerData(); as speaker) {
-<form ngNoForm (submit)="save(speaker, $event)" autocomplete="off">
+  <form ngNoForm (submit)="save(speaker, $event)" autocomplete="off">
     <div class="page-header">
-        <div>
-            <h2>{{ speaker.$key ? 'Edit speaker' : 'New speaker' }}</h2>
-            <p class="muted">{{ speaker.name || 'Unnamed' }}</p>
-        </div>
-        <a mat-button routerLink="/speakers">Back to speakers</a>
+      <div>
+        <h2>{{ speaker.$key ? 'Edit speaker' : 'New speaker' }}</h2>
+        <p class="muted">{{ speaker.name || 'Unnamed' }}</p>
+      </div>
+      <a mat-button routerLink="/speakers">Back to speakers</a>
     </div>
 
     <section class="card profile" aria-labelledby="profile-heading">
-        <div class="photo">
-            @if (speaker.imageUrl) {
-            <img [src]="speaker.imageUrl" [alt]="'Photo of ' + (speaker.name || 'speaker')" />
-            } @else {
-            <span class="avatar big" aria-hidden="true">{{ speaker.name?.[0] ?? '?' }}</span>
-            }
+      <div class="photo">
+        @if (speaker.imageUrl) {
+          <img [src]="speaker.imageUrl" [alt]="'Photo of ' + (speaker.name || 'speaker')" />
+        } @else {
+          <span class="avatar big" aria-hidden="true">{{ speaker.name?.[0] ?? '?' }}</span>
+        }
+      </div>
+      <div>
+        <h3 id="profile-heading">Profile</h3>
+        <div class="field-grid">
+          <mat-form-field>
+            <mat-label>Name</mat-label>
+            <input matInput [(ngModel)]="speaker.name" required />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Company</mat-label>
+            <input matInput [(ngModel)]="speaker.company" />
+          </mat-form-field>
+          <mat-form-field class="span-all">
+            <mat-label>Bio</mat-label>
+            <textarea
+              matInput
+              [(ngModel)]="speaker.bio"
+              cdkTextareaAutosize
+              cdkAutosizeMinRows="5"
+            ></textarea>
+            <mat-hint>Markdown</mat-hint>
+          </mat-form-field>
         </div>
-        <div>
-            <h3 id="profile-heading">Profile</h3>
-            <div class="field-grid">
-                <mat-form-field>
-                    <mat-label>Name</mat-label>
-                    <input matInput [(ngModel)]="speaker.name" required />
-                </mat-form-field>
-                <mat-form-field>
-                    <mat-label>Company</mat-label>
-                    <input matInput [(ngModel)]="speaker.company" />
-                </mat-form-field>
-                <mat-form-field class="span-all">
-                    <mat-label>Bio</mat-label>
-                    <textarea
-                        matInput
-                        [(ngModel)]="speaker.bio"
-                        cdkTextareaAutosize
-                        cdkAutosizeMinRows="5"
-                    ></textarea>
-                    <mat-hint>Markdown</mat-hint>
-                </mat-form-field>
-            </div>
-            <mat-checkbox [(ngModel)]="speaker.confirmed">
-                Confirmed (shown on the public site)
-            </mat-checkbox>
-        </div>
+        <mat-checkbox [(ngModel)]="speaker.confirmed">
+          Confirmed (shown on the public site)
+        </mat-checkbox>
+      </div>
     </section>
 
     <section class="card" aria-labelledby="links-heading">
-        <h3 id="links-heading">Links</h3>
-        <div class="field-grid">
-            <mat-form-field>
-                <mat-label>Website</mat-label>
-                <input matInput type="url" [(ngModel)]="speaker.website" />
-            </mat-form-field>
-            <mat-form-field>
-                <mat-label>LinkedIn profile URL</mat-label>
-                <input matInput type="url" [(ngModel)]="speaker.linkedin" />
-            </mat-form-field>
-            <mat-form-field>
-                <mat-label>Twitter / X</mat-label>
-                <span matTextPrefix>&#64;</span>
-                <input matInput [(ngModel)]="speaker.twitter" />
-            </mat-form-field>
-            <mat-form-field>
-                <mat-label>Photo URL</mat-label>
-                <input matInput type="url" [(ngModel)]="speaker.imageUrl" />
-                <mat-hint>Or upload one below</mat-hint>
-            </mat-form-field>
-        </div>
-        @if (speaker.$key && speaker.name) {
+      <h3 id="links-heading">Links</h3>
+      <div class="field-grid">
+        <mat-form-field>
+          <mat-label>Website</mat-label>
+          <input matInput type="url" [(ngModel)]="speaker.website" />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>LinkedIn profile URL</mat-label>
+          <input matInput type="url" [(ngModel)]="speaker.linkedin" />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Twitter / X</mat-label>
+          <span matTextPrefix>&#64;</span>
+          <input matInput [(ngModel)]="speaker.twitter" />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Photo URL</mat-label>
+          <input matInput type="url" [(ngModel)]="speaker.imageUrl" />
+          <mat-hint>Or upload one below</mat-hint>
+        </mat-form-field>
+      </div>
+      @if (speaker.$key && speaker.name) {
         <p class="share">
-            <span class="muted">Share link</span>
-            <a [href]="'/s/' + slugify(speaker.name)">{{ environment.siteUrl }}/s/{{ slugify(speaker.name) }}</a>
-            <span class="muted">Goes to their page, credited to them in the UTM funnel.</span>
+          <span class="muted">Share link</span>
+          <a [href]="'/s/' + slugify(speaker.name)"
+            >{{ environment.siteUrl }}/s/{{ slugify(speaker.name) }}</a
+          >
+          <span class="muted">Goes to their page, credited to them in the UTM funnel.</span>
         </p>
-        }
+      }
     </section>
 
     <section class="card" aria-labelledby="photos-heading">
-        <h3 id="photos-heading">Photos</h3>
-        @if (speaker.$key) {
+      <h3 id="photos-heading">Photos</h3>
+      @if (speaker.$key) {
         <sffb-uploader
-            [folder]="'devfest' + environment.year + '/speakers/' + speaker.$key"
-            [current]="speaker.imageUrl"
-            (selected)="speaker.imageUrl = $event"
+          [folder]="'devfest' + environment.year + '/speakers/' + speaker.$key"
+          [current]="speaker.imageUrl"
+          (selected)="speaker.imageUrl = $event"
         />
-        } @else {
+      } @else {
         <p class="muted">Create the speaker first, then upload their photo.</p>
-        }
+      }
     </section>
 
     <div class="actions sticky">
-        <button mat-flat-button type="submit">{{ speaker.$key ? 'Save speaker' : 'Create speaker' }}</button>
-        <a mat-button routerLink="/speakers">Cancel</a>
-        <span class="spacer"></span>
-        @if (speaker.$key) {
+      <button mat-flat-button type="submit">
+        {{ speaker.$key ? 'Save speaker' : 'Create speaker' }}
+      </button>
+      <a mat-button routerLink="/speakers">Cancel</a>
+      <span class="spacer"></span>
+      @if (speaker.$key) {
         <button mat-stroked-button class="danger" type="button" (click)="delete(speaker)">
-            Delete speaker
+          Delete speaker
         </button>
-        }
+      }
     </div>
-</form>
+  </form>
 } @else {
-<p class="muted" role="status">Loading speaker…</p>
+  <p class="muted" role="status">Loading speaker…</p>
 }

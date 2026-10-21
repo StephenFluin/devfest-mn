@@ -1,25 +1,25 @@
 <section>
-    <div>
-        <picture>
-            <source srcset="/a/images/devfestmn-dark.svg" media="(prefers-color-scheme: dark)" />
-            <img
-                src="/a/images/devfestmn.svg"
-                style="width: 40%; max-width: 400px; min-width: 250px"
-                alt="DevFestMN"
-            />
-        </picture>
-    </div>
-    <div class="callout">Confirmed Speakers</div>
+  <div>
+    <picture>
+      <source srcset="/a/images/devfestmn-dark.svg" media="(prefers-color-scheme: dark)" />
+      <img
+        src="/a/images/devfestmn.svg"
+        style="width: 40%; max-width: 400px; min-width: 250px"
+        alt="DevFestMN"
+      />
+    </picture>
+  </div>
+  <div class="callout">Confirmed Speakers</div>
 
-    @if (auth.isAdmin()) {
+  @if (auth.isAdmin()) {
     <button mat-raised-button color="primary" (click)="addSpeaker()">Add Speaker</button>
+  }
+  <div class="speaker-list-container">
+    @for (speaker of speakers(); track speaker.$key) {
+      <speaker-container [speaker]="speaker" [showEdit]="auth.isAdmin()"></speaker-container>
     }
-    <div class="speaker-list-container">
-        @for (speaker of speakers(); track speaker.$key) {
-        <speaker-container [speaker]="speaker" [showEdit]="auth.isAdmin()"></speaker-container>
-        }
-    </div>
-    @if (auth.isAdmin()) {
+  </div>
+  @if (auth.isAdmin()) {
     <button mat-raised-button color="primary" (click)="addSpeaker()">Add Speaker</button>
-    }
+  }
 </section>

@@ -9,316 +9,318 @@
 @use '@angular/material' as mat;
 
 html {
-    @include mat.theme(
-        (
-            color: (
-                primary: mat.$azure-palette,
-                tertiary: mat.$cyan-palette,
-                theme-type: color-scheme,
-            ),
-            typography: (
-                plain-family: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-                brand-family: "'Montserrat', sans-serif",
-            ),
-            density: 0,
-        )
-    );
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$cyan-palette,
+        theme-type: color-scheme,
+      ),
+      typography: (
+        plain-family: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+        brand-family: "'Montserrat', sans-serif",
+      ),
+      density: 0,
+    )
+  );
 }
 
 .admin {
-    --admin-radius: 16px;
-    --admin-gap: 24px;
-    --admin-success: light-dark(#146c2e, #7dd99a);
-    --admin-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 4px 16px rgb(0 0 0 / 0.06);
+  --admin-radius: 16px;
+  --admin-gap: 24px;
+  --admin-success: light-dark(#146c2e, #7dd99a);
+  --admin-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 4px 16px rgb(0 0 0 / 0.06);
 
-    display: block;
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 24px 16px 64px;
+  display: block;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-large);
+
+  /* The public site's element styles (blue buttons, big margins) don't belong here. */
+  button:not([class*='mat-']) {
+    margin: 0;
+    font: var(--mat-sys-label-large);
+    border-radius: 999px;
+  }
+  section {
+    text-align: start;
+    color: inherit;
+  }
+  section h2 {
+    text-transform: none;
+  }
+  p,
+  section p {
+    width: auto;
+    max-width: none;
+    margin: 0 0 12px;
+  }
+  h1,
+  h2,
+  h3 {
+    letter-spacing: 0;
     color: var(--mat-sys-on-surface);
-    font: var(--mat-sys-body-large);
-
-    /* The public site's element styles (blue buttons, big margins) don't belong here. */
-    button:not([class*='mat-']) {
-        margin: 0;
-        font: var(--mat-sys-label-large);
-        border-radius: 999px;
-    }
-    section {
-        text-align: start;
-        color: inherit;
-    }
-    section h2 {
-        text-transform: none;
-    }
-    p,
-    section p {
-        width: auto;
-        max-width: none;
-        margin: 0 0 12px;
-    }
-    h1,
-    h2,
-    h3 {
-        letter-spacing: 0;
-        color: var(--mat-sys-on-surface);
-    }
-    h1 {
-        font: var(--mat-sys-headline-medium);
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 700;
-        margin: 0;
-    }
-    h2 {
-        font: var(--mat-sys-headline-small);
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 700;
-        margin: 0 0 4px;
-    }
-    h3 {
-        font: var(--mat-sys-title-large);
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 600;
-        margin: 0 0 8px;
-    }
-    a:not([class*='mat-']) {
-        color: var(--mat-sys-primary);
-        text-decoration: underline;
-        text-underline-offset: 2px;
-    }
-    a:not([class*='mat-']):hover {
-        color: var(--mat-sys-on-primary-container);
-    }
-    :focus-visible {
-        outline: 2px solid var(--mat-sys-primary);
-        outline-offset: 2px;
-    }
-    code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-        font-size: 0.9em;
-        padding: 1px 6px;
-        border-radius: 6px;
-        background: var(--mat-sys-surface-container-high);
-    }
+  }
+  h1 {
+    font: var(--mat-sys-headline-medium);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    margin: 0;
+  }
+  h2 {
+    font: var(--mat-sys-headline-small);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+  h3 {
+    font: var(--mat-sys-title-large);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  a:not([class*='mat-']) {
+    color: var(--mat-sys-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  a:not([class*='mat-']):hover {
+    color: var(--mat-sys-on-primary-container);
+  }
+  :focus-visible {
+    outline: 2px solid var(--mat-sys-primary);
+    outline-offset: 2px;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.9em;
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: var(--mat-sys-surface-container-high);
+  }
 }
 
 /* Page header: title, a line of context, and page-level actions. */
 .admin .page-header {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin: 8px 0 var(--admin-gap);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin: 8px 0 var(--admin-gap);
 }
 .admin .page-header p {
-    margin: 0;
+  margin: 0;
 }
 
 .admin .muted {
-    color: var(--mat-sys-on-surface-variant);
-    font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-medium);
 }
 
 .admin .card {
-    background: var(--mat-sys-surface-container-low);
-    border: 1px solid var(--mat-sys-outline-variant);
-    border-radius: var(--admin-radius);
-    padding: 24px;
-    margin-bottom: var(--admin-gap);
+  background: var(--mat-sys-surface-container-low);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--admin-radius);
+  padding: 24px;
+  margin-bottom: var(--admin-gap);
 }
 .admin .card > :last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .admin .stack {
-    display: grid;
-    gap: 16px;
+  display: grid;
+  gap: 16px;
 }
 
 /* Forms: full-width fields in a responsive two-column grid. */
 .admin .field-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    column-gap: 16px;
-    row-gap: 4px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  column-gap: 16px;
+  row-gap: 4px;
 }
 .admin .field-grid .span-all {
-    grid-column: 1 / -1;
+  grid-column: 1 / -1;
 }
 .admin mat-form-field {
-    width: 100%;
+  width: 100%;
 }
 
 /* Sticky action bar at the bottom of long forms. */
 .admin .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
 }
 .admin .actions.sticky {
-    position: sticky;
-    bottom: 0;
-    z-index: 2;
-    padding: 16px 0;
-    margin-top: 8px;
-    background: linear-gradient(transparent, var(--color-bg) 30%);
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding: 16px 0;
+  margin-top: 8px;
+  background: linear-gradient(transparent, var(--color-bg) 30%);
 }
 .admin .actions .spacer {
-    flex: 1;
+  flex: 1;
 }
 
 .admin .status {
-    font: var(--mat-sys-body-medium);
-    color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
 }
 .admin .status.error,
 .admin .error {
-    color: var(--mat-sys-error);
+  color: var(--mat-sys-error);
 }
 .admin .status.ok {
-    color: var(--admin-success);
+  color: var(--admin-success);
 }
 
 .admin .notice {
-    padding: 12px 16px;
-    border-radius: 12px;
-    background: var(--mat-sys-tertiary-container);
-    color: var(--mat-sys-on-tertiary-container);
-    margin-bottom: var(--admin-gap);
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+  margin-bottom: var(--admin-gap);
 }
 .admin .notice.warn {
-    background: var(--mat-sys-error-container);
-    color: var(--mat-sys-on-error-container);
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
 }
 
 /* Destructive buttons. */
 .admin .danger {
-    --mat-button-text-label-text-color: var(--mat-sys-error);
-    --mat-button-outlined-label-text-color: var(--mat-sys-error);
-    --mat-button-outlined-outline-color: var(--mat-sys-error);
+  --mat-button-text-label-text-color: var(--mat-sys-error);
+  --mat-button-outlined-label-text-color: var(--mat-sys-error);
+  --mat-button-outlined-outline-color: var(--mat-sys-error);
 }
 
 /* Big numbers at the top of a report. */
 .admin .tiles {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-    gap: 16px;
-    margin-bottom: var(--admin-gap);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 16px;
+  margin-bottom: var(--admin-gap);
 }
 .admin .tile {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 16px 20px;
-    border-radius: var(--admin-radius);
-    background: var(--mat-sys-surface-container);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 20px;
+  border-radius: var(--admin-radius);
+  background: var(--mat-sys-surface-container);
 }
 .admin .tile .label {
-    font: var(--mat-sys-label-large);
-    color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-on-surface-variant);
 }
 .admin .tile .value {
-    font: var(--mat-sys-display-small);
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-    color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-display-small);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--mat-sys-on-surface);
 }
 .admin .tile .note {
-    font: var(--mat-sys-body-small);
-    color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 /* Data tables. */
 .admin .table-wrap {
-    overflow-x: auto;
-    border: 1px solid var(--mat-sys-outline-variant);
-    border-radius: 12px;
+  overflow-x: auto;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
 }
 .admin table.data {
-    width: 100%;
-    border-collapse: collapse;
-    font: var(--mat-sys-body-medium);
-    font-variant-numeric: tabular-nums;
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--mat-sys-body-medium);
+  font-variant-numeric: tabular-nums;
 }
 .admin table.data th,
 .admin table.data td {
-    padding: 10px 16px;
-    text-align: right;
-    white-space: nowrap;
-    border-bottom: 1px solid var(--mat-sys-outline-variant);
+  padding: 10px 16px;
+  text-align: right;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
 }
 .admin table.data th {
-    font: var(--mat-sys-label-large);
-    color: var(--mat-sys-on-surface-variant);
-    background: var(--mat-sys-surface-container);
-    position: sticky;
-    top: 0;
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-on-surface-variant);
+  background: var(--mat-sys-surface-container);
+  position: sticky;
+  top: 0;
 }
 .admin table.data .text {
-    text-align: left;
-    white-space: normal;
+  text-align: left;
+  white-space: normal;
 }
 .admin table.data tbody tr:last-child td {
-    border-bottom: 0;
+  border-bottom: 0;
 }
 .admin table.data tbody tr:hover td {
-    background: var(--mat-sys-surface-container-low);
+  background: var(--mat-sys-surface-container-low);
 }
 
 /* Small rounded labels, e.g. a speaker on a session. */
 .admin .chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 .admin .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 4px 4px 4px;
-    border-radius: 999px;
-    border: 1px solid var(--mat-sys-outline-variant);
-    background: var(--mat-sys-surface-container-low);
-    font: var(--mat-sys-label-large);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 4px;
+  border-radius: 999px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  background: var(--mat-sys-surface-container-low);
+  font: var(--mat-sys-label-large);
 }
 .admin .chip img,
 .admin .avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex: none;
-    background: var(--mat-sys-secondary-container);
-    color: var(--mat-sys-on-secondary-container);
-    display: inline-grid;
-    place-items: center;
-    font: var(--mat-sys-label-large);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: none;
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+  display: inline-grid;
+  place-items: center;
+  font: var(--mat-sys-label-large);
 }
 .admin .chip .remove {
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: transparent;
-    color: var(--mat-sys-on-surface-variant);
-    cursor: pointer;
-    font-size: 18px;
-    line-height: 1;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--mat-sys-on-surface-variant);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
 }
 .admin .chip .remove:hover {
-    background: var(--mat-sys-surface-container-highest);
-    color: var(--mat-sys-error);
+  background: var(--mat-sys-surface-container-highest);
+  color: var(--mat-sys-error);
 }
 
 @media (prefers-reduced-motion: no-preference) {
-    .admin .card,
-    .admin .tile {
-        transition: border-color 0.15s, background-color 0.15s;
-    }
+  .admin .card,
+  .admin .tile {
+    transition:
+      border-color 0.15s,
+      background-color 0.15s;
+  }
 }

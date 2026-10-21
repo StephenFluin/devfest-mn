@@ -1,47 +1,53 @@
 @if (speaker(); as speaker) {
-<div style="text-align: left">
+  <div style="text-align: left">
     <h1 class="callout" style="font-weight: normal; letter-spacing: normal">
-        {{ speaker.name }}
-        @if (auth.isAdmin()) {
+      {{ speaker.name }}
+      @if (auth.isAdmin()) {
         <a [routerLink]="['/', 'admin', 'speakers', speaker.$key, 'edit']">
-            <img src="/a/edit.svg" alt="Edit speaker" />
+          <img src="/a/edit.svg" alt="Edit speaker" />
         </a>
-        }
+      }
     </h1>
     @if (speaker.imageUrl) {
-    <div style="display: flex; align-items: center; justify-content: center">
+      <div style="display: flex; align-items: center; justify-content: center">
         <img
-            [src]="speaker.imageUrl"
-            [alt]="'Photo of ' + speaker.name"
-            width="125"
-            height="125"
-            style="object-fit: cover; border-radius: 50%"
+          [src]="speaker.imageUrl"
+          [alt]="'Photo of ' + speaker.name"
+          width="125"
+          height="125"
+          style="object-fit: cover; border-radius: 50%"
         />
-    </div>
+      </div>
     }
     <div>{{ speaker.company }}</div>
     @if (sessions().length) {
-    <div style="margin-top: 16px">
+      <div style="margin-top: 16px">
         Speaking on
         @for (session of sessions(); track session.$key; let last = $last) {
-        @if (environment.showSchedule) {
-        <a [routerLink]="['/', 'schedule', session.$key, slugify(session.title)]">{{ session.title }}</a>
-        } @else {
-        <strong>{{ session.title }}</strong>
-        }{{ last ? '' : ' and ' }}
+          @if (environment.showSchedule) {
+            <a [routerLink]="['/', 'schedule', session.$key, slugify(session.title)]">{{
+              session.title
+            }}</a>
+          } @else {
+            <strong>{{ session.title }}</strong>
+          }
+          {{ last ? '' : ' and ' }}
         }
-    </div>
-    } @if (links().length) {
-    <div style="margin-top: 8px">
+      </div>
+    }
+    @if (links().length) {
+      <div style="margin-top: 8px">
         @for (link of links(); track link.url; let last = $last) {
-        <a [href]="link.url" rel="me">{{ link.label }}</a>{{ last ? '' : ' · ' }}
+          <a [href]="link.url" rel="me">{{ link.label }}</a
+          >{{ last ? '' : ' · ' }}
         }
-    </div>
-    } @if (speaker.bio) {
-    <div
+      </div>
+    }
+    @if (speaker.bio) {
+      <div
         style="border: 1px solid var(--color-border-soft); margin: 32px; padding: 32px"
         [innerHTML]="renderedBio()"
-    ></div>
+      ></div>
     }
-</div>
+  </div>
 }

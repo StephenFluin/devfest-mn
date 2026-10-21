@@ -1,8 +1,8 @@
 import {
-    AngularNodeAppEngine,
-    createNodeRequestHandler,
-    isMainModule,
-    writeResponseToNodeResponse,
+  AngularNodeAppEngine,
+  createNodeRequestHandler,
+  isMainModule,
+  writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import compression from 'compression';
 import express from 'express';
@@ -22,98 +22,102 @@ process.env['TZ'] = 'America/Chicago';
 const browserDistFolder = join(import.meta.dirname, '../browser');
 // In development the server runs from source; after a build, assets live in ../browser.
 const imagesFolder = import.meta.dirname.includes('/dist/')
-    ? join(import.meta.dirname, '../browser/a/images/')
-    : join(import.meta.dirname, '../../../src/a/images/');
+  ? join(import.meta.dirname, '../browser/a/images/')
+  : join(import.meta.dirname, '../../../src/a/images/');
 
 const app = express();
 app.disable('x-powered-by');
 const angularApp = new AngularNodeAppEngine();
 
 app.use(
-    compression({
-        filter: (req, res) => {
-            // Don't compress responses if the client doesn't support it
-            if (req.headers['x-no-compression']) {
-                return false;
-            }
-            // Use compression for all other requests
-            return compression.filter(req, res);
-        },
-        level: 6, // Compression level (1-9, where 9 is most compressed but slowest)
-        threshold: 1024, // Only compress responses larger than 1KB
-    })
+  compression({
+    filter: (req, res) => {
+      // Don't compress responses if the client doesn't support it
+      if (req.headers['x-no-compression']) {
+        return false;
+      }
+      // Use compression for all other requests
+      return compression.filter(req, res);
+    },
+    level: 6, // Compression level (1-9, where 9 is most compressed but slowest)
+    threshold: 1024, // Only compress responses larger than 1KB
+  }),
 );
 
 interface SitemapEntry {
-    path: string;
-    /** Last edit in the admin, in ms, when known. */
-    updated?: number;
+  path: string;
+  /** Last edit in the admin, in ms, when known. */
+  updated?: number;
 }
 
 async function sitemapEntries(): Promise<SitemapEntry[]> {
-    const entries: SitemapEntry[] = ['', 'gallery', 'past', 'conduct', 'refunds'].map((path) => ({
-        path,
+  const entries: SitemapEntry[] = ['', 'gallery', 'past', 'conduct', 'refunds'].map((path) => ({
+    path,
+  }));
+  if (cfpStateAt() === 'open') entries.push({ path: 'speaker-cfp' });
+  if (environment.showSponsor) entries.push({ path: 'sponsors' });
+
+  // Only schedule and speakers are public; the rest of the year is admin-only.
+  const fetchPublic = async (child: 'schedule' | 'speakers') => {
+    const response = await fetch(
+      `${environment.firebaseConfig.databaseURL}/devfest${environment.year}/${child}.json`,
+    );
+    if (!response.ok) {
+      throw new Error(`Firebase responded with ${response.status}`);
+    }
+    return Object.entries<any>((await response.json()) ?? {});
+  };
+  const latest = (items: SitemapEntry[]) =>
+    Math.max(0, ...items.map((item) => item.updated ?? 0)) || undefined;
+
+  const [schedule, speakers] = await Promise.all([
+    fetchPublic('schedule'),
+    fetchPublic('speakers'),
+  ]);
+  // Speaker pages show their talks and session pages show their speakers, so each page changes
+  // when either side is saved.
+  const speakerUpdated = new Map(speakers.map(([key, speaker]) => [key, speaker.updatedAt ?? 0]));
+  const sessionsOf = (speakerKey: string) =>
+    schedule.filter(([, session]) => Object.values(session.speakers ?? {}).includes(speakerKey));
+
+  if (environment.showSchedule) {
+    const sessions = schedule
+      .filter(([, session]) => session.title)
+      .map(([key, session]) => ({
+        path: `schedule/${key}/${slugify(session.title)}`,
+        updated:
+          Math.max(
+            session.updatedAt ?? 0,
+            ...Object.values<string>(session.speakers ?? {}).map(
+              (speakerKey) => speakerUpdated.get(speakerKey) ?? 0,
+            ),
+          ) || undefined,
+      }));
+    entries.push({ path: 'schedule', updated: latest(sessions) }, ...sessions);
+  }
+  const speakerPages = speakers
+    .filter(([, speaker]) => speaker.name && speaker.confirmed)
+    .map(([key, speaker]) => ({
+      path: `speakers/${key}/${slugify(speaker.name)}`,
+      updated:
+        Math.max(
+          speaker.updatedAt ?? 0,
+          ...sessionsOf(key).map(([, session]) => session.updatedAt ?? 0),
+        ) || undefined,
     }));
-    if (cfpStateAt() === 'open') entries.push({ path: 'speaker-cfp' });
-    if (environment.showSponsor) entries.push({ path: 'sponsors' });
-
-    // Only schedule and speakers are public; the rest of the year is admin-only.
-    const fetchPublic = async (child: 'schedule' | 'speakers') => {
-        const response = await fetch(
-            `${environment.firebaseConfig.databaseURL}/devfest${environment.year}/${child}.json`
-        );
-        if (!response.ok) {
-            throw new Error(`Firebase responded with ${response.status}`);
-        }
-        return Object.entries<any>((await response.json()) ?? {});
-    };
-    const latest = (items: SitemapEntry[]) =>
-        Math.max(0, ...items.map((item) => item.updated ?? 0)) || undefined;
-
-    const [schedule, speakers] = await Promise.all([fetchPublic('schedule'), fetchPublic('speakers')]);
-    // Speaker pages show their talks and session pages show their speakers, so each page changes
-    // when either side is saved.
-    const speakerUpdated = new Map(speakers.map(([key, speaker]) => [key, speaker.updatedAt ?? 0]));
-    const sessionsOf = (speakerKey: string) =>
-        schedule.filter(([, session]) => Object.values(session.speakers ?? {}).includes(speakerKey));
-
-    if (environment.showSchedule) {
-        const sessions = schedule
-            .filter(([, session]) => session.title)
-            .map(([key, session]) => ({
-                path: `schedule/${key}/${slugify(session.title)}`,
-                updated:
-                    Math.max(
-                        session.updatedAt ?? 0,
-                        ...Object.values<string>(session.speakers ?? {}).map(
-                            (speakerKey) => speakerUpdated.get(speakerKey) ?? 0
-                        )
-                    ) || undefined,
-            }));
-        entries.push({ path: 'schedule', updated: latest(sessions) }, ...sessions);
-    }
-    const speakerPages = speakers
-        .filter(([, speaker]) => speaker.name && speaker.confirmed)
-        .map(([key, speaker]) => ({
-            path: `speakers/${key}/${slugify(speaker.name)}`,
-            updated:
-                Math.max(
-                    speaker.updatedAt ?? 0,
-                    ...sessionsOf(key).map(([, session]) => session.updatedAt ?? 0)
-                ) || undefined,
-        }));
-    // Speakers are public once any are confirmed.
-    if (speakerPages.length) {
-        entries.push({ path: 'speakers', updated: latest(speakerPages) }, ...speakerPages);
-        // The home page lists the speakers too.
-        entries[0].updated = latest(speakerPages);
-    }
-    return entries;
+  // Speakers are public once any are confirmed.
+  if (speakerPages.length) {
+    entries.push({ path: 'speakers', updated: latest(speakerPages) }, ...speakerPages);
+    // The home page lists the speakers too.
+    entries[0].updated = latest(speakerPages);
+  }
+  return entries;
 }
 
-const sitemapUrl = (path: string) => (path ? `${environment.siteUrl}/${path}` : environment.siteUrl);
+const sitemapUrl = (path: string) =>
+  path ? `${environment.siteUrl}/${path}` : environment.siteUrl;
 const escapeXml = (value: string) =>
-    value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 /**
  * sitemap.xml lists the public pages that are switched on for the current phase of the event,
@@ -121,37 +125,39 @@ const escapeXml = (value: string) =>
  * comes from updatedAt, which the admin sets whenever a speaker or session is saved.
  */
 app.get('/sitemap.xml', async (req, res) => {
-    try {
-        const urls = (await sitemapEntries()).map(
-            ({ path, updated }) =>
-                `  <url><loc>${escapeXml(sitemapUrl(path))}</loc>` +
-                (updated ? `<lastmod>${new Date(updated).toISOString()}</lastmod>` : '') +
-                '</url>'
-        );
-        res.set('Cache-Control', 'public, max-age=3600');
-        res.type('application/xml').send(
-            '<?xml version="1.0" encoding="UTF-8"?>\n' +
-                '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-                urls.join('\n') +
-                '\n</urlset>\n'
-        );
-    } catch (error) {
-        console.error('Error generating sitemap:', error);
-        res.status(500).send('Error generating sitemap');
-    }
+  try {
+    const urls = (await sitemapEntries()).map(
+      ({ path, updated }) =>
+        `  <url><loc>${escapeXml(sitemapUrl(path))}</loc>` +
+        (updated ? `<lastmod>${new Date(updated).toISOString()}</lastmod>` : '') +
+        '</url>',
+    );
+    res.set('Cache-Control', 'public, max-age=3600');
+    res
+      .type('application/xml')
+      .send(
+        '<?xml version="1.0" encoding="UTF-8"?>\n' +
+          '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+          urls.join('\n') +
+          '\n</urlset>\n',
+      );
+  } catch (error) {
+    console.error('Error generating sitemap:', error);
+    res.status(500).send('Error generating sitemap');
+  }
 });
 
 /** The older plain-text sitemap, kept for anything that still points at it. */
 app.get('/sitemap.txt', async (req, res) => {
-    try {
-        res.set('Cache-Control', 'public, max-age=3600');
-        res.type('text/plain').send(
-            (await sitemapEntries()).map(({ path }) => sitemapUrl(path)).join('\n')
-        );
-    } catch (error) {
-        console.error('Error generating sitemap:', error);
-        res.status(500).send('Error generating sitemap');
-    }
+  try {
+    res.set('Cache-Control', 'public, max-age=3600');
+    res
+      .type('text/plain')
+      .send((await sitemapEntries()).map(({ path }) => sitemapUrl(path)).join('\n'));
+  } catch (error) {
+    console.error('Error generating sitemap:', error);
+    res.status(500).send('Error generating sitemap');
+  }
 });
 
 /**
@@ -163,45 +169,45 @@ app.get('/sitemap.txt', async (req, res) => {
 let speakerSlugs: { at: number; slugs: Promise<Map<string, string>> } | undefined;
 
 async function loadSpeakerSlugs(): Promise<Map<string, string>> {
-    const response = await fetch(
-        `${environment.firebaseConfig.databaseURL}/devfest${environment.year}/speakers.json`
-    );
-    if (!response.ok) {
-        throw new Error(`Firebase responded with ${response.status}`);
-    }
-    const speakers: Record<string, { name?: string; confirmed?: boolean }> =
-        (await response.json()) ?? {};
-    return new Map(
-        Object.entries(speakers)
-            .filter(([, speaker]) => speaker.name && speaker.confirmed)
-            .map(([key, speaker]) => [slugify(speaker.name), key])
-    );
+  const response = await fetch(
+    `${environment.firebaseConfig.databaseURL}/devfest${environment.year}/speakers.json`,
+  );
+  if (!response.ok) {
+    throw new Error(`Firebase responded with ${response.status}`);
+  }
+  const speakers: Record<string, { name?: string; confirmed?: boolean }> =
+    (await response.json()) ?? {};
+  return new Map(
+    Object.entries(speakers)
+      .filter(([, speaker]) => speaker.name && speaker.confirmed)
+      .map(([key, speaker]) => [slugify(speaker.name), key]),
+  );
 }
 
 app.get('/s/:slug', async (req, res) => {
-    try {
-        // Cached briefly so a new speaker's link works within a minute of being confirmed.
-        if (!speakerSlugs || Date.now() - speakerSlugs.at > 60_000) {
-            speakerSlugs = { at: Date.now(), slugs: loadSpeakerSlugs() };
-        }
-        const slug = slugify(req.params.slug);
-        const key = (await speakerSlugs.slugs).get(slug);
-        res.set('Cache-Control', 'no-store');
-        if (!key) {
-            res.redirect(302, '/speakers');
-            return;
-        }
-        const params = new URLSearchParams({
-            utm_source: 'speaker',
-            utm_medium: 'social',
-            utm_campaign: `speaker_${slug}`,
-        });
-        res.redirect(302, `/speakers/${key}/${slug}?${params}`);
-    } catch (error) {
-        speakerSlugs = undefined;
-        console.error('Error resolving speaker link:', error);
-        res.redirect(302, '/speakers');
+  try {
+    // Cached briefly so a new speaker's link works within a minute of being confirmed.
+    if (!speakerSlugs || Date.now() - speakerSlugs.at > 60_000) {
+      speakerSlugs = { at: Date.now(), slugs: loadSpeakerSlugs() };
     }
+    const slug = slugify(req.params.slug);
+    const key = (await speakerSlugs.slugs).get(slug);
+    res.set('Cache-Control', 'no-store');
+    if (!key) {
+      res.redirect(302, '/speakers');
+      return;
+    }
+    const params = new URLSearchParams({
+      utm_source: 'speaker',
+      utm_medium: 'social',
+      utm_campaign: `speaker_${slug}`,
+    });
+    res.redirect(302, `/speakers/${key}/${slug}?${params}`);
+  } catch (error) {
+    speakerSlugs = undefined;
+    console.error('Error resolving speaker link:', error);
+    res.redirect(302, '/speakers');
+  }
 });
 
 /**
@@ -210,35 +216,35 @@ app.get('/s/:slug', async (req, res) => {
  * is the next session in its room.
  */
 app.get('/calendar/:file', async (req, res) => {
-    const key = req.params.file.match(/^([A-Za-z0-9_-]{1,40})\.ics$/)?.[1];
-    if (!key) {
-        res.status(404).end();
-        return;
+  const key = req.params.file.match(/^([A-Za-z0-9_-]{1,40})\.ics$/)?.[1];
+  if (!key) {
+    res.status(404).end();
+    return;
+  }
+  try {
+    const response = await fetch(
+      `${environment.firebaseConfig.databaseURL}/devfest${environment.year}/schedule.json`,
+    );
+    if (!response.ok) {
+      throw new Error(`Firebase responded with ${response.status}`);
     }
-    try {
-        const response = await fetch(
-            `${environment.firebaseConfig.databaseURL}/devfest${environment.year}/schedule.json`
-        );
-        if (!response.ok) {
-            throw new Error(`Firebase responded with ${response.status}`);
-        }
-        const schedule: Session[] = Object.entries<Session>((await response.json()) ?? {}).map(
-            ([$key, session]) => ({ ...session, $key })
-        );
-        const session = schedule.find((item) => item.$key === key);
-        const event = session && calendarEvent(session, schedule);
-        if (!event) {
-            res.status(404).end();
-            return;
-        }
-        // Short, so a moved session reaches people who add it later.
-        res.set('Cache-Control', 'public, max-age=300');
-        res.set('Content-Disposition', `inline; filename="${slugify(session.title)}.ics"`);
-        res.type('text/calendar; charset=utf-8').send(icsFile(event));
-    } catch (error) {
-        console.error('Error building calendar file:', error);
-        res.status(500).end();
+    const schedule: Session[] = Object.entries<Session>((await response.json()) ?? {}).map(
+      ([$key, session]) => ({ ...session, $key }),
+    );
+    const session = schedule.find((item) => item.$key === key);
+    const event = session && calendarEvent(session, schedule);
+    if (!event) {
+      res.status(404).end();
+      return;
     }
+    // Short, so a moved session reaches people who add it later.
+    res.set('Cache-Control', 'public, max-age=300');
+    res.set('Content-Disposition', `inline; filename="${slugify(session.title)}.ics"`);
+    res.type('text/calendar; charset=utf-8').send(icsFile(event));
+  } catch (error) {
+    console.error('Error building calendar file:', error);
+    res.status(500).end();
+  }
 });
 
 /**
@@ -250,69 +256,66 @@ app.get('/calendar/:file', async (req, res) => {
 const cards = new Map<string, { version: number; png: Promise<Uint8Array> }>();
 
 async function speakerCardData(key: string) {
-    const base = `${environment.firebaseConfig.databaseURL}/devfest${environment.year}`;
-    const [speaker, schedule] = await Promise.all(
-        [`${base}/speakers/${encodeURIComponent(key)}.json`, `${base}/schedule.json`].map(
-            async (url) => {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Firebase responded with ${response.status}`);
-                return response.json();
-            }
-        )
-    );
-    if (!speaker?.confirmed || !speaker.name) return null;
-    const sessions = Object.values<any>(schedule ?? {}).filter((session) =>
-        Object.values(session.speakers ?? {}).includes(key)
-    );
-    return {
-        // Matches the version speaker pages put in the URL (speaker-full.component.ts).
-        version: Math.max(
-            speaker.updatedAt ?? 0,
-            ...sessions.map((session) => session.updatedAt ?? 0)
-        ),
-        speaker: {
-            name: speaker.name,
-            company: speaker.company,
-            imageUrl: speaker.imageUrl,
-            talks: sessions.map((session) => session.title).filter(Boolean),
-        },
-    };
+  const base = `${environment.firebaseConfig.databaseURL}/devfest${environment.year}`;
+  const [speaker, schedule] = await Promise.all(
+    [`${base}/speakers/${encodeURIComponent(key)}.json`, `${base}/schedule.json`].map(
+      async (url) => {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Firebase responded with ${response.status}`);
+        return response.json();
+      },
+    ),
+  );
+  if (!speaker?.confirmed || !speaker.name) return null;
+  const sessions = Object.values<any>(schedule ?? {}).filter((session) =>
+    Object.values(session.speakers ?? {}).includes(key),
+  );
+  return {
+    // Matches the version speaker pages put in the URL (speaker-full.component.ts).
+    version: Math.max(speaker.updatedAt ?? 0, ...sessions.map((session) => session.updatedAt ?? 0)),
+    speaker: {
+      name: speaker.name,
+      company: speaker.company,
+      imageUrl: speaker.imageUrl,
+      talks: sessions.map((session) => session.title).filter(Boolean),
+    },
+  };
 }
 
 app.get('/og/speakers/:file', async (req, res) => {
-    const key = req.params.file.match(/^([A-Za-z0-9_-]{1,40})\.png$/)?.[1];
-    if (!key) {
+  const key = req.params.file.match(/^([A-Za-z0-9_-]{1,40})\.png$/)?.[1];
+  if (!key) {
+    res.status(404).end();
+    return;
+  }
+  try {
+    const requested = String(req.query['v'] ?? '');
+    let card = cards.get(key);
+    if (!card || String(card.version) !== requested) {
+      const data = await speakerCardData(key);
+      if (!data) {
+        cards.delete(key);
         res.status(404).end();
         return;
+      }
+      if (!card || card.version !== data.version) {
+        if (cards.size >= 200) cards.clear();
+        card = { version: data.version, png: renderSpeakerCard(data.speaker, imagesFolder) };
+        cards.set(key, card);
+      }
     }
-    try {
-        const requested = String(req.query['v'] ?? '');
-        let card = cards.get(key);
-        if (!card || String(card.version) !== requested) {
-            const data = await speakerCardData(key);
-            if (!data) {
-                cards.delete(key);
-                res.status(404).end();
-                return;
-            }
-            if (!card || card.version !== data.version) {
-                if (cards.size >= 200) cards.clear();
-                card = { version: data.version, png: renderSpeakerCard(data.speaker, imagesFolder) };
-                cards.set(key, card);
-            }
-        }
-        const png = await card.png;
-        // Long caching only for the current version's URL; anything else may change.
-        res.set(
-            'Cache-Control',
-            String(card.version) === requested ? 'public, max-age=86400' : 'public, max-age=600'
-        );
-        res.type('image/png').send(Buffer.from(png));
-    } catch (error) {
-        cards.delete(key);
-        console.error('Error rendering speaker card:', error);
-        res.status(500).end();
-    }
+    const png = await card.png;
+    // Long caching only for the current version's URL; anything else may change.
+    res.set(
+      'Cache-Control',
+      String(card.version) === requested ? 'public, max-age=86400' : 'public, max-age=600',
+    );
+    res.type('image/png').send(Buffer.from(png));
+  } catch (error) {
+    cards.delete(key);
+    console.error('Error rendering speaker card:', error);
+    res.status(500).end();
+  }
 });
 
 /**
@@ -321,44 +324,44 @@ app.get('/og/speakers/:file', async (req, res) => {
  * deploy, so the list is built once per server.
  */
 interface GalleryPhoto {
-    url: string;
-    thumbnail: string;
-    year: string;
+  url: string;
+  thumbnail: string;
+  year: string;
 }
 let galleryPhotos: Promise<GalleryPhoto[]> | undefined;
 
 async function listGalleryPhotos(): Promise<GalleryPhoto[]> {
-    const years = await fs.readdir(join(imagesFolder, 'gallery'));
-    const perYear = await Promise.all(
-        years.map(async (year) => {
-            const files = await fs.readdir(join(imagesFolder, 'gallery', year));
-            const thumbs = new Set(
-                await fs.readdir(join(imagesFolder, 'gallery-thumbs', year)).catch(() => [])
-            );
-            return files.map((file) => {
-                const thumb = file.replace(/\.[^.]+$/, '.webp');
-                const url = `/a/images/gallery/${year}/${file}`;
-                return {
-                    url,
-                    thumbnail: thumbs.has(thumb) ? `/a/images/gallery-thumbs/${year}/${thumb}` : url,
-                    year,
-                };
-            });
-        })
-    );
-    return perYear.flat();
+  const years = await fs.readdir(join(imagesFolder, 'gallery'));
+  const perYear = await Promise.all(
+    years.map(async (year) => {
+      const files = await fs.readdir(join(imagesFolder, 'gallery', year));
+      const thumbs = new Set(
+        await fs.readdir(join(imagesFolder, 'gallery-thumbs', year)).catch(() => []),
+      );
+      return files.map((file) => {
+        const thumb = file.replace(/\.[^.]+$/, '.webp');
+        const url = `/a/images/gallery/${year}/${file}`;
+        return {
+          url,
+          thumbnail: thumbs.has(thumb) ? `/a/images/gallery-thumbs/${year}/${thumb}` : url,
+          year,
+        };
+      });
+    }),
+  );
+  return perYear.flat();
 }
 
 app.get('/api/gallery', async (req, res) => {
-    try {
-        galleryPhotos ??= listGalleryPhotos();
-        res.set('Cache-Control', 'public, max-age=3600');
-        res.json(await galleryPhotos);
-    } catch (error) {
-        galleryPhotos = undefined;
-        console.error('Error listing gallery photos:', error);
-        res.status(500).json({ error: 'Unable to load the photo gallery' });
-    }
+  try {
+    galleryPhotos ??= listGalleryPhotos();
+    res.set('Cache-Control', 'public, max-age=3600');
+    res.json(await galleryPhotos);
+  } catch (error) {
+    galleryPhotos = undefined;
+    console.error('Error listing gallery photos:', error);
+    res.status(500).json({ error: 'Unable to load the photo gallery' });
+  }
 });
 
 /**
@@ -377,15 +380,15 @@ app.get('/api/gallery', async (req, res) => {
  * the two is the ticket price actually paid.
  */
 function ticketPrice({ costs }: EventbriteOrder) {
-    const value = (cost: { major_value: string }) => Number(cost.major_value);
-    return Math.min(value(costs.base_price), value(costs.gross) - value(costs.tax));
+  const value = (cost: { major_value: string }) => Number(cost.major_value);
+  return Math.min(value(costs.base_price), value(costs.gross) - value(costs.tax));
 }
 
 interface EventbriteOrder {
-    created: string;
-    status: string;
-    costs: Record<'base_price' | 'gross' | 'tax', { major_value: string }>;
-    attendees: { refunded: boolean; cancelled: boolean }[];
+  created: string;
+  status: string;
+  costs: Record<'base_price' | 'gross' | 'tax', { major_value: string }>;
+  attendees: { refunded: boolean; cancelled: boolean }[];
 }
 
 /**
@@ -395,92 +398,92 @@ interface EventbriteOrder {
 const burndownLimit = { windowMs: 60_000, max: 5, recent: [] as number[] };
 
 app.post('/api/admin/burndown/update', async (req, res) => {
-    try {
-        const now = Date.now();
-        burndownLimit.recent = burndownLimit.recent.filter((t) => now - t < burndownLimit.windowMs);
-        if (burndownLimit.recent.length >= burndownLimit.max) {
-            res.set('Retry-After', String(Math.ceil(burndownLimit.windowMs / 1000)));
-            res.status(429).json({ error: 'Too many updates, try again in a minute' });
-            return;
-        }
-        burndownLimit.recent.push(now);
-
-        const idToken = req.headers.authorization?.match(/^Bearer ([\w.-]+)$/)?.[1];
-        if (!idToken) {
-            res.status(401).json({ error: 'Sign in first' });
-            return;
-        }
-        // The REST API only accepts Firebase ID tokens as ?auth=, not in a header. This request
-        // goes straight to Firebase over HTTPS and its URL is never logged here.
-        const db = (path: string, init?: RequestInit) =>
-            fetch(
-                `${environment.firebaseConfig.databaseURL}/${path}.json?auth=${encodeURIComponent(idToken)}`,
-                init
-            );
-
-        // Only admins can read /admin, so this doubles as the permission check.
-        if ((await db('admin')).status !== 200) {
-            res.status(403).json({ error: 'Only admins can update the burndown' });
-            return;
-        }
-
-        if (!process.env['EVENTBRITE_TOKEN']) {
-            try {
-                process.loadEnvFile();
-            } catch {}
-        }
-        const ebToken = process.env['EVENTBRITE_TOKEN'];
-        if (!ebToken) {
-            res.status(500).json({ error: 'EVENTBRITE_TOKEN is not configured' });
-            return;
-        }
-
-        const orders: { day: string; time: string; tickets: number; price: number }[] = [];
-        let continuation = '';
-        do {
-            const response = await fetch(
-                `https://www.eventbriteapi.com/v3/events/${environment.eventbriteEventId}/orders/` +
-                    `?expand=attendees${continuation ? `&continuation=${continuation}` : ''}`,
-                { headers: { Authorization: `Bearer ${ebToken}` } }
-            );
-            if (!response.ok) {
-                throw new Error(`Eventbrite responded with ${response.status}: ${await response.text()}`);
-            }
-            const page: {
-                orders: EventbriteOrder[];
-                pagination: { has_more_items: boolean; continuation?: string };
-            } = await response.json();
-            for (const order of page.orders) {
-                const tickets = order.attendees.filter((a) => !a.refunded && !a.cancelled).length;
-                if (order.status !== 'placed' || !tickets) continue;
-                // Partly refunded orders keep the price of the tickets that are left.
-                const price = (ticketPrice(order) * tickets) / order.attendees.length;
-                // TZ is America/Chicago (set above), so local date parts are Central time.
-                const created = new Date(order.created);
-                orders.push({
-                    day: created.toLocaleDateString('en-CA'),
-                    time: created.toTimeString().slice(0, 5),
-                    tickets,
-                    price: Math.round(price * 100) / 100,
-                });
-            }
-            continuation = page.pagination.has_more_items ? (page.pagination.continuation ?? '') : '';
-        } while (continuation);
-        orders.sort((a, b) => `${a.day} ${a.time}`.localeCompare(`${b.day} ${b.time}`));
-
-        const updatedAt = new Date().toISOString();
-        const write = await db(`burndown/${environment.year}`, {
-            method: 'PATCH',
-            body: JSON.stringify({ orders, updatedAt, eventDate: environment.eventDate }),
-        });
-        if (!write.ok) {
-            throw new Error(`Firebase responded with ${write.status}: ${await write.text()}`);
-        }
-        res.json({ orders: orders.length, updatedAt });
-    } catch (error) {
-        console.error('Error updating burndown:', error);
-        res.status(502).json({ error: 'Unable to update from Eventbrite' });
+  try {
+    const now = Date.now();
+    burndownLimit.recent = burndownLimit.recent.filter((t) => now - t < burndownLimit.windowMs);
+    if (burndownLimit.recent.length >= burndownLimit.max) {
+      res.set('Retry-After', String(Math.ceil(burndownLimit.windowMs / 1000)));
+      res.status(429).json({ error: 'Too many updates, try again in a minute' });
+      return;
     }
+    burndownLimit.recent.push(now);
+
+    const idToken = req.headers.authorization?.match(/^Bearer ([\w.-]+)$/)?.[1];
+    if (!idToken) {
+      res.status(401).json({ error: 'Sign in first' });
+      return;
+    }
+    // The REST API only accepts Firebase ID tokens as ?auth=, not in a header. This request
+    // goes straight to Firebase over HTTPS and its URL is never logged here.
+    const db = (path: string, init?: RequestInit) =>
+      fetch(
+        `${environment.firebaseConfig.databaseURL}/${path}.json?auth=${encodeURIComponent(idToken)}`,
+        init,
+      );
+
+    // Only admins can read /admin, so this doubles as the permission check.
+    if ((await db('admin')).status !== 200) {
+      res.status(403).json({ error: 'Only admins can update the burndown' });
+      return;
+    }
+
+    if (!process.env['EVENTBRITE_TOKEN']) {
+      try {
+        process.loadEnvFile();
+      } catch {}
+    }
+    const ebToken = process.env['EVENTBRITE_TOKEN'];
+    if (!ebToken) {
+      res.status(500).json({ error: 'EVENTBRITE_TOKEN is not configured' });
+      return;
+    }
+
+    const orders: { day: string; time: string; tickets: number; price: number }[] = [];
+    let continuation = '';
+    do {
+      const response = await fetch(
+        `https://www.eventbriteapi.com/v3/events/${environment.eventbriteEventId}/orders/` +
+          `?expand=attendees${continuation ? `&continuation=${continuation}` : ''}`,
+        { headers: { Authorization: `Bearer ${ebToken}` } },
+      );
+      if (!response.ok) {
+        throw new Error(`Eventbrite responded with ${response.status}: ${await response.text()}`);
+      }
+      const page: {
+        orders: EventbriteOrder[];
+        pagination: { has_more_items: boolean; continuation?: string };
+      } = await response.json();
+      for (const order of page.orders) {
+        const tickets = order.attendees.filter((a) => !a.refunded && !a.cancelled).length;
+        if (order.status !== 'placed' || !tickets) continue;
+        // Partly refunded orders keep the price of the tickets that are left.
+        const price = (ticketPrice(order) * tickets) / order.attendees.length;
+        // TZ is America/Chicago (set above), so local date parts are Central time.
+        const created = new Date(order.created);
+        orders.push({
+          day: created.toLocaleDateString('en-CA'),
+          time: created.toTimeString().slice(0, 5),
+          tickets,
+          price: Math.round(price * 100) / 100,
+        });
+      }
+      continuation = page.pagination.has_more_items ? (page.pagination.continuation ?? '') : '';
+    } while (continuation);
+    orders.sort((a, b) => `${a.day} ${a.time}`.localeCompare(`${b.day} ${b.time}`));
+
+    const updatedAt = new Date().toISOString();
+    const write = await db(`burndown/${environment.year}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ orders, updatedAt, eventDate: environment.eventDate }),
+    });
+    if (!write.ok) {
+      throw new Error(`Firebase responded with ${write.status}: ${await write.text()}`);
+    }
+    res.json({ orders: orders.length, updatedAt });
+  } catch (error) {
+    console.error('Error updating burndown:', error);
+    res.status(502).json({ error: 'Unable to update from Eventbrite' });
+  }
 });
 
 addVisitAnalytics(app);
@@ -492,26 +495,26 @@ addVisitAnalytics(app);
  */
 const hashedFile = /-[\w-]{8}\.(?:js|css)(?:\.map)?$/;
 app.use(
-    express.static(browserDistFolder, {
-        index: false,
-        redirect: false,
-        setHeaders: (res, path) => {
-            res.setHeader(
-                'Cache-Control',
-                hashedFile.test(path) ? 'public, max-age=31536000, immutable' : 'public, max-age=3600'
-            );
-        },
-    })
+  express.static(browserDistFolder, {
+    index: false,
+    redirect: false,
+    setHeaders: (res, path) => {
+      res.setHeader(
+        'Cache-Control',
+        hashedFile.test(path) ? 'public, max-age=31536000, immutable' : 'public, max-age=3600',
+      );
+    },
+  }),
 );
 
 /**
  * Handle all other requests by rendering the Angular application.
  */
 app.use((req, res, next) => {
-    angularApp
-        .handle(req)
-        .then((response) => (response ? writeResponseToNodeResponse(response, res) : next()))
-        .catch(next);
+  angularApp
+    .handle(req)
+    .then((response) => (response ? writeResponseToNodeResponse(response, res) : next()))
+    .catch(next);
 });
 
 /**
@@ -519,15 +522,15 @@ app.use((req, res, next) => {
  * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
  */
 if (isMainModule(import.meta.url) || process.env['pm_id']) {
-    const port = process.env['PORT'] || 4000;
-    app.listen(port, (error) => {
-        if (error) {
-            throw error;
-        }
+  const port = process.env['PORT'] || 4000;
+  app.listen(port, (error) => {
+    if (error) {
+      throw error;
+    }
 
-        console.log(`Node.js version: ${process.version}`);
-        console.log(`Node Express server listening on http://localhost:${port}`);
-    });
+    console.log(`Node.js version: ${process.version}`);
+    console.log(`Node Express server listening on http://localhost:${port}`);
+  });
 }
 
 /**

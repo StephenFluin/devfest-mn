@@ -2,61 +2,61 @@ import { Component, computed, HostListener } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 
 interface Photo {
-    url: string;
-    thumbnail: string;
-    year: string;
+  url: string;
+  thumbnail: string;
+  year: string;
 }
 
 @Component({
-    selector: 'app-gallery',
-    imports: [],
-    template: `
-        <div class="gallery-container">
-            <h1>Photo Gallery</h1>
+  selector: 'app-gallery',
+  imports: [],
+  template: `
+    <div class="gallery-container">
+      <h1>Photo Gallery</h1>
 
-            @if (photoData.error()) {
-            <p class="gallery-error">The photo gallery couldn't be loaded. Please try again later.</p>
-            }
-            <div class="year-sections">
-                @for (yearGroup of photosByYear(); track yearGroup.year) {
-                <div class="year-section">
-                    <h2 class="year-header">{{ yearGroup.year }}</h2>
-                    <div class="photo-grid">
-                        @for (photo of yearGroup.photos; track photo.url) {
-                        <div class="photo-item" (click)="selectedPhoto = photo">
-                            <img
-                                [src]="photo.thumbnail"
-                                loading="lazy"
-                                alt="Gallery photo from {{ yearGroup.year }}"
-                                class="thumbnail"
-                            />
-                        </div>
-                        }
-                    </div>
+      @if (photoData.error()) {
+        <p class="gallery-error">The photo gallery couldn't be loaded. Please try again later.</p>
+      }
+      <div class="year-sections">
+        @for (yearGroup of photosByYear(); track yearGroup.year) {
+          <div class="year-section">
+            <h2 class="year-header">{{ yearGroup.year }}</h2>
+            <div class="photo-grid">
+              @for (photo of yearGroup.photos; track photo.url) {
+                <div class="photo-item" (click)="selectedPhoto = photo">
+                  <img
+                    [src]="photo.thumbnail"
+                    loading="lazy"
+                    alt="Gallery photo from {{ yearGroup.year }}"
+                    class="thumbnail"
+                  />
                 </div>
-                }
+              }
             </div>
+          </div>
+        }
+      </div>
 
-            <!-- Fullscreen Modal -->
-            @if (selectedPhoto) {
-            <div class="fullscreen-overlay" (click)="closeFullscreen()">
-                <div class="fullscreen-content" (click)="$event.stopPropagation()">
-                    <button class="close-button" (click)="closeFullscreen()">×</button>
-                    <img
-                        loading="lazy"
-                        [src]="selectedPhoto.url"
-                        alt="Gallery photo from {{ selectedPhoto.year }}"
-                        class="fullscreen-image"
-                    />
-                    <div class="photo-info">
-                        <h3>{{ selectedPhoto.year }}</h3>
-                    </div>
-                </div>
+      <!-- Fullscreen Modal -->
+      @if (selectedPhoto) {
+        <div class="fullscreen-overlay" (click)="closeFullscreen()">
+          <div class="fullscreen-content" (click)="$event.stopPropagation()">
+            <button class="close-button" (click)="closeFullscreen()">×</button>
+            <img
+              loading="lazy"
+              [src]="selectedPhoto.url"
+              alt="Gallery photo from {{ selectedPhoto.year }}"
+              class="fullscreen-image"
+            />
+            <div class="photo-info">
+              <h3>{{ selectedPhoto.year }}</h3>
             </div>
-            }
+          </div>
         </div>
-    `,
-    styles: `
+      }
+    </div>
+  `,
+  styles: `
     .gallery-container {
       padding: 2rem;
       max-width: 1200px;
@@ -107,7 +107,9 @@ interface Photo {
       cursor: pointer;
       border-radius: 8px;
       overflow: hidden;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
@@ -189,16 +191,16 @@ interface Photo {
       .gallery-container {
         padding: 1rem;
       }
-      
+
       .photo-grid {
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 1rem;
       }
-      
+
       .fullscreen-content {
         padding: 1rem;
       }
-      
+
       .close-button {
         top: -2rem;
         font-size: 2rem;
@@ -209,65 +211,68 @@ interface Photo {
   `,
 })
 export class GalleryComponent {
-    photoData = httpResource<Photo[]>(() => '/api/gallery');
-    photosByYear = computed(() => {
-        let photos = this.photoData.value();
-        if (!photos || photos.length === 0) {
-            return [];
+  photoData = httpResource<Photo[]>(() => '/api/gallery');
+  photosByYear = computed(() => {
+    let photos = this.photoData.value();
+    if (!photos || photos.length === 0) {
+      return [];
+    }
+    const photoGroups = photos.reduce(
+      (acc, photo) => {
+        const year = parseInt(photo.year);
+        if (!acc[year]) {
+          acc[year] = [];
         }
-        const photoGroups = photos.reduce((acc, photo) => {
-            const year = parseInt(photo.year);
-            if (!acc[year]) {
-                acc[year] = [];
-            }
-            acc[year].push(photo);
-            return acc;
-        }, {} as { [key: number]: Photo[] });
+        acc[year].push(photo);
+        return acc;
+      },
+      {} as { [key: number]: Photo[] },
+    );
 
-        // Convert to array format and sort by highest year first
-        let photosByYear = Object.entries(photoGroups)
-            .map(([year, photos]) => ({
-                year: parseInt(year),
-                photos: photos,
-            }))
-            .sort((a, b) => b.year - a.year);
-        return photosByYear;
-    });
+    // Convert to array format and sort by highest year first
+    let photosByYear = Object.entries(photoGroups)
+      .map(([year, photos]) => ({
+        year: parseInt(year),
+        photos: photos,
+      }))
+      .sort((a, b) => b.year - a.year);
+    return photosByYear;
+  });
 
-    selectedPhoto: Photo | null = null;
+  selectedPhoto: Photo | null = null;
 
-    closeFullscreen(): void {
-        this.selectedPhoto = null;
+  closeFullscreen(): void {
+    this.selectedPhoto = null;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.selectedPhoto) {
+      this.closeFullscreen();
     }
+  }
 
-    @HostListener('document:keydown.escape')
-    onEscapeKey(): void {
-        if (this.selectedPhoto) {
-            this.closeFullscreen();
-        }
-    }
+  @HostListener('document:keydown.arrowleft')
+  onLeftKey(): void {
+    this.navigate(-1);
+  }
 
-    @HostListener('document:keydown.arrowleft')
-    onLeftKey(): void {
-        this.navigate(-1);
-    }
+  @HostListener('document:keydown.arrowright')
+  onRightKey(): void {
+    this.navigate(1);
+  }
 
-    @HostListener('document:keydown.arrowright')
-    onRightKey(): void {
-        this.navigate(1);
+  navigate(offset: number): void {
+    if (!this.selectedPhoto) {
+      return;
     }
-
-    navigate(offset: number): void {
-        if (!this.selectedPhoto) {
-            return;
-        }
-        // Flatten in display order so navigation crosses year boundaries
-        const allPhotos = this.photosByYear().flatMap((group) => group.photos);
-        const index = allPhotos.findIndex((photo) => photo.url === this.selectedPhoto!.url);
-        if (index === -1) {
-            return;
-        }
-        const nextIndex = (index + offset + allPhotos.length) % allPhotos.length;
-        this.selectedPhoto = allPhotos[nextIndex];
+    // Flatten in display order so navigation crosses year boundaries
+    const allPhotos = this.photosByYear().flatMap((group) => group.photos);
+    const index = allPhotos.findIndex((photo) => photo.url === this.selectedPhoto!.url);
+    if (index === -1) {
+      return;
     }
+    const nextIndex = (index + offset + allPhotos.length) % allPhotos.length;
+    this.selectedPhoto = allPhotos[nextIndex];
+  }
 }

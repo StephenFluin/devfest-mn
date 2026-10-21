@@ -7,9 +7,11 @@
     </tr>
     @for (session of sessions(); track session.$key) {
       <tr>
-        <td> <a [routerLink]="['/admin/sessions',session.$key,'edit']">{{session.title}}</a></td>
-        <td>{{session.room}}</td>
-        <td>{{session.startTime}}</td>
+        <td>
+          <a [routerLink]="['/admin/sessions', session.$key, 'edit']">{{ session.title }}</a>
+        </td>
+        <td>{{ session.room }}</td>
+        <td>{{ session.startTime }}</td>
       </tr>
     }
   </table>

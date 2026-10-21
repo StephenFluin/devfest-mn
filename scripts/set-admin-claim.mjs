@@ -12,8 +12,8 @@ import { getAuth } from 'firebase-admin/auth';
 
 const [email, flag] = process.argv.slice(2);
 if (!email) {
-    console.error('Usage: node scripts/set-admin-claim.mjs <email> [--remove]');
-    process.exit(1);
+  console.error('Usage: node scripts/set-admin-claim.mjs <email> [--remove]');
+  process.exit(1);
 }
 
 initializeApp({ credential: applicationDefault(), projectId: 'devfestmn-2026' });
@@ -21,7 +21,7 @@ const auth = getAuth();
 const user = await auth.getUserByEmail(email);
 const { admin, ...otherClaims } = user.customClaims ?? {};
 await auth.setCustomUserClaims(
-    user.uid,
-    flag === '--remove' ? otherClaims : { ...otherClaims, admin: true }
+  user.uid,
+  flag === '--remove' ? otherClaims : { ...otherClaims, admin: true },
 );
 console.log(`${flag === '--remove' ? 'Removed' : 'Set'} admin claim for ${email} (${user.uid})`);

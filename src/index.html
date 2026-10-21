@@ -1,60 +1,67 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <title>DevFestMN 2026</title>
-        <base href="/" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="manifest" href="/a/webapp.manifest" />
-        <meta name="theme-color" content="#545d65" />
-        <link rel="icon" sizes="192x192" href="/a/icons/icon-192x192.png" />
-        <link
-            rel="preload"
-            href="/a/montserrat-latin-400-700.woff2"
-            as="font"
-            type="font/woff2"
-            crossorigin
-        />
+  <head>
+    <meta charset="utf-8" />
+    <title>DevFestMN 2026</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="manifest" href="/a/webapp.manifest" />
+    <meta name="theme-color" content="#545d65" />
+    <link rel="icon" sizes="192x192" href="/a/icons/icon-192x192.png" />
+    <link
+      rel="preload"
+      href="/a/montserrat-latin-400-700.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
 
-        <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="DevFestMN" />
-        <meta property="og:locale" content="en_US" />
-        <meta property="og:image" content="https://devfest.mn/a/images/og-image.jpg" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta
-            property="og:image:alt"
-            content="DevFestMN 2026, Saturday, December 5th, Twin Cities developer conference"
-        />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:image" content="https://devfest.mn/a/images/og-image.jpg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="DevFestMN" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:image" content="https://devfest.mn/a/images/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="DevFestMN 2026, Saturday, December 5th, Twin Cities developer conference"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://devfest.mn/a/images/og-image.jpg" />
 
-        <!--
+    <!--
             Google tag (gtag.js). Calls queue in dataLayer straight away, but the tag script only
             downloads once the page has loaded and the browser is idle. GA4 tracks
             SPA route changes itself via enhanced measurement.
         -->
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag() {
-                dataLayer.push(arguments);
-            }
-            gtag('js', new Date());
-            gtag('config', 'G-9DBPLX5XKT');
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'G-9DBPLX5XKT');
 
-            window.addEventListener('load', function () {
-                var idle = window.requestIdleCallback || function (cb) { setTimeout(cb, 1); };
-                idle(function () {
-                    var tag = document.createElement('script');
-                    tag.async = true;
-                    tag.src = 'https://www.googletagmanager.com/gtag/js?id=G-9DBPLX5XKT';
-                    document.head.appendChild(tag);
-                }, { timeout: 3000 });
-            });
-        </script>
-    </head>
+      window.addEventListener('load', function () {
+        var idle =
+          window.requestIdleCallback ||
+          function (cb) {
+            setTimeout(cb, 1);
+          };
+        idle(
+          function () {
+            var tag = document.createElement('script');
+            tag.async = true;
+            tag.src = 'https://www.googletagmanager.com/gtag/js?id=G-9DBPLX5XKT';
+            document.head.appendChild(tag);
+          },
+          { timeout: 3000 },
+        );
+      });
+    </script>
+  </head>
 
-    <body>
-        <app-root><div id="header-bar">DevFestMN</div></app-root>
-    </body>
+  <body>
+    <app-root><div id="header-bar">DevFestMN</div></app-root>
+  </body>
 </html>

@@ -12,10 +12,10 @@ const showFrom = new Date(`${environment.eventDate}T00:00:00${eventUtcOffset}`).
 const showUntil = showFrom + (1 + 1 + 3) * DAY;
 
 export function isDayOf(now = Date.now()) {
-    return now >= showFrom && now < showUntil;
+  return now >= showFrom && now < showUntil;
 }
 
 /** Whether to show day-of details, agreed between server and browser. */
 export function dayOf() {
-    return serverAgreedClock('dayOf', () => isDayOf(), false);
+  return serverAgreedClock('dayOf', () => isDayOf(), false);
 }

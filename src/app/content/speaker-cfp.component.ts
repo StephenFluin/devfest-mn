@@ -6,13 +6,13 @@ import { cfpCountdown, cfpState } from '../shared/cfp-deadline';
 import { trackCfpClick } from '../analytics.util';
 
 @Component({
-    selector: 'app-speaker-cfp',
-    templateUrl: './speaker-cfp.component.html',
-    imports: [ADirective, DatePipe],
+  selector: 'app-speaker-cfp',
+  templateUrl: './speaker-cfp.component.html',
+  imports: [ADirective, DatePipe],
 })
 export class SpeakerCfpComponent {
-    environment = environment;
-    countdown = cfpCountdown();
-    cfp = cfpState();
-    trackCfpClick = trackCfpClick;
+  environment = environment;
+  countdown = cfpCountdown();
+  cfp = cfpState();
+  trackCfpClick = trackCfpClick;
 }

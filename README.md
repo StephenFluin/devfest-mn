@@ -3,10 +3,10 @@
 This is the website for [DevFestMN](https://devfest.mn), the annual Twin Cities developer conference run by
 GDG Twin Cities. The site is how attendees, speakers, and sponsors find and take part in the event:
 
--   **Attendees** see the date, venue, schedule, and speakers, and buy tickets through Eventbrite.
--   **Speakers** read the call for papers and submit talks.
--   **Sponsors** learn about sponsorship and see who already supports the event.
--   **Organizers** use the admin pages to manage speakers, sessions, and the schedule, and to track ticket sales.
+- **Attendees** see the date, venue, schedule, and speakers, and buy tickets through Eventbrite.
+- **Speakers** read the call for papers and submit talks.
+- **Sponsors** learn about sponsorship and see who already supports the event.
+- **Organizers** use the admin pages to manage speakers, sessions, and the schedule, and to track ticket sales.
 
 Follow DevFestMN on [Bluesky](https://bsky.app/profile/devfestmn.bsky.social) and
 [Mastodon](https://developers.live/@devfestmn).
@@ -70,13 +70,13 @@ We keep the same codebase every year but move to a new Firebase project.
 Each past year stays online at `https://<year>.devfest.mn` (for example the `2025` branch and `2025-final` tag).
 Before the new year launches on https://devfest.mn, update the archive so search engines don't mix the two:
 
--   In the archive's `src/environments/environment.ts`, set `siteUrl` to `https://<year>.devfest.mn` and `year`
-    to the archived year. Canonical links, `og:url`, and `sitemap.xml` are all built from `siteUrl`, so pages
-    then point at the archive instead of claiming to be the current site.
--   Check that canonical links are absolute URLs on the subdomain, e.g. `https://2025.devfest.mn/speakers/…`,
-    not relative paths like `/2025/speakers/…` or `https://devfest.mn/…`.
--   Spot-check the deployed archive with `curl -s https://<year>.devfest.mn/sitemap.xml` and the canonical tag on
-    a speaker page.
+- In the archive's `src/environments/environment.ts`, set `siteUrl` to `https://<year>.devfest.mn` and `year`
+  to the archived year. Canonical links, `og:url`, and `sitemap.xml` are all built from `siteUrl`, so pages
+  then point at the archive instead of claiming to be the current site.
+- Check that canonical links are absolute URLs on the subdomain, e.g. `https://2025.devfest.mn/speakers/…`,
+  not relative paths like `/2025/speakers/…` or `https://devfest.mn/…`.
+- Spot-check the deployed archive with `curl -s https://<year>.devfest.mn/sitemap.xml` and the canonical tag on
+  a speaker page.
 
 If this is skipped, Google finds last year's speaker and session URLs on devfest.mn, where they don't exist, and
 reports them as duplicates in Search Console. (The current site now answers those with a 404, but the archive's
@@ -85,14 +85,14 @@ links should still be fixed.)
 Each archive lives on a `<year>` branch, cut from that year's `<year>-final` tag, and deploys to that year's
 Firebase project. Commit fixes to the branch, push it, then deploy:
 
--   **2025 and later (App Hosting):** roll out the branch to the year's backend, e.g.
+- **2025 and later (App Hosting):** roll out the branch to the year's backend, e.g.
 
-    ```bash
-    npx firebase apphosting:rollouts:create devfest-mn --git-branch 2025 --project devfestmn-2025
-    ```
+  ```bash
+  npx firebase apphosting:rollouts:create devfest-mn --git-branch 2025 --project devfestmn-2025
+  ```
 
--   **2024 (static Firebase Hosting):** install with Yarn (`yarn install --frozen-lockfile`), run `npx ng build`,
-    then from the branch checkout run `npx firebase deploy --only hosting --project devfestmn-2024`.
+- **2024 (static Firebase Hosting):** install with Yarn (`yarn install --frozen-lockfile`), run `npx ng build`,
+  then from the branch checkout run `npx firebase deploy --only hosting --project devfestmn-2024`.
 
 ## Photo gallery
 

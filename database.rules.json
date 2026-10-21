@@ -1,139 +1,139 @@
 {
-    "rules": {
-        "admin": {
-            ".read": "root.child('admin/'+auth.uid).exists()",
-            "$user_id": {
-                ".read": "$user_id === auth.uid",
-                ".write": "($user_id === auth.uid && newData.exists() && auth.token.email_verified === true && root.child('adminEmails/' + auth.token.email.toLowerCase().replace('.', ',')).exists()) || (root.child('admin/'+auth.uid).exists() && $user_id !== auth.uid && !newData.exists())",
-                ".validate": "!newData.exists() || newData.child('email').val() === auth.token.email"
-            }
-        },
-        "adminEmails": {
-            ".read": "root.child('admin/'+auth.uid).exists()",
-            "$email_key": {
-                ".read": "auth.token.email_verified === true && auth.token.email.toLowerCase().replace('.', ',') === $email_key",
-                ".write": "root.child('admin/'+auth.uid).exists()",
-                ".validate": "newData.hasChildren(['email', 'addedAt']) && newData.child('email').isString() && newData.child('email').val().toLowerCase().replace('.', ',') === $email_key",
-                "email": { ".validate": "newData.isString() && newData.val().length <= 254" },
-                "name": { ".validate": "newData.isString() && newData.val().length <= 100" },
-                "addedBy": { ".validate": "newData.isString() && newData.val().length <= 254" },
-                "addedAt": { ".validate": "newData.val() === now || newData.isNumber()" },
-                "$other": { ".validate": false }
-            }
-        },
-        "burndown": {
-            ".read": "root.child('admin/'+auth.uid).exists()",
-            ".write": "root.child('admin/'+auth.uid).exists()"
-        },
-        "analytics": {
-            ".read": "root.child('admin/'+auth.uid).exists()",
-            ".write": false
-        },
-        "users": {
-            "$user_id": {
-                ".read": "$user_id === auth.uid",
-                ".write": "$user_id === auth.uid"
-            }
-        },
-        "$year": {
-            "schedule": {
-                ".read": true,
-                ".indexOn": "title",
-                "$session_id": {
-                    ".write": "$year.matches(/^devfest[0-9]{4}$/) && (root.child('admin/'+auth.uid).exists() || root.child($year+'/volunteers/'+auth.uid).exists())"
-                }
-            },
-            "speakers": {
-                ".read": true,
-                ".indexOn": "name",
-                ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()"
-            },
-            "rooms": {
-                ".read": true,
-                ".indexOn": "order",
-                ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()",
-                "$room_id": {
-                    ".validate": "newData.hasChildren(['name'])",
-                    "name": {
-                        ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
-                    },
-                    "directions": {
-                        ".validate": "newData.isString() && newData.val().length <= 500"
-                    },
-                    "order": {
-                        ".validate": "newData.isNumber()"
-                    },
-                    "$other": {
-                        ".validate": false
-                    }
-                }
-            },
-            "agendas": {
-                "$user_id": {
-                    ".read": "$user_id === auth.uid",
-                    ".write": "$year.matches(/^devfest[0-9]{4}$/) && $user_id === auth.uid",
-                    "$session_id": {
-                        ".validate": "newData.hasChildren(['value']) && root.child($year+'/schedule/'+$session_id).exists()",
-                        "value": {
-                            ".validate": "newData.isBoolean()"
-                        },
-                        "$other": {
-                            ".validate": false
-                        }
-                    }
-                }
-            },
-            "feedback": {
-                ".read": "root.child('admin/'+auth.uid).exists()",
-                "$user_id": {
-                    ".read": "$user_id === auth.uid",
-                    ".write": "$year.matches(/^devfest[0-9]{4}$/) && $user_id === auth.uid",
-                    "$session_id": {
-                        ".validate": "newData.hasChildren() && root.child($year+'/schedule/'+$session_id).exists()",
-                        "speaker": {
-                            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5"
-                        },
-                        "content": {
-                            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5"
-                        },
-                        "recommendation": {
-                            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5"
-                        },
-                        "comment": {
-                            ".validate": "newData.isString() && newData.val().length < 2000"
-                        },
-                        "$other": {
-                            ".validate": false
-                        }
-                    }
-                }
-            },
-            "volunteers": {
-                ".read": "root.child('admin/'+auth.uid).exists()",
-                ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()",
-                "$user_id": {
-                    ".read": "$user_id === auth.uid",
-                    ".write": "$year.matches(/^devfest[0-9]{4}$/) && $user_id === auth.uid && newData.exists() && auth.token.email_verified === true && root.child($year + '/volunteerEmails/' + auth.token.email.toLowerCase().replace('.', ',')).exists()",
-                    ".validate": "!newData.exists() || root.child('admin/'+auth.uid).exists() || newData.child('email').val() === auth.token.email"
-                }
-            },
-            "volunteerEmails": {
-                ".read": "root.child('admin/'+auth.uid).exists()",
-                "$email_key": {
-                    ".read": "auth.token.email_verified === true && auth.token.email.toLowerCase().replace('.', ',') === $email_key",
-                    ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()",
-                    ".validate": "newData.hasChildren(['email', 'addedAt']) && newData.child('email').isString() && newData.child('email').val().toLowerCase().replace('.', ',') === $email_key",
-                    "email": { ".validate": "newData.isString() && newData.val().length <= 254" },
-                    "name": { ".validate": "newData.isString() && newData.val().length <= 100" },
-                    "addedBy": { ".validate": "newData.isString() && newData.val().length <= 254" },
-                    "addedAt": { ".validate": "newData.val() === now || newData.isNumber()" },
-                    "$other": { ".validate": false }
-                }
-            },
-            "adminNotes": {
-                ".read": "root.child('admin/'+auth.uid).exists()",
-                ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()"
-            }
+  "rules": {
+    "admin": {
+      ".read": "root.child('admin/'+auth.uid).exists()",
+      "$user_id": {
+        ".read": "$user_id === auth.uid",
+        ".write": "($user_id === auth.uid && newData.exists() && auth.token.email_verified === true && root.child('adminEmails/' + auth.token.email.toLowerCase().replace('.', ',')).exists()) || (root.child('admin/'+auth.uid).exists() && $user_id !== auth.uid && !newData.exists())",
+        ".validate": "!newData.exists() || newData.child('email').val() === auth.token.email"
+      }
+    },
+    "adminEmails": {
+      ".read": "root.child('admin/'+auth.uid).exists()",
+      "$email_key": {
+        ".read": "auth.token.email_verified === true && auth.token.email.toLowerCase().replace('.', ',') === $email_key",
+        ".write": "root.child('admin/'+auth.uid).exists()",
+        ".validate": "newData.hasChildren(['email', 'addedAt']) && newData.child('email').isString() && newData.child('email').val().toLowerCase().replace('.', ',') === $email_key",
+        "email": { ".validate": "newData.isString() && newData.val().length <= 254" },
+        "name": { ".validate": "newData.isString() && newData.val().length <= 100" },
+        "addedBy": { ".validate": "newData.isString() && newData.val().length <= 254" },
+        "addedAt": { ".validate": "newData.val() === now || newData.isNumber()" },
+        "$other": { ".validate": false }
+      }
+    },
+    "burndown": {
+      ".read": "root.child('admin/'+auth.uid).exists()",
+      ".write": "root.child('admin/'+auth.uid).exists()"
+    },
+    "analytics": {
+      ".read": "root.child('admin/'+auth.uid).exists()",
+      ".write": false
+    },
+    "users": {
+      "$user_id": {
+        ".read": "$user_id === auth.uid",
+        ".write": "$user_id === auth.uid"
+      }
+    },
+    "$year": {
+      "schedule": {
+        ".read": true,
+        ".indexOn": "title",
+        "$session_id": {
+          ".write": "$year.matches(/^devfest[0-9]{4}$/) && (root.child('admin/'+auth.uid).exists() || root.child($year+'/volunteers/'+auth.uid).exists())"
         }
+      },
+      "speakers": {
+        ".read": true,
+        ".indexOn": "name",
+        ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()"
+      },
+      "rooms": {
+        ".read": true,
+        ".indexOn": "order",
+        ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()",
+        "$room_id": {
+          ".validate": "newData.hasChildren(['name'])",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+          },
+          "directions": {
+            ".validate": "newData.isString() && newData.val().length <= 500"
+          },
+          "order": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "agendas": {
+        "$user_id": {
+          ".read": "$user_id === auth.uid",
+          ".write": "$year.matches(/^devfest[0-9]{4}$/) && $user_id === auth.uid",
+          "$session_id": {
+            ".validate": "newData.hasChildren(['value']) && root.child($year+'/schedule/'+$session_id).exists()",
+            "value": {
+              ".validate": "newData.isBoolean()"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
+      },
+      "feedback": {
+        ".read": "root.child('admin/'+auth.uid).exists()",
+        "$user_id": {
+          ".read": "$user_id === auth.uid",
+          ".write": "$year.matches(/^devfest[0-9]{4}$/) && $user_id === auth.uid",
+          "$session_id": {
+            ".validate": "newData.hasChildren() && root.child($year+'/schedule/'+$session_id).exists()",
+            "speaker": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5"
+            },
+            "content": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5"
+            },
+            "recommendation": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5"
+            },
+            "comment": {
+              ".validate": "newData.isString() && newData.val().length < 2000"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
+      },
+      "volunteers": {
+        ".read": "root.child('admin/'+auth.uid).exists()",
+        ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()",
+        "$user_id": {
+          ".read": "$user_id === auth.uid",
+          ".write": "$year.matches(/^devfest[0-9]{4}$/) && $user_id === auth.uid && newData.exists() && auth.token.email_verified === true && root.child($year + '/volunteerEmails/' + auth.token.email.toLowerCase().replace('.', ',')).exists()",
+          ".validate": "!newData.exists() || root.child('admin/'+auth.uid).exists() || newData.child('email').val() === auth.token.email"
+        }
+      },
+      "volunteerEmails": {
+        ".read": "root.child('admin/'+auth.uid).exists()",
+        "$email_key": {
+          ".read": "auth.token.email_verified === true && auth.token.email.toLowerCase().replace('.', ',') === $email_key",
+          ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()",
+          ".validate": "newData.hasChildren(['email', 'addedAt']) && newData.child('email').isString() && newData.child('email').val().toLowerCase().replace('.', ',') === $email_key",
+          "email": { ".validate": "newData.isString() && newData.val().length <= 254" },
+          "name": { ".validate": "newData.isString() && newData.val().length <= 100" },
+          "addedBy": { ".validate": "newData.isString() && newData.val().length <= 254" },
+          "addedAt": { ".validate": "newData.val() === now || newData.isNumber()" },
+          "$other": { ".validate": false }
+        }
+      },
+      "adminNotes": {
+        ".read": "root.child('admin/'+auth.uid).exists()",
+        ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()"
+      }
     }
+  }
 }

@@ -1,4 +1,12 @@
-import { afterNextRender, inject, makeStateKey, PLATFORM_ID, signal, Signal, TransferState } from '@angular/core';
+import {
+  afterNextRender,
+  inject,
+  makeStateKey,
+  PLATFORM_ID,
+  signal,
+  Signal,
+  TransferState,
+} from '@angular/core';
 import { isPlatformServer } from '@angular/common';
 
 /**
@@ -8,15 +16,15 @@ import { isPlatformServer } from '@angular/common';
  * prerendered at build time or the moment passed since. Must be called in an injection context.
  */
 export function serverAgreedClock<T>(key: string, compute: () => T, fallback: T): Signal<T> {
-    const transferState = inject(TransferState);
-    const stateKey = makeStateKey<T>(key);
-    const value = signal(fallback);
-    if (isPlatformServer(inject(PLATFORM_ID))) {
-        value.set(compute());
-        transferState.set(stateKey, value());
-    } else {
-        value.set(transferState.get(stateKey, fallback));
-        afterNextRender(() => value.set(compute()));
-    }
-    return value.asReadonly();
+  const transferState = inject(TransferState);
+  const stateKey = makeStateKey<T>(key);
+  const value = signal(fallback);
+  if (isPlatformServer(inject(PLATFORM_ID))) {
+    value.set(compute());
+    transferState.set(stateKey, value());
+  } else {
+    value.set(transferState.get(stateKey, fallback));
+    afterNextRender(() => value.set(compute()));
+  }
+  return value.asReadonly();
 }

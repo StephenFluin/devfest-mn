@@ -1,134 +1,134 @@
 {
-    "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-    "version": 1,
-    "newProjectRoot": "projects",
-    "projects": {
-        "devfestmn": {
-            "projectType": "application",
-            "schematics": {
-                "@schematics/angular:component": {
-                    "style": "scss",
-                    "inlineStyle": true,
-                    "inlineTemplate": true,
-                    "skipTests": true
-                }
-            },
-            "root": "",
-            "sourceRoot": "src",
-            "prefix": "app",
-            "architect": {
-                "build": {
-                    "builder": "@angular/build:application",
-                    "options": {
-                        "outputPath": "dist",
-                        "index": "src/index.html",
-                        "browser": "src/main.ts",
-                        "polyfills": [],
-                        "tsConfig": "tsconfig.app.json",
-                        "inlineStyleLanguage": "scss",
-                        "assets": ["src/favicon.ico", "src/robots.txt", "src/a"],
-                        "styles": [
-                            "src/styles.scss",
-                            {
-                                "input": "src/admin.scss",
-                                "bundleName": "material-theme",
-                                "inject": false
-                            }
-                        ],
-                        "scripts": [],
-                        "server": "src/main.server.ts",
-                        "ssr": {
-                            "entry": "src/server.ts"
-                        },
-                        "loader": {
-                            ".wasm": "binary",
-                            ".woff": "binary"
-                        },
-                        "namedChunks": true,
-                        "sourceMap": true,
-                        "outputMode": "server",
-                        "security": {
-                            "allowedHosts": [
-                                "devfest.mn",
-                                "www.devfest.mn",
-                                "devfestmn-2026-webapp--devfestmn-2026.us-central1.hosted.app",
-                                "localhost"
-                            ]
-                        }
-                    },
-                    "configurations": {
-                        "production": {
-                            "budgets": [
-                                {
-                                    "type": "initial",
-                                    "maximumWarning": "500kb",
-                                    "maximumError": "1500kb"
-                                },
-                                {
-                                    "type": "anyComponentStyle",
-                                    "maximumWarning": "2kb",
-                                    "maximumError": "4kb"
-                                }
-                            ],
-                            "outputHashing": "all"
-                        },
-                        "development": {
-                            "optimization": false,
-                            "extractLicenses": false,
-                            "namedChunks": true,
-                            "sourceMap": true
-                        }
-                    },
-                    "defaultConfiguration": "production"
-                },
-                "serve": {
-                    "builder": "@angular/build:dev-server",
-                    "configurations": {
-                        "production": {
-                            "buildTarget": "devfestmn:build:production"
-                        },
-                        "development": {
-                            "buildTarget": "devfestmn:build:development"
-                        }
-                    },
-                    "defaultConfiguration": "development"
-                },
-                "extract-i18n": {
-                    "builder": "@angular/build:extract-i18n",
-                    "options": {
-                        "buildTarget": "devfestmn:build"
-                    }
-                }
-            }
-        }
-    },
-    "cli": {
-        "analytics": "ef0ce6e0-8775-42b4-8136-01e1b1f35616"
-    },
-    "schematics": {
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "devfestmn": {
+      "projectType": "application",
+      "schematics": {
         "@schematics/angular:component": {
-            "type": "component"
-        },
-        "@schematics/angular:directive": {
-            "type": "directive"
-        },
-        "@schematics/angular:service": {
-            "type": "service"
-        },
-        "@schematics/angular:guard": {
-            "typeSeparator": "."
-        },
-        "@schematics/angular:interceptor": {
-            "typeSeparator": "."
-        },
-        "@schematics/angular:module": {
-            "typeSeparator": "."
-        },
-        "@schematics/angular:pipe": {
-            "typeSeparator": "."
-        },
-        "@schematics/angular:resolver": {
-            "typeSeparator": "."
+          "style": "scss",
+          "inlineStyle": true,
+          "inlineTemplate": true,
+          "skipTests": true
         }
+      },
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "dist",
+            "index": "src/index.html",
+            "browser": "src/main.ts",
+            "polyfills": [],
+            "tsConfig": "tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": ["src/favicon.ico", "src/robots.txt", "src/a"],
+            "styles": [
+              "src/styles.scss",
+              {
+                "input": "src/admin.scss",
+                "bundleName": "material-theme",
+                "inject": false
+              }
+            ],
+            "scripts": [],
+            "server": "src/main.server.ts",
+            "ssr": {
+              "entry": "src/server.ts"
+            },
+            "loader": {
+              ".wasm": "binary",
+              ".woff": "binary"
+            },
+            "namedChunks": true,
+            "sourceMap": true,
+            "outputMode": "server",
+            "security": {
+              "allowedHosts": [
+                "devfest.mn",
+                "www.devfest.mn",
+                "devfestmn-2026-webapp--devfestmn-2026.us-central1.hosted.app",
+                "localhost"
+              ]
+            }
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1500kb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "namedChunks": true,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "devfestmn:build:production"
+            },
+            "development": {
+              "buildTarget": "devfestmn:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+          "builder": "@angular/build:extract-i18n",
+          "options": {
+            "buildTarget": "devfestmn:build"
+          }
+        }
+      }
     }
+  },
+  "cli": {
+    "analytics": "ef0ce6e0-8775-42b4-8136-01e1b1f35616"
+  },
+  "schematics": {
+    "@schematics/angular:component": {
+      "type": "component"
+    },
+    "@schematics/angular:directive": {
+      "type": "directive"
+    },
+    "@schematics/angular:service": {
+      "type": "service"
+    },
+    "@schematics/angular:guard": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:interceptor": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:module": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:pipe": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:resolver": {
+      "typeSeparator": "."
+    }
+  }
 }

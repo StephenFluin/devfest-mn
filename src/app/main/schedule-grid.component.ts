@@ -8,21 +8,15 @@ import { RouterLink } from '@angular/router';
 import { JsonPipe, KeyValuePipe } from '@angular/common';
 
 @Component({
-    selector: 'schedule-grid',
-    templateUrl: 'schedule-grid.component.html',
-    imports: [
-    RouterLink,
-    MatButtonModule,
-    JsonPipe,
-    KeyValuePipe,
-    GetSpeakerPipe
-]
+  selector: 'schedule-grid',
+  templateUrl: 'schedule-grid.component.html',
+  imports: [RouterLink, MatButtonModule, JsonPipe, KeyValuePipe, GetSpeakerPipe],
 })
 export class ScheduleGridComponent {
-    slugify = slugify;
-    ds = inject(DataService);
-    auth = inject(AuthService);
+  slugify = slugify;
+  ds = inject(DataService);
+  auth = inject(AuthService);
 
-    readonly data = input(undefined);
-    readonly forceMobile = input<boolean>(undefined);
+  readonly data = input(undefined);
+  readonly forceMobile = input<boolean>(undefined);
 }

@@ -1,43 +1,40 @@
 <section>
-    <div class="callout">Current Schedule</div>
-    <p class="schedule-announcement">
-        Schedule times and rooms will be updated often. <br />This page will be the most current and
-        accurate.
-    </p>
+  <div class="callout">Current Schedule</div>
+  <p class="schedule-announcement">
+    Schedule times and rooms will be updated often. <br />This page will be the most current and
+    accurate.
+  </p>
 
-    <div class="button-container" style="margin: 40px 0; line-height: 40px">
-        <button
-            type="button"
-            (click)="showAgenda.set(true)"
-            [class.cta-unselected]="!showAgenda()"
-            [attr.aria-pressed]="showAgenda()"
-            class="cta"
-            style="border: 1px solid #19a9e5"
-        >
-            My Agenda
-        </button>
-        <button
-            type="button"
-            (click)="showAgenda.set(false)"
-            [class.cta-unselected]="showAgenda()"
-            [attr.aria-pressed]="!showAgenda()"
-            class="cta"
-            style="border: 1px solid #19a9e5; white-space: nowrap"
-        >
-            Full Schedule
-        </button>
-    </div>
-    @if (showAgenda() && !agenda.keys().size) {
+  <div class="button-container" style="margin: 40px 0; line-height: 40px">
+    <button
+      type="button"
+      (click)="showAgenda.set(true)"
+      [class.cta-unselected]="!showAgenda()"
+      [attr.aria-pressed]="showAgenda()"
+      class="cta"
+      style="border: 1px solid #19a9e5"
+    >
+      My Agenda
+    </button>
+    <button
+      type="button"
+      (click)="showAgenda.set(false)"
+      [class.cta-unselected]="showAgenda()"
+      [attr.aria-pressed]="!showAgenda()"
+      class="cta"
+      style="border: 1px solid #19a9e5; white-space: nowrap"
+    >
+      Full Schedule
+    </button>
+  </div>
+  @if (showAgenda() && !agenda.keys().size) {
     <p class="schedule-announcement">
-        Your agenda is empty. Open a session and choose <strong>Add to My Agenda</strong> to save
-        it here.
+      Your agenda is empty. Open a session and choose <strong>Add to My Agenda</strong> to save it
+      here.
     </p>
-    }
-    <schedule-grid
-        [data]="data()"
-        [forceMobile]="showAgenda()"
-    ></schedule-grid>
-    @if (authService.isAdmin()) {
+  }
+  <schedule-grid [data]="data()" [forceMobile]="showAgenda()"></schedule-grid>
+  @if (authService.isAdmin()) {
     <button mat-raised-button color="primary" (click)="addSession()">Add Session</button>
-    }
+  }
 </section>
