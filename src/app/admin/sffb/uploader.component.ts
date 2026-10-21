@@ -11,7 +11,7 @@ export interface Image {
 }
 
 @Component({
-  selector: 'sffb-uploader',
+  selector: 'app-sffb-uploader',
   template: `
     <div class="actions">
       <label class="upload" [class.busy]="uploading()">

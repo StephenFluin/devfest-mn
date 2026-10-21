@@ -8,7 +8,7 @@ import { RouterLink } from '@angular/router';
 import { JsonPipe, KeyValuePipe } from '@angular/common';
 
 @Component({
-  selector: 'schedule-grid',
+  selector: 'app-schedule-grid',
   templateUrl: 'schedule-grid.component.html',
   imports: [RouterLink, MatButtonModule, JsonPipe, KeyValuePipe, GetSpeakerPipe],
 })

@@ -13,7 +13,7 @@ import { EmailInvitesComponent } from './email-invites.component';
         </p>
       </div>
     </div>
-    <email-invites
+    <app-email-invites
       [invitesPath]="'devfest' + year + '/volunteerEmails'"
       [recordsPath]="'devfest' + year + '/volunteers'"
       noun="volunteer"

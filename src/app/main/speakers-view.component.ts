@@ -17,7 +17,7 @@ import { environment } from '../../environments/environment';
           <a routerLink="/past">past DevFestMN</a>.
         </p>
       } @else {
-        <speaker-full [speaker]="speaker()" [year]="environment.year"></speaker-full>
+        <app-speaker-full [speaker]="speaker()" [year]="environment.year"></app-speaker-full>
       }
     </section>
   `,

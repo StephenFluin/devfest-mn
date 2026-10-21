@@ -1,14 +1,14 @@
 @if (auth.uid() && environment.showFeedback) {
   <div>
     <div>How would you rate this speaker?</div>
-    <star-bar (newSelection)="saveSpeaker($event)" [selected]="feedback().speaker"></star-bar>
+    <app-star-bar (newSelection)="saveSpeaker($event)" [selected]="feedback().speaker"></app-star-bar>
     <div>How would you rate the content?</div>
-    <star-bar (newSelection)="saveContent($event)" [selected]="feedback().content"></star-bar>
+    <app-star-bar (newSelection)="saveContent($event)" [selected]="feedback().content"></app-star-bar>
     <div>Would you recommend this session?</div>
-    <star-bar
+    <app-star-bar
       (newSelection)="saveRecommendation($event)"
       [selected]="feedback().recommendation"
-    ></star-bar>
+    ></app-star-bar>
     <div>Comments</div>
     <input
       #feedbackComment

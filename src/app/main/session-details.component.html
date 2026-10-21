@@ -19,7 +19,7 @@
         <div class="speaker-list-container" style="margin-top: 16px; width: 325px">
           @for (speaker of session().speakers | keyvalue; track speaker) {
             <div>
-              <speaker-container [speaker]="speaker.value | getSpeaker"></speaker-container>
+              <app-speaker-container [speaker]="speaker.value | getSpeaker"></app-speaker-container>
             </div>
           }
         </div>
@@ -69,7 +69,7 @@
           @if (environment.showFeedback) {
             <div>
               <h3 style="margin-top: 32px">Provide Feedback</h3>
-              <user-feedback [session]="session()"></user-feedback>
+              <app-user-feedback [session]="session()"></app-user-feedback>
             </div>
           }
         } @else {

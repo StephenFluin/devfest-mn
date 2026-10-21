@@ -10,7 +10,7 @@ import { environment } from '../../environments/environment';
 
 /** Search the speakers and add them to a saved session. */
 @Component({
-  selector: 'speaker-selector',
+  selector: 'app-speaker-selector',
   template: `
     @if (session().$key) {
       <mat-form-field class="search">

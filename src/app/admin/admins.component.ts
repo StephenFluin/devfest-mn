@@ -12,7 +12,7 @@ import { EmailInvitesComponent } from './email-invites.component';
         </p>
       </div>
     </div>
-    <email-invites
+    <app-email-invites
       invitesPath="adminEmails"
       recordsPath="admin"
       noun="admin"

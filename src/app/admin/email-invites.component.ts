@@ -37,7 +37,7 @@ interface Row {
  * removes their invite and their record together.
  */
 @Component({
-  selector: 'email-invites',
+  selector: 'app-email-invites',
   template: `
     <form class="card add" (submit)="add($event)" autocomplete="off">
       <mat-form-field>
@@ -112,7 +112,7 @@ interface Row {
                   (click)="remove(row)"
                   [disabled]="(protectSelf() && row.isYou) || busy()"
                   [attr.aria-label]="'Remove ' + (row.email || 'this ' + noun())"
-                  [title]="protectSelf() && row.isYou ? 'You can\\'t remove yourself' : ''"
+                  [title]="protectSelf() && row.isYou ? 'You can’t remove yourself' : ''"
                 >
                   Remove
                 </button>

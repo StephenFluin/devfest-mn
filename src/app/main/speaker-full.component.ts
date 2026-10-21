@@ -15,7 +15,7 @@ import { conferenceEvent, sessionEvent } from '../shared/event-data';
 const absolute = (url: string) => (url.startsWith('/') ? `${environment.siteUrl}${url}` : url);
 
 @Component({
-  selector: 'speaker-full',
+  selector: 'app-speaker-full',
   templateUrl: 'speaker-full.component.html',
   imports: [RouterLink, ADirective],
 })

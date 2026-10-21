@@ -80,7 +80,7 @@
     <section class="card" aria-labelledby="photos-heading">
       <h3 id="photos-heading">Photos</h3>
       @if (speaker.$key) {
-        <sffb-uploader
+        <app-sffb-uploader
           [folder]="'devfest' + environment.year + '/speakers/' + speaker.$key"
           [current]="speaker.imageUrl"
           (selected)="speaker.imageUrl = $event"

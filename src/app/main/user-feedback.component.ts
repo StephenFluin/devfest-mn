@@ -9,7 +9,7 @@ import { StarBarComponent } from './star-bar.component';
 import { environment } from '../../environments/environment';
 
 @Component({
-  selector: 'user-feedback',
+  selector: 'app-user-feedback',
   templateUrl: 'user-feedback.component.html',
   imports: [StarBarComponent, MatButtonModule],
 })

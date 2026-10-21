@@ -10,7 +10,7 @@ import { UserFeedbackComponent } from './user-feedback.component';
   template: `
     <section>
       <div class="callout">{{ session()?.title }}</div>
-      <user-feedback [session]="session()"></user-feedback>
+      <app-user-feedback [session]="session()"></app-user-feedback>
     </section>
   `,
   imports: [UserFeedbackComponent],

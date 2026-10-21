@@ -16,7 +16,7 @@
   }
   <div class="speaker-list-container">
     @for (speaker of speakers(); track speaker.$key) {
-      <speaker-container [speaker]="speaker" [showEdit]="auth.isAdmin()"></speaker-container>
+      <app-speaker-container [speaker]="speaker" [showEdit]="auth.isAdmin()"></app-speaker-container>
     }
   </div>
   @if (auth.isAdmin()) {

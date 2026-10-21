@@ -13,7 +13,7 @@ import { environment } from '../../environments/environment';
 import { calendarEvent, googleCalendarUrl, icsPath } from '../shared/calendar';
 
 @Component({
-  selector: 'session-details',
+  selector: 'app-session-details',
   templateUrl: 'session-details.component.html',
   styles: `
     .add-to-calendar {

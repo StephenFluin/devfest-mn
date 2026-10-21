@@ -9,7 +9,7 @@ const mapsSearch = (query: string) =>
  * Getting to the venue: a map of the campus, where to park, and how to find the rooms once inside.
  */
 @Component({
-  selector: 'venue-info',
+  selector: 'app-venue-info',
   template: `
     <a
       id="map"

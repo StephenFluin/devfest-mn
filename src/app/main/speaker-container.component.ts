@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { slugify } from '../shared/slug';
 
 @Component({
-  selector: 'speaker-container',
+  selector: 'app-speaker-container',
   template: `
     @if (speaker()) {
       <div>

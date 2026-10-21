@@ -1,7 +1,7 @@
 import { Component, input, signal, output, computed } from '@angular/core';
 
 @Component({
-  selector: 'star-bar',
+  selector: 'app-star-bar',
   template: `
     @for (val of options; track val) {
       <span (click)="select(val)">

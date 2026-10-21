@@ -33,7 +33,7 @@
       here.
     </p>
   }
-  <schedule-grid [data]="data()" [forceMobile]="showAgenda()"></schedule-grid>
+  <app-schedule-grid [data]="data()" [forceMobile]="showAgenda()"></app-schedule-grid>
   @if (authService.isAdmin()) {
     <button mat-raised-button color="primary" (click)="addSession()">Add Session</button>
   }
