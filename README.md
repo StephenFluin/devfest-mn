@@ -177,3 +177,39 @@ Speakers are added in the admin (`/admin/speakers/new/edit`) and only appear pub
 4. In Google Search Console, submit `https://devfest.mn/sitemap.xml` (it replaces `sitemap.txt`, which still
    works) and request indexing for the new speaker pages. Each page's `lastmod` is when it was last saved in
    the admin.
+
+### Inviting speakers to edit their own profile
+
+On `/speakers`, admins can click **Invite Speaker** and enter a name and email. That creates an unconfirmed
+speaker and emails them a private link, `https://devfest.mn/speaker-edit/<token>/edit`.
+The token is random (not the speaker's database key, which is public), and anyone with the link can edit that
+one speaker's name, bio, company, links, and photo URL, but can't confirm, create, or delete speakers. The
+speaker editor shows the link again, with an **Email it again** button, for invited speakers.
+
+Email goes through [Resend](https://resend.com) from the server (`src/mailer.ts`, behind a small `Mailer`
+interface so the provider can be swapped). Setup, once:
+
+- Verify the `devfest.mn` domain in Resend, so it can send as `MAIL_FROM` in `apphosting.yaml`.
+- Store the API key as an App Hosting secret, and let the backend read it if the command doesn't offer to:
+
+```bash
+npx firebase apphosting:secrets:set resendApiKey
+```
+
+```bash
+npx firebase apphosting:secrets:grantaccess resendApiKey --backend devfestmn-2026-webapp
+```
+
+Locally, emails are printed to the server log instead of sent, unless `.env` has `RESEND_API_KEY` (and
+optionally `MAIL_FROM`). `MAIL_PROVIDER=console` or `MAIL_PROVIDER=resend` forces one or the other.
+
+The edit page signs visitors in with Firebase **anonymous auth**, and the database rules
+(`speakerInvites` and `speakerGrants` in `database.rules.json`) only let a signed-in user edit a speaker after
+presenting a valid token. So this needs:
+
+- Anonymous sign-in enabled in the Firebase console (Authentication → Sign-in method → Anonymous), once per
+  year's project.
+- The database rules deployed (see [How the site is built and deployed](#how-the-site-is-built-and-deployed)).
+
+To revoke a link, delete its entry under `devfest<year>/speakerInvites` in the Realtime Database console. Anyone
+who already opened it keeps access until you also delete their entry under `devfest<year>/speakerGrants`.

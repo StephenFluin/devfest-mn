@@ -75,6 +75,25 @@
           <span class="muted">Goes to their page, credited to them in the UTM funnel.</span>
         </p>
       }
+      @if (invites.hasValue()) {
+        @for (invite of invites.value(); track invite.$key) {
+          <p class="share">
+            <span class="muted">
+              Edit link for {{ invite.name }} &lt;{{ invite.email }}&gt;
+              @if (invite.emailedAt) {
+                (emailed {{ invite.emailedAt | date: 'short' }})
+              }
+            </span>
+            <a [href]="inviteLink(invite.$key)">{{ inviteLink(invite.$key) }}</a>
+            <span>
+              <button mat-button type="button" (click)="resendInvite(invite.$key)">
+                Email it again
+              </button>
+              {{ inviteStatus() }}
+            </span>
+          </p>
+        }
+      }
     </section>
 
     <section class="card" aria-labelledby="photos-heading">

@@ -58,6 +58,15 @@ export const MainRoutes: Routes = [
     },
   },
   {
+    // The private link emailed to an invited speaker; the token is the only credential.
+    path: 'speaker-edit/:token/edit',
+    loadComponent: () =>
+      import('./speaker-invite/speaker-invite-edit.component').then(
+        (m) => m.SpeakerInviteEditComponent,
+      ),
+    data: { title: 'Edit Your Speaker Profile' },
+  },
+  {
     path: '',
     pathMatch: 'prefix',
     children: [

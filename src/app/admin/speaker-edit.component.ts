@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, resource, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TextFieldModule } from '@angular/cdk/text-field';
@@ -8,10 +8,13 @@ import { UploaderComponent } from './sffb/uploader.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms';
+import { DatePipe } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { environment } from '../../environments/environment';
 import { slugify } from '../shared/slug';
+import { inviteLink, sendInviteEmail } from '../speaker-invite/invite-email';
+import { AuthService } from '../realtime-data/auth.service';
 
 @Component({
   templateUrl: './speaker-edit.component.html',
@@ -51,6 +54,7 @@ import { slugify } from '../shared/slug';
     MatCheckboxModule,
     MatButtonModule,
     UploaderComponent,
+    DatePipe,
   ],
 })
 export class SpeakerEditComponent {
@@ -71,6 +75,27 @@ export class SpeakerEditComponent {
     const item = this.ds.speakers().find((item) => item.$key === params.get('id'));
     return item && { ...item };
   });
+
+  auth = inject(AuthService);
+  inviteLink = inviteLink;
+  inviteStatus = signal('');
+
+  /** Invites sent to this speaker, whose links let them edit their own profile. */
+  invites = resource({
+    params: () => this.speakerData()?.$key,
+    loader: ({ params }) => this.ds.invitesFor(params),
+  });
+
+  async resendInvite(token: string) {
+    this.inviteStatus.set('Sending...');
+    try {
+      await sendInviteEmail(await this.auth.auth?.currentUser?.getIdToken(), token);
+      this.inviteStatus.set('Sent.');
+      this.invites.reload();
+    } catch (err) {
+      this.inviteStatus.set(err.message);
+    }
+  }
 
   save(speaker: Speaker, event: Event) {
     event.preventDefault();

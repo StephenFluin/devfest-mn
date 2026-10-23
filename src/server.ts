@@ -12,6 +12,8 @@ import { environment } from './environments/environment';
 import { slugify } from './app/shared/slug';
 import { addVisitAnalytics } from './visit-analytics';
 import { renderSpeakerCard } from './speaker-card';
+import { createMailer } from './mailer';
+import { INVITE_TOKEN, inviteEmail } from './app/speaker-invite/invite-email';
 import { calendarEvent, icsFile } from './app/shared/calendar';
 import { cfpStateAt } from './app/shared/cfp-deadline';
 import type { Session } from './app/shared/data.service';
@@ -486,6 +488,69 @@ app.post('/api/admin/burndown/update', async (req, res) => {
   } catch (error) {
     console.error('Error updating burndown:', error);
     res.status(502).json({ error: 'Unable to update from Eventbrite' });
+  }
+});
+
+/** Invites are sent one at a time by admins, so a small shared limit stops runaway sends. */
+const inviteLimit = { windowMs: 60_000, max: 10, recent: [] as number[] };
+
+/**
+ * Emails a speaker the edit link for an invite the admin already created at
+ * speakerInvites/<token>. Like the burndown update, the caller's ID token is passed through to
+ * the database, so the rules decide who may send (admins only).
+ */
+app.post('/api/admin/speaker-invites/:token/email', async (req, res) => {
+  try {
+    const now = Date.now();
+    inviteLimit.recent = inviteLimit.recent.filter((t) => now - t < inviteLimit.windowMs);
+    if (inviteLimit.recent.length >= inviteLimit.max) {
+      res.set('Retry-After', String(Math.ceil(inviteLimit.windowMs / 1000)));
+      res.status(429).json({ error: 'Too many invites, try again in a minute' });
+      return;
+    }
+    inviteLimit.recent.push(now);
+
+    const token = req.params.token;
+    const idToken = req.headers.authorization?.match(/^Bearer ([\w.-]+)$/)?.[1];
+    if (!idToken) {
+      res.status(401).json({ error: 'Sign in first' });
+      return;
+    }
+    if (!INVITE_TOKEN.test(token)) {
+      res.status(400).json({ error: 'Not an invite token' });
+      return;
+    }
+    const db = (path: string, init?: RequestInit) =>
+      fetch(
+        `${environment.firebaseConfig.databaseURL}/${path}.json?auth=${encodeURIComponent(idToken)}`,
+        init,
+      );
+
+    // Anyone may read a single invite, so check for an admin separately.
+    if ((await db('admin')).status !== 200) {
+      res.status(403).json({ error: 'Only admins can send invites' });
+      return;
+    }
+    const invitePath = `devfest${environment.year}/speakerInvites/${token}`;
+    const invite = await (await db(invitePath)).json();
+    if (!invite?.email) {
+      res.status(404).json({ error: 'No such invite' });
+      return;
+    }
+
+    await createMailer().send({
+      to: invite.email,
+      replyTo: environment.contactEmail,
+      ...inviteEmail(invite.name, token),
+    });
+    await db(invitePath, {
+      method: 'PATCH',
+      body: JSON.stringify({ emailedAt: { '.sv': 'timestamp' } }),
+    });
+    res.json({ sent: true });
+  } catch (error) {
+    console.error('Error emailing speaker invite:', error);
+    res.status(502).json({ error: 'Unable to send the invite email' });
   }
 });
 

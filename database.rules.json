@@ -46,7 +46,28 @@
       "speakers": {
         ".read": true,
         ".indexOn": "name",
-        ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()"
+        ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()",
+        "$speaker_id": {
+          ".write": "$year.matches(/^devfest[0-9]{4}$/) && data.exists() && newData.exists() && root.child($year+'/speakerGrants/'+auth.uid+'/speaker').val() === $speaker_id",
+          "confirmed": {
+            ".validate": "root.child('admin/'+auth.uid).exists() || newData.val() === data.val()"
+          }
+        }
+      },
+      "speakerInvites": {
+        ".read": "root.child('admin/'+auth.uid).exists()",
+        ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()",
+        ".indexOn": "speaker",
+        "$token": {
+          ".read": true
+        }
+      },
+      "speakerGrants": {
+        "$user_id": {
+          ".read": "$user_id === auth.uid",
+          ".write": "$year.matches(/^devfest[0-9]{4}$/) && $user_id === auth.uid",
+          ".validate": "newData.hasChildren(['token', 'speaker']) && newData.child('token').isString() && newData.child('token').val().matches(/^[A-Za-z0-9_-]{20,}$/) && root.child($year+'/speakerInvites/'+newData.child('token').val()+'/speaker').val() === newData.child('speaker').val()"
+        }
       },
       "rooms": {
         ".read": true,

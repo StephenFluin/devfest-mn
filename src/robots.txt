@@ -1,4 +1,5 @@
 User-agent: *
 Disallow: /admin
+Disallow: /speaker-edit
 
 Sitemap: https://devfest.mn/sitemap.xml

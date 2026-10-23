@@ -29,3 +29,14 @@ env:
     secret: eventbriteToken
     availability:
       - RUNTIME
+  # Resend API key used to email speaker invites (src/mailer.ts). Create it once with:
+  #   npx firebase apphosting:secrets:set resendApiKey
+  - variable: RESEND_API_KEY
+    secret: resendApiKey
+    availability:
+      - RUNTIME
+  # Must be on a domain verified in Resend.
+  - variable: MAIL_FROM
+    value: DevFestMN <info@devfest.mn>
+    availability:
+      - RUNTIME

@@ -1,5 +1,16 @@
 import { Injectable, computed, inject } from '@angular/core';
-import { ref, query, orderByChild, push, update, remove, serverTimestamp } from 'firebase/database';
+import {
+  ref,
+  query,
+  orderByChild,
+  push,
+  update,
+  remove,
+  set,
+  get,
+  equalTo,
+  serverTimestamp,
+} from 'firebase/database';
 import { environment } from '../../environments/environment';
 import { DATABASE, listResource } from '../realtime-data/firebase';
 
@@ -47,6 +58,21 @@ export interface Room {
   directions?: string;
   /** Schedule column order, lowest first. */
   order?: number;
+}
+
+/**
+ * Stored at speakerInvites/<token>. The token is the secret in the speaker's edit link, so it's
+ * random rather than the speaker's key, which is public in the speakers list.
+ */
+export interface SpeakerInvite {
+  $key?: string;
+  /** Key of the speaker this invite may edit. */
+  speaker: string;
+  name: string;
+  email: string;
+  createdAt?: number;
+  /** Server time (ms) the invite was last emailed. */
+  emailedAt?: number;
 }
 
 export interface Feedback {
@@ -223,6 +249,36 @@ export class DataService {
       .catch((err) => {
         console.error('Error deleting speaker from session', err);
       });
+  }
+
+  /** Creates an unconfirmed speaker plus an invite for them, and returns the invite's token. */
+  async inviteSpeaker(name: string, email: string): Promise<string> {
+    const speaker = this.save('speakers', { name, confirmed: false });
+    await speaker;
+    const bytes = crypto.getRandomValues(new Uint8Array(24));
+    const token = btoa(String.fromCharCode(...bytes))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    await set(this.ref(`speakerInvites/${token}`), {
+      speaker: speaker.key,
+      name,
+      email,
+      createdAt: serverTimestamp(),
+    });
+    return token;
+  }
+
+  /** Admin only: invites sent to a speaker, so their edit link can be found again. */
+  async invitesFor(speakerKey: string): Promise<SpeakerInvite[]> {
+    const snapshot = await get(
+      query(this.ref('speakerInvites'), orderByChild('speaker'), equalTo(speakerKey)),
+    );
+    const invites: SpeakerInvite[] = [];
+    snapshot.forEach((child) => {
+      invites.push({ ...child.val(), $key: child.key });
+    });
+    return invites;
   }
 
   ref(path: string) {

@@ -13,6 +13,31 @@
 
   @if (auth.isAdmin()) {
     <button mat-raised-button color="primary" (click)="addSpeaker()">Add Speaker</button>
+    <button mat-raised-button (click)="showInvite.set(!showInvite())">Invite Speaker</button>
+    @if (showInvite()) {
+      <form class="invite-form" (ngSubmit)="sendInvite()">
+        <p>
+          Creates an unconfirmed speaker and emails them a private link to edit their own profile.
+        </p>
+        <label>Name <input name="name" [(ngModel)]="inviteName" required /></label>
+        <label>Email <input name="email" type="email" [(ngModel)]="inviteEmail" required /></label>
+        <button mat-raised-button color="primary" type="submit" [disabled]="sending()">
+          Send Invite
+        </button>
+        <button mat-button type="button" (click)="showInvite.set(false)">Cancel</button>
+      </form>
+    }
+    @if (sent(); as sent) {
+      <p class="invite-sent">
+        @if (sent.error) {
+          Created {{ sent.name }}, but the email failed ({{ sent.error }}). Resend it from their
+          speaker editor, or send them the link yourself:
+        } @else {
+          Emailed {{ sent.name }} their edit link:
+        }
+        <a [href]="sent.link">{{ sent.link }}</a>
+      </p>
+    }
   }
   <div class="speaker-list-container">
     @for (speaker of speakers(); track speaker.$key) {
@@ -26,3 +51,22 @@
     <button mat-raised-button color="primary" (click)="addSpeaker()">Add Speaker</button>
   }
 </section>
+
+<style>
+  .invite-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    margin: 16px auto;
+    max-width: 640px;
+  }
+  .invite-form p {
+    flex-basis: 100%;
+    margin: 0;
+  }
+  .invite-sent {
+    word-break: break-all;
+  }
+</style>
