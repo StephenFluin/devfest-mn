@@ -183,7 +183,7 @@ Speakers are added in the admin (`/admin/speakers/new/edit`) and only appear pub
 On `/speakers`, admins can click **Invite Speaker** and enter a name and email. That creates an unconfirmed
 speaker and emails them a private link, `https://devfest.mn/speaker-edit/<token>/edit`.
 The token is random (not the speaker's database key, which is public), and anyone with the link can edit that
-one speaker's name, bio, company, links, and photo URL, but can't confirm, create, or delete speakers. The
+one speaker's name, bio, company, links, and photo, but can't confirm, create, or delete speakers. The
 speaker editor shows the link again, with an **Email it again** button, for invited speakers.
 
 Email goes through [Resend](https://resend.com) from the server (`src/mailer.ts`, behind a small `Mailer`
@@ -210,6 +210,18 @@ presenting a valid token. So this needs:
 - Anonymous sign-in enabled in the Firebase console (Authentication → Sign-in method → Anonymous), once per
   year's project.
 - The database rules deployed (see [How the site is built and deployed](#how-the-site-is-built-and-deployed)).
+
+Speakers upload their photo through the server (`POST /api/speaker-edit/<token>/photo`), because the Storage
+rules only let admins upload. The server checks the token and writes the file to
+`devfest<year>/speakers/<key>/` with its App Hosting service account, which needs permission to create objects
+in the bucket. If uploads fail with a Storage 403 in the App Hosting logs, grant it:
+
+```bash
+gcloud storage buckets add-iam-policy-binding gs://devfestmn-2026.firebasestorage.app --member=serviceAccount:firebase-app-hosting-compute@devfestmn-2026.iam.gserviceaccount.com --role=roles/storage.objectCreator
+```
+
+Locally there are no Google credentials, so to try uploads run the server with
+`FIREBASE_DATABASE_EMULATOR_HOST` and `FIREBASE_STORAGE_EMULATOR_HOST` pointing at the emulators.
 
 To revoke a link, delete its entry under `devfest<year>/speakerInvites` in the Realtime Database console. Anyone
 who already opened it keeps access until you also delete their entry under `devfest<year>/speakerGrants`.

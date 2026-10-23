@@ -1,5 +1,6 @@
 import express, { type Express } from 'express';
 import { environment } from './environments/environment';
+import { googleAccessToken } from './google-credentials';
 import { CAMPAIGN_FIELDS, ORDER_ID, SESSION_ID, VisitSession } from './app/shared/visit-session';
 import { UntypedJson } from './app/shared/untyped-json';
 
@@ -103,8 +104,11 @@ async function writeSession(sid: string, update: Partial<VisitSession>) {
     token = 'owner';
   } else {
     url = `${environment.firebaseConfig.databaseURL}/${path}`;
-    const access = await accessToken();
-    if (!access) return;
+    const access = await googleAccessToken();
+    if (!access) {
+      warnNoCredentials();
+      return;
+    }
     token = access;
   }
   const response = await fetch(url, {
@@ -117,34 +121,12 @@ async function writeSession(sid: string, update: Partial<VisitSession>) {
   }
 }
 
-const METADATA_TOKEN_URL =
-  'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token' +
-  '?scopes=https://www.googleapis.com/auth/firebase.database,https://www.googleapis.com/auth/userinfo.email';
-let cachedToken: { value: string; expires: number } | undefined;
-let noCredentials = false;
-
-/** An OAuth token for the service account the server runs as, or undefined off Google Cloud. */
-async function accessToken(): Promise<string | undefined> {
-  if (cachedToken && cachedToken.expires > Date.now()) return cachedToken.value;
-  if (noCredentials) return undefined;
-  let response: Response;
-  try {
-    response = await fetch(METADATA_TOKEN_URL, {
-      headers: { 'Metadata-Flavor': 'Google' },
-      signal: AbortSignal.timeout(2000),
-    });
-  } catch {
-    noCredentials = true;
-    console.warn(
-      'Visit analytics are not being saved: no Google credentials here. ' +
-        'Set FIREBASE_DATABASE_EMULATOR_HOST to test them locally.',
-    );
-    return undefined;
-  }
-  if (!response.ok) {
-    throw new Error(`Metadata server responded with ${response.status}`);
-  }
-  const { access_token, expires_in } = await response.json();
-  cachedToken = { value: access_token, expires: Date.now() + (expires_in - 60) * 1000 };
-  return access_token;
+let warned = false;
+function warnNoCredentials() {
+  if (warned) return;
+  warned = true;
+  console.warn(
+    'Visit analytics are not being saved: no Google credentials here. ' +
+      'Set FIREBASE_DATABASE_EMULATOR_HOST to test them locally.',
+  );
 }

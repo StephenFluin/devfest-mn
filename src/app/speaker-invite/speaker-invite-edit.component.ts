@@ -48,11 +48,22 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
                 <input name="twitter" [(ngModel)]="speaker.twitter" placeholder="without the @"
               /></label>
               <label
-                >Photo URL <input name="imageUrl" type="url" [(ngModel)]="speaker.imageUrl"
+                >Photo (PNG, JPEG or WebP, under 5 MB)
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  [disabled]="uploading()"
+                  (change)="upload(speaker, $event)"
               /></label>
+              @if (uploadStatus(); as uploadStatus) {
+                <p role="status">{{ uploadStatus }}</p>
+              }
               @if (speaker.imageUrl) {
                 <img class="preview" [src]="speaker.imageUrl" alt="Your photo" />
               }
+              <label
+                >Or a photo URL <input name="imageUrl" type="url" [(ngModel)]="speaker.imageUrl"
+              /></label>
               <label
                 >Website <input name="website" type="url" [(ngModel)]="speaker.website"
               /></label>
@@ -110,6 +121,8 @@ export class SpeakerInviteEditComponent {
 
   saving = signal(false);
   status = signal('');
+  uploading = signal(false);
+  uploadStatus = signal('');
 
   /** Resolves to the invited speaker's key once this visitor may edit them. */
   access = resource({
@@ -137,6 +150,42 @@ export class SpeakerInviteEditComponent {
     const item = this.ds.speaker(this.access.value());
     return item && { ...item };
   });
+
+  /**
+   * Uploads through the server, since the Storage rules only let admins upload. The photo is
+   * shown in the form and kept once the speaker saves.
+   */
+  async upload(speaker: Speaker, event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (file.size >= 5 * 1024 * 1024) {
+      this.uploadStatus.set('That photo is too big. Please choose one under 5 MB.');
+      input.value = '';
+      return;
+    }
+    this.uploading.set(true);
+    this.uploadStatus.set('Uploading...');
+    try {
+      const response = await fetch(`/api/speaker-edit/${this.params().get('token')}/photo`, {
+        method: 'POST',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result.error ?? `Upload failed (${response.status})`);
+      }
+      speaker.imageUrl = result.imageUrl;
+      this.uploadStatus.set('Uploaded. Save your profile to use this photo.');
+    } catch (err) {
+      console.error('Unable to upload photo', err);
+      this.uploadStatus.set(`Sorry, the upload failed: ${err.message}`);
+    } finally {
+      this.uploading.set(false);
+      input.value = '';
+    }
+  }
 
   async save(speaker: Speaker) {
     this.saving.set(true);

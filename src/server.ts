@@ -13,6 +13,8 @@ import { slugify } from './app/shared/slug';
 import { addVisitAnalytics } from './visit-analytics';
 import { renderSpeakerCard } from './speaker-card';
 import { createMailer } from './mailer';
+import { googleAccessToken } from './google-credentials';
+import { randomUUID } from 'node:crypto';
 import { INVITE_TOKEN, inviteEmail } from './app/speaker-invite/invite-email';
 import { calendarEvent, icsFile } from './app/shared/calendar';
 import { cfpStateAt } from './app/shared/cfp-deadline';
@@ -553,6 +555,115 @@ app.post('/api/admin/speaker-invites/:token/email', async (req, res) => {
     res.status(502).json({ error: 'Unable to send the invite email' });
   }
 });
+
+const PHOTO_TYPES: Record<string, string> = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/webp': 'webp',
+};
+/** Speakers upload one photo at a time, so a small shared limit stops anyone filling the bucket. */
+const photoLimit = { windowMs: 60_000, max: 20, recent: [] as number[] };
+
+/**
+ * Uploads an invited speaker's photo to devfest<year>/speakers/<key>/ in Storage, alongside the
+ * photos admins upload, and returns its download URL for the page to save as the speaker's
+ * imageUrl. Holding the invite token is the permission: the Storage rules only let admins upload,
+ * so the server writes with its own service account (which needs write access to the bucket).
+ * Locally, set FIREBASE_DATABASE_EMULATOR_HOST and FIREBASE_STORAGE_EMULATOR_HOST to use the
+ * emulators.
+ */
+app.post(
+  '/api/speaker-edit/:token/photo',
+  express.raw({ type: Object.keys(PHOTO_TYPES), limit: '5mb' }),
+  async (req, res) => {
+    try {
+      const now = Date.now();
+      photoLimit.recent = photoLimit.recent.filter((t) => now - t < photoLimit.windowMs);
+      if (photoLimit.recent.length >= photoLimit.max) {
+        res.set('Retry-After', String(Math.ceil(photoLimit.windowMs / 1000)));
+        res.status(429).json({ error: 'Too many uploads, try again in a minute' });
+        return;
+      }
+      photoLimit.recent.push(now);
+
+      const token = req.params.token;
+      const extension = PHOTO_TYPES[req.headers['content-type'] ?? ''];
+      if (!INVITE_TOKEN.test(token)) {
+        res.status(400).json({ error: 'Not an invite token' });
+        return;
+      }
+      if (!extension || !Buffer.isBuffer(req.body) || !req.body.length) {
+        res.status(400).json({ error: 'Upload a PNG, JPEG or WebP image under 5 MB' });
+        return;
+      }
+      // Anyone may read a single invite by its token, so this needs no credentials.
+      const invitePath = `devfest${environment.year}/speakerInvites/${token}.json`;
+      const dbEmulator = process.env['FIREBASE_DATABASE_EMULATOR_HOST'];
+      const namespace = new URL(environment.firebaseConfig.databaseURL).hostname.split('.')[0];
+      const invite = await (
+        await fetch(
+          dbEmulator
+            ? `http://${dbEmulator}/${invitePath}?ns=${namespace}`
+            : `${environment.firebaseConfig.databaseURL}/${invitePath}`,
+        )
+      ).json();
+      if (!invite?.speaker) {
+        res.status(404).json({ error: 'No such invite' });
+        return;
+      }
+
+      const emulator = process.env['FIREBASE_STORAGE_EMULATOR_HOST'];
+      const access = emulator ? 'owner' : await googleAccessToken();
+      if (!access) {
+        res.status(503).json({ error: 'Photo uploads are not configured on this server' });
+        return;
+      }
+      const bucket = environment.firebaseConfig.storageBucket;
+      const name = `devfest${environment.year}/speakers/${invite.speaker}/photo-${now}.${extension}`;
+      const downloadToken = randomUUID();
+      const metadata = {
+        name,
+        contentType: req.headers['content-type'],
+        cacheControl: 'max-age=604800',
+        // What Firebase Storage download URLs are checked against.
+        metadata: { firebaseStorageDownloadTokens: downloadToken },
+      };
+      const boundary = `photo-${randomUUID()}`;
+      const body = Buffer.concat([
+        Buffer.from(
+          `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n` +
+            `${JSON.stringify(metadata)}\r\n--${boundary}\r\nContent-Type: ${metadata.contentType}\r\n\r\n`,
+        ),
+        req.body,
+        Buffer.from(`\r\n--${boundary}--`),
+      ]);
+      const host = emulator ? `http://${emulator}` : 'https://storage.googleapis.com';
+      const upload = await fetch(
+        `${host}/upload/storage/v1/b/${bucket}/o?uploadType=multipart&name=${encodeURIComponent(name)}`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${access}`,
+            'Content-Type': `multipart/related; boundary=${boundary}`,
+          },
+          body,
+        },
+      );
+      if (!upload.ok) {
+        throw new Error(`Storage responded with ${upload.status}: ${await upload.text()}`);
+      }
+      const downloadHost = emulator
+        ? `http://${emulator}`
+        : 'https://firebasestorage.googleapis.com';
+      res.json({
+        imageUrl: `${downloadHost}/v0/b/${bucket}/o/${encodeURIComponent(name)}?alt=media&token=${downloadToken}`,
+      });
+    } catch (error) {
+      console.error('Error uploading speaker photo:', error);
+      res.status(502).json({ error: 'Unable to upload the photo' });
+    }
+  },
+);
 
 addVisitAnalytics(app);
 
