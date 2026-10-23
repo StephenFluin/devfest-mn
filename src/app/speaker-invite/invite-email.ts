@@ -10,7 +10,7 @@ export function inviteLink(token: string) {
 /** The invite sent by the server when an admin invites a speaker. */
 export function inviteEmail(name: string, token: string) {
   return {
-    subject: `Your DevFestMN ${environment.year} speaker profile`,
+    subject: `We're happy to have you speak at DevFestMN ${environment.year}!`,
     text: [
       `Hi ${name},`,
       '',
