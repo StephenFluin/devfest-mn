@@ -15,11 +15,13 @@ import { renderSpeakerCard } from './speaker-card';
 import { createMailer } from './mailer';
 import { googleAccessToken } from './google-credentials';
 import { randomUUID } from 'node:crypto';
-import { INVITE_TOKEN, inviteEmail } from './app/speaker-invite/invite-email';
-import { calendarEvent, icsFile } from './app/shared/calendar';
+import { INVITE_TOKEN, inviteEmail, speakerKitEmail } from './app/speaker-invite/invite-email';
+import { calendarEvent, conferenceCalendarEvent, icsFile } from './app/shared/calendar';
 import { cfpStateAt } from './app/shared/cfp-deadline';
 import type { Session } from './app/shared/data.service';
 import { UntypedJson } from './app/shared/untyped-json';
+import { BurndownOrder, discountKey, DiscountUsage } from './app/shared/campaign';
+import { addCampaignRoutes } from './campaign-routes';
 
 // Set timezone to Central Time for SSR
 process.env['TZ'] = 'America/Chicago';
@@ -202,9 +204,11 @@ app.get('/s/:slug', async (req, res) => {
       res.redirect(302, '/speakers');
       return;
     }
+    // The speaker's share kit adds ?m=<network> so the funnel shows which network the visit came from.
+    const medium = String(req.query['m'] ?? '').match(/^[a-z0-9_-]{1,30}$/)?.[0] ?? 'social';
     const params = new URLSearchParams({
       utm_source: 'speaker',
-      utm_medium: 'social',
+      utm_medium: medium,
       utm_campaign: `speaker_${slug}`,
     });
     res.redirect(302, `/speakers/${key}/${slug}?${params}`);
@@ -224,6 +228,13 @@ app.get('/calendar/:file', async (req, res) => {
   const key = req.params.file.match(/^([A-Za-z0-9_-]{1,40})\.ics$/)?.[1];
   if (!key) {
     res.status(404).end();
+    return;
+  }
+  // The whole conference, offered after buying a ticket.
+  if (key === `devfestmn-${environment.year}`) {
+    res.set('Cache-Control', 'public, max-age=3600');
+    res.set('Content-Disposition', `inline; filename="${key}.ics"`);
+    res.type('text/calendar; charset=utf-8').send(icsFile(conferenceCalendarEvent()));
     return;
   }
   try {
@@ -370,10 +381,12 @@ app.get('/api/gallery', async (req, res) => {
 });
 
 /**
- * Copies this year's Eventbrite orders into burndown/<year>/orders for the admin burndown chart.
- * Only anonymous fields are kept: the order's day and time (Central), ticket count, and ticket
- * price paid (after discounts, excluding fees and tax). Refunded and cancelled tickets are left out, including single
- * tickets refunded from an order Eventbrite still reports as placed.
+ * Copies this year's Eventbrite orders into burndown/<year>/orders for the admin burndown chart and
+ * the Campaigns page. Only anonymous fields are kept: the order's day and time (Central), ticket
+ * count, ticket price paid (after discounts, excluding fees and tax), and the affiliate code the
+ * order was placed with, which is how the Campaigns page credits sales to a campaign. Refunded and
+ * cancelled tickets are left out, including single tickets refunded from an order Eventbrite still
+ * reports as placed. Promo code usage goes to burndown/<year>/discounts.
  *
  * The caller's Firebase ID token is passed through to the database, so the database rules decide
  * who may run it (admins only) and the server needs no Google credentials of its own. The
@@ -393,7 +406,13 @@ interface EventbriteOrder {
   created: string;
   status: string;
   costs: Record<'base_price' | 'gross' | 'tax', { major_value: string }>;
-  attendees: { refunded: boolean; cancelled: boolean }[];
+  attendees: { refunded: boolean; cancelled: boolean; affiliate?: string | null }[];
+}
+
+interface EventbriteDiscount {
+  code?: string;
+  quantity_sold?: number;
+  quantity_available?: number | null;
 }
 
 /**
@@ -445,7 +464,7 @@ app.post('/api/admin/burndown/update', async (req, res) => {
       return;
     }
 
-    const orders: { day: string; time: string; tickets: number; price: number }[] = [];
+    const orders: BurndownOrder[] = [];
     let continuation = '';
     do {
       const response = await fetch(
@@ -467,21 +486,65 @@ app.post('/api/admin/burndown/update', async (req, res) => {
         const price = (ticketPrice(order) * tickets) / order.attendees.length;
         // TZ is America/Chicago (set above), so local date parts are Central time.
         const created = new Date(order.created);
+        // The affiliate code of the checkout, lowercased like campaign slugs; it's the same for
+        // every attendee on an order.
+        const affiliate = order.attendees
+          .find((a) => a.affiliate)
+          ?.affiliate?.toLowerCase()
+          .slice(0, 50);
         orders.push({
           day: created.toLocaleDateString('en-CA'),
           time: created.toTimeString().slice(0, 5),
           tickets,
           price: Math.round(price * 100) / 100,
+          ...(affiliate && { affiliate }),
         });
       }
       continuation = page.pagination.has_more_items ? (page.pagination.continuation ?? '') : '';
     } while (continuation);
     orders.sort((a, b) => `${a.day} ${a.time}`.localeCompare(`${b.day} ${b.time}`));
 
+    // Promo code usage, for campaigns that hand out a code. Discounts belong to the organization,
+    // filtered to this event. A failure here shouldn't lose the orders, so it's logged instead.
+    const discounts: Record<string, DiscountUsage> = {};
+    try {
+      const organizations: { organizations: { id: string }[] } = await (
+        await fetch('https://www.eventbriteapi.com/v3/users/me/organizations/', {
+          headers: { Authorization: `Bearer ${ebToken}` },
+        })
+      ).json();
+      const organization = organizations.organizations?.[0]?.id;
+      let page = '';
+      while (organization) {
+        const response = await fetch(
+          `https://www.eventbriteapi.com/v3/organizations/${organization}/discounts/` +
+            `?scope=event&event_id=${environment.eventbriteEventId}${page ? `&continuation=${page}` : ''}`,
+          { headers: { Authorization: `Bearer ${ebToken}` } },
+        );
+        if (!response.ok) break;
+        const result: {
+          discounts: EventbriteDiscount[];
+          pagination: { has_more_items: boolean; continuation?: string };
+        } = await response.json();
+        for (const discount of result.discounts ?? []) {
+          if (!discount.code) continue;
+          discounts[discountKey(discount.code)] = {
+            code: discount.code,
+            sold: discount.quantity_sold ?? 0,
+            ...(discount.quantity_available != null && { available: discount.quantity_available }),
+          };
+        }
+        page = result.pagination?.has_more_items ? (result.pagination.continuation ?? '') : '';
+        if (!page) break;
+      }
+    } catch (error) {
+      console.error('Error reading Eventbrite discounts:', error);
+    }
+
     const updatedAt = new Date().toISOString();
     const write = await db(`burndown/${environment.year}`, {
       method: 'PATCH',
-      body: JSON.stringify({ orders, updatedAt, eventDate: environment.eventDate }),
+      body: JSON.stringify({ orders, discounts, updatedAt, eventDate: environment.eventDate }),
     });
     if (!write.ok) {
       throw new Error(`Firebase responded with ${write.status}: ${await write.text()}`);
@@ -553,6 +616,77 @@ app.post('/api/admin/speaker-invites/:token/email', async (req, res) => {
   } catch (error) {
     console.error('Error emailing speaker invite:', error);
     res.status(502).json({ error: 'Unable to send the invite email' });
+  }
+});
+
+/**
+ * Emails an invited, confirmed speaker their share kit: their short link and ready-to-post messages
+ * about their talk, so announcing themselves takes one click. Same permission model as the invite
+ * email above.
+ */
+app.post('/api/admin/speaker-invites/:token/kit', async (req, res) => {
+  try {
+    const now = Date.now();
+    inviteLimit.recent = inviteLimit.recent.filter((t) => now - t < inviteLimit.windowMs);
+    if (inviteLimit.recent.length >= inviteLimit.max) {
+      res.set('Retry-After', String(Math.ceil(inviteLimit.windowMs / 1000)));
+      res.status(429).json({ error: 'Too many emails, try again in a minute' });
+      return;
+    }
+    inviteLimit.recent.push(now);
+
+    const token = req.params.token;
+    const idToken = req.headers.authorization?.match(/^Bearer ([\w.-]+)$/)?.[1];
+    if (!idToken) {
+      res.status(401).json({ error: 'Sign in first' });
+      return;
+    }
+    if (!INVITE_TOKEN.test(token)) {
+      res.status(400).json({ error: 'Not an invite token' });
+      return;
+    }
+    const db = (path: string, init?: RequestInit) =>
+      fetch(
+        `${environment.firebaseConfig.databaseURL}/${path}.json?auth=${encodeURIComponent(idToken)}`,
+        init,
+      );
+    if ((await db('admin')).status !== 200) {
+      res.status(403).json({ error: 'Only admins can send the share kit' });
+      return;
+    }
+    const base = `devfest${environment.year}`;
+    const invite = await (await db(`${base}/speakerInvites/${token}`)).json();
+    if (!invite?.email || !invite.speaker) {
+      res.status(404).json({ error: 'No such invite' });
+      return;
+    }
+    const [speaker, schedule] = await Promise.all([
+      (await db(`${base}/speakers/${encodeURIComponent(invite.speaker)}`)).json(),
+      (await db(`${base}/schedule`)).json(),
+    ]);
+    if (!speaker?.confirmed || !speaker.name) {
+      res
+        .status(409)
+        .json({ error: 'Confirm the speaker first; the kit links to their public page' });
+      return;
+    }
+    const talks = Object.values<UntypedJson>(schedule ?? {})
+      .filter((session) => Object.values(session.speakers ?? {}).includes(invite.speaker))
+      .map((session) => session.title)
+      .filter(Boolean);
+    await createMailer().send({
+      to: invite.email,
+      replyTo: environment.contactEmail,
+      ...speakerKitEmail(speaker.name, talks),
+    });
+    await db(`${base}/speakerInvites/${token}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ kitEmailedAt: { '.sv': 'timestamp' } }),
+    });
+    res.json({ sent: true });
+  } catch (error) {
+    console.error('Error emailing speaker kit:', error);
+    res.status(502).json({ error: 'Unable to send the share kit' });
   }
 });
 
@@ -666,6 +800,7 @@ app.post(
 );
 
 addVisitAnalytics(app);
+addCampaignRoutes(app);
 
 /**
  * Serve static files from /browser. Build output with a content hash in its name (main-AB12cd34.js)

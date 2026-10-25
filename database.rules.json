@@ -29,6 +29,37 @@
       ".read": "root.child('admin/'+auth.uid).exists()",
       ".write": false
     },
+    "marketing": {
+      "$year": {
+        "links": {
+          ".read": true,
+          ".write": "$year.matches(/^[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()",
+          "$slug": {
+            ".validate": "$slug.matches(/^[a-z0-9][a-z0-9-]{1,39}$/) && newData.hasChildren(['source', 'medium', 'campaign', 'landing'])",
+            "source": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 50"
+            },
+            "medium": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 50"
+            },
+            "campaign": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+            },
+            "landing": {
+              ".validate": "newData.isString() && newData.val().matches(/^\\/[^\\s]{0,200}$/)"
+            },
+            "promo": {
+              ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{2,30}$/)"
+            },
+            "$other": { ".validate": false }
+          }
+        },
+        "campaigns": {
+          ".read": "root.child('admin/'+auth.uid).exists()",
+          ".write": "$year.matches(/^[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()"
+        }
+      }
+    },
     "users": {
       "$user_id": {
         ".read": "$user_id === auth.uid",

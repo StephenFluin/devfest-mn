@@ -22,12 +22,23 @@ export interface CardSpeaker {
 const WIDTH = 1200;
 const HEIGHT = 630;
 
+let wasm: Promise<void> | undefined;
+
+/** Rasterizes an SVG with resvg, loading its WebAssembly once per server. */
+export async function svgToPng(svg: string, width: number): Promise<Uint8Array> {
+  wasm ??= initWasm(resvgWasm).catch((error) => {
+    wasm = undefined;
+    throw error;
+  });
+  await wasm;
+  return new Resvg(svg, { fitTo: { mode: 'width', value: width } }).render().asPng();
+}
+
 let ready: Promise<{ hero: string; logo: string }> | undefined;
 
-/** Loads the renderer and the images every card uses, once per server. */
+/** Loads the images every card uses, once per server. */
 function setup(imagesFolder: string) {
   ready ??= (async () => {
-    await initWasm(resvgWasm);
     const [hero, logo] = await Promise.all([
       readFile(join(imagesFolder, 'hero-cover.jpg')),
       readFile(join(imagesFolder, 'devfestmn.svg')),
@@ -149,5 +160,5 @@ export async function renderSpeakerCard(speaker: CardSpeaker, imagesFolder: stri
       { name: 'Montserrat', data: Buffer.from(montserrat700), weight: 700, style: 'normal' },
     ],
   });
-  return new Resvg(svg, { fitTo: { mode: 'width', value: WIDTH } }).render().asPng();
+  return svgToPng(svg, WIDTH);
 }

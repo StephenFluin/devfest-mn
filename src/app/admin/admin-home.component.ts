@@ -134,6 +134,11 @@ export class AdminHomeComponent {
       description: 'Burndown compared with past years.',
     },
     {
+      path: '/admin/campaigns',
+      title: 'Campaigns',
+      description: 'Short links, QR codes and promo codes for each place the event is promoted.',
+    },
+    {
       path: '/admin/utm-funnel',
       title: 'UTM funnel',
       description: 'Where visitors come from and what they do.',

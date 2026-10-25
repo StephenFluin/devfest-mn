@@ -8,11 +8,17 @@ import { environment } from '../../environments/environment';
 /** The admin nav, in order of what matters most as the event approaches. */
 const NAV = [
   {
+    label: 'Grow',
+    links: [
+      { path: '/admin/burndown', label: 'Ticket sales' },
+      { path: '/admin/campaigns', label: 'Campaigns' },
+      { path: '/admin/utm-funnel', label: 'UTM funnel' },
+    ],
+  },
+  {
     label: 'Manage',
     links: [
       { path: '/admin/overview', label: 'Overview' },
-      { path: '/admin/burndown', label: 'Ticket sales' },
-      { path: '/admin/utm-funnel', label: 'UTM funnel' },
       { path: '/admin/rooms', label: 'Rooms' },
       { path: '/admin/volunteers', label: 'Volunteers' },
       { path: '/admin/admins', label: 'Admins' },

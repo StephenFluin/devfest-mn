@@ -129,10 +129,12 @@ scripts/gallery-thumbnails.sh
 ## Ticket burndown
 
 The admin burndown page (`/admin/burndown`) charts ticket sales over time. It reads anonymous order data
-(day, time, tickets, price) from `burndown/<year>` in the Realtime Database.
+(day, time, tickets, price, and the Eventbrite affiliate code the order was placed with) from
+`burndown/<year>` in the Realtime Database, plus promo code usage under `burndown/<year>/discounts`.
 
-"Update from Eventbrite" rewrites the current year only. It uses the `eventbriteToken` App Hosting secret in
-production, or `EVENTBRITE_TOKEN` in a local `.env` file during development.
+"Update from Eventbrite" (on the burndown and Campaigns pages) rewrites the current year only. It uses the
+`eventbriteToken` App Hosting secret in production, or `EVENTBRITE_TOKEN` in a local `.env` file during
+development.
 
 Past years are kept in `data/burndown-history.json`. When the site moves to a new Firebase project, copy the
 current year into that file and load it into the new project:
@@ -158,6 +160,56 @@ service account. If visits don't show up after a deploy, check the server logs f
 that account (`firebase-app-hosting-compute@<project>.iam.gserviceaccount.com`) the **Firebase Realtime
 Database Admin** role. Locally, events are dropped unless `FIREBASE_DATABASE_EMULATOR_HOST` points at the
 Realtime Database emulator.
+
+## Growing attendance
+
+Most people who'd enjoy DevFestMN have never heard of it. The site has two loops for reaching them, both
+measured in the admin so effort and money go where tickets come from.
+
+### Campaigns: short links, QR codes and promo codes
+
+The admin Campaigns page (`/admin/campaigns`) creates one short link per place the event is promoted: a
+meetup listing, a partner company, a sponsor's newsletter, a poster, an ad. Pick a preset (it prefills the
+UTM source and medium and says where to put the link), give it a name, and the page shows:
+
+- `https://devfest.mn/go/<slug>`, which 302-redirects to the landing page tagged with `utm_source`,
+  `utm_medium`, `utm_campaign` and `aff=<slug>`. The site remembers the campaign for 30 days (like the UTM
+  funnel) and passes the slug to Eventbrite checkout as its **affiliate code**, so Eventbrite records which
+  campaign each order came from, even on a later visit or another device.
+- `https://devfest.mn/go/<slug>.png`, a printable QR code of the link, for posters, slides and flyers.
+- Optionally a **promo code**: the server creates it in Eventbrite as a coded discount (percent off, with an
+  optional number of uses) and the link pre-applies it in checkout. This is how partners, communities and
+  companies get a deal of their own to pass along, and how you see how many used it.
+- Visits, engaged visits and on-site sales (from the UTM funnel), plus tickets and revenue Eventbrite credits
+  to the slug, and cost per ticket once spend is entered. Click **Update from Eventbrite** to refresh the
+  Eventbrite numbers.
+
+The page's **Word of mouth** table measures the two links the site hands out on its own: the share prompt
+shown after someone buys a ticket (`utm_source=attendee`) and speakers' `/s/` links (`utm_source=speaker`).
+
+Campaigns live in two halves under `marketing/<year>` in the Realtime Database: `links/<slug>` is public
+(the server reads it to redirect) and holds only what the redirect needs; `campaigns/<slug>` is admin-only
+(name, notes, spend, Eventbrite discount id). Deleting a campaign doesn't delete its promo code from
+Eventbrite.
+
+For paid campaigns, also set `adConversions.googleAds` in `src/environments/environment.ts` to the Google
+Ads conversion id so completed orders are reported as conversions and Google Ads learns which clicks sold
+tickets.
+
+### Share prompts for attendees and speakers
+
+When an Eventbrite order completes on the site, a **"You're in!"** panel offers ready-made posts for
+LinkedIn, Bluesky and X, an email, a copy-to-clipboard version for Slack and Mastodon, and the day as a
+calendar entry (`/calendar/devfestmn-<year>.ics`). Each post links back tagged with the network, so the
+funnel shows which networks attendees' posts convert on.
+
+Confirmed speakers see a **Share your talk** kit on their edit page (`/speaker-edit/<token>/edit`): their
+share card, their `/s/<name>` link and a post per network. The same kit appears in the admin speaker editor,
+with **Email their share kit**, which sends it to an invited speaker. The `/s/` link takes `?m=<network>`
+so the funnel splits speaker traffic by network too.
+
+Setup: deploy the database rules (`marketing` is new). Emailing share kits uses Resend, as described under
+[Inviting speakers](#inviting-speakers-to-edit-their-own-profile).
 
 ## Announcing speakers
 

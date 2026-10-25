@@ -14,15 +14,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../realtime-data/auth.service';
 import { DATABASE, objectResource } from '../realtime-data/firebase';
-
-/** One anonymous order, as stored in burndown/<year>/orders. Day and time are Central. */
-interface BurndownOrder {
-  day: string;
-  time?: string;
-  tickets: number;
-  /** Total ticket price for the order, excluding Eventbrite fees and tax. */
-  price: number;
-}
+import { BurndownOrder } from '../shared/campaign';
+import { syncEventbrite } from './eventbrite-sync';
 
 interface BurndownYear {
   eventDate: string;
@@ -526,17 +519,9 @@ export class BurndownComponent {
     this.updating.set(true);
     this.message.set('');
     try {
-      const idToken = await this.auth.auth?.currentUser?.getIdToken();
-      const response = await fetch('/api/admin/burndown/update', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${idToken}` },
-      });
-      const result = await response.json();
-      this.message.set(
-        response.ok ? `Loaded ${result.orders} orders.` : (result.error ?? 'Update failed'),
-      );
-    } catch {
-      this.message.set('Update failed');
+      this.message.set(await syncEventbrite(this.auth));
+    } catch (error) {
+      this.message.set(error.message ?? 'Update failed');
     } finally {
       this.updating.set(false);
     }

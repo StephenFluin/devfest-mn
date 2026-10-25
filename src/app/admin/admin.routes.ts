@@ -83,6 +83,11 @@ export const AdminRoutes: Routes = [
                   import('./utm-funnel.component').then((m) => m.UtmFunnelComponent),
               },
               {
+                path: 'campaigns',
+                loadComponent: () =>
+                  import('./campaigns.component').then((m) => m.CampaignsComponent),
+              },
+              {
                 path: 'volunteers',
                 loadComponent: () =>
                   import('./volunteers.component').then((m) => m.VolunteersComponent),
