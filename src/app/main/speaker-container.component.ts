@@ -1,48 +1,45 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { slugify } from '../shared/slug';
 
 @Component({
   selector: 'app-speaker-container',
   template: `
-    @if (speaker()) {
-      <div>
-        @if (speaker().confirmed || showEdit()) {
-          <div class="speaker-card">
-            @if (speaker().imageUrl) {
-              <div>
-                <div
-                  class="thumb"
-                  [style.background-image]="'url(' + speaker().imageUrl + ')'"
-                ></div>
-              </div>
-            }
-            <div class="speaker-content">
-              @if (!speaker().confirmed && showEdit()) {
-                <div style="background-color: yellow">
-                  <strong>NOT CONFIRMED</strong>
-                </div>
-              }
-              <div style="font-size:20px;">
-                <a [routerLink]="['/', 'speakers', speaker().$key, slugify(speaker().name)]">{{
-                  speaker().name
-                }}</a>
-                @if (showEdit()) {
-                  <a [routerLink]="['/', 'admin', 'speakers', speaker().$key, 'edit']"
-                    ><img src="/a/edit.svg" alt="Edit speaker"
-                  /></a>
-                }
-              </div>
-              <div>{{ speaker().company }}</div>
-              @if (speaker().twitter) {
-                <div>
-                  <a href="https://twitter.com/{{ speaker().twitter }}" target="_blank"
-                    >&#64;{{ speaker().twitter }}</a
-                  >
-                </div>
-              }
-            </div>
-          </div>
+    @if (speaker() && (speaker().confirmed || showEdit())) {
+      <div class="speaker-card" [class.unconfirmed]="!speaker().confirmed">
+        @if (speaker().imageUrl) {
+          <div class="thumb" [style.background-image]="'url(' + speaker().imageUrl + ')'"></div>
+        } @else {
+          <div class="thumb thumb-initials" aria-hidden="true">{{ initials() }}</div>
+        }
+        <div class="speaker-content">
+          @if (!speaker().confirmed && showEdit()) {
+            <span class="speaker-badge">Not confirmed</span>
+          }
+          <a
+            class="speaker-name"
+            [routerLink]="['/', 'speakers', speaker().$key, slugify(speaker().name)]"
+            >{{ speaker().name }}</a
+          >
+          @if (speaker().company) {
+            <div class="speaker-company">{{ speaker().company }}</div>
+          }
+          @if (speaker().twitter) {
+            <a
+              class="speaker-handle"
+              href="https://twitter.com/{{ speaker().twitter }}"
+              target="_blank"
+              >&#64;{{ speaker().twitter }}</a
+            >
+          }
+        </div>
+        @if (showEdit()) {
+          <a
+            class="speaker-edit"
+            [routerLink]="['/', 'admin', 'speakers', speaker().$key, 'edit']"
+            title="Edit speaker"
+            ><img src="/a/edit.svg" alt="Edit speaker"
+          /></a>
         }
       </div>
     }
@@ -52,5 +49,14 @@ import { slugify } from '../shared/slug';
 export class SpeakerContainerComponent {
   readonly speaker = input(undefined);
   readonly showEdit = input(false);
+  readonly initials = computed(() =>
+    (this.speaker()?.name ?? '')
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((part: string) => part[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase(),
+  );
   slugify = slugify;
 }

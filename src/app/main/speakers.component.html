@@ -12,8 +12,17 @@
   <div class="callout">Confirmed Speakers</div>
 
   @if (auth.isAdmin()) {
-    <button mat-raised-button color="primary" (click)="addSpeaker()">Add Speaker</button>
-    <button mat-raised-button (click)="showInvite.set(!showInvite())">Invite Speaker</button>
+    <div class="admin-actions">
+      <button type="button" class="button" (click)="addSpeaker()">Add Speaker</button>
+      <button
+        type="button"
+        class="button secondary"
+        [attr.aria-expanded]="showInvite()"
+        (click)="showInvite.set(!showInvite())"
+      >
+        Invite Speaker
+      </button>
+    </div>
     @if (showInvite()) {
       <form class="invite-form" (ngSubmit)="sendInvite()">
         <p>
@@ -21,10 +30,10 @@
         </p>
         <label>Name <input name="name" [(ngModel)]="inviteName" required /></label>
         <label>Email <input name="email" type="email" [(ngModel)]="inviteEmail" required /></label>
-        <button mat-raised-button color="primary" type="submit" [disabled]="sending()">
-          Send Invite
+        <button class="button" type="submit" [disabled]="sending()">Send Invite</button>
+        <button class="button secondary" type="button" (click)="showInvite.set(false)">
+          Cancel
         </button>
-        <button mat-button type="button" (click)="showInvite.set(false)">Cancel</button>
       </form>
     }
     @if (sent(); as sent) {
@@ -48,11 +57,44 @@
     }
   </div>
   @if (auth.isAdmin()) {
-    <button mat-raised-button color="primary" (click)="addSpeaker()">Add Speaker</button>
+    <div class="admin-actions">
+      <button type="button" class="button" (click)="addSpeaker()">Add Speaker</button>
+    </div>
   }
 </section>
 
 <style>
+  /* Admin-only controls, styled with the site's own .button so public pages never need the
+     admin Material theme. */
+  .admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin: 0 0 24px;
+  }
+  .admin-actions .button,
+  .invite-form .button {
+    margin: 0;
+  }
+  .button.secondary {
+    background-color: transparent;
+    color: var(--color-heading);
+    box-shadow: inset 0 0 0 1px currentColor;
+  }
+  .button:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .invite-form input {
+    margin-left: 6px;
+    padding: 6px 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font: inherit;
+  }
   .invite-form {
     display: flex;
     flex-wrap: wrap;
@@ -60,7 +102,7 @@
     align-items: center;
     justify-content: center;
     margin: 16px auto;
-    max-width: 640px;
+    max-width: 760px;
   }
   .invite-form p {
     flex-basis: 100%;
