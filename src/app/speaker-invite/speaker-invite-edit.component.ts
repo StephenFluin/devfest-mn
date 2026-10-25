@@ -9,6 +9,7 @@ import { get, set } from 'firebase/database';
 import { DataService, Speaker, SpeakerInvite } from '../shared/data.service';
 import { AUTH } from '../realtime-data/firebase';
 import { AuthService } from '../realtime-data/auth.service';
+import { SpeakerKitComponent } from './speaker-kit.component';
 
 /** Fields a speaker may edit on their own profile. Confirming stays with the organizers. */
 const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'linkedin'] as const;
@@ -32,6 +33,17 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
         @case ('resolved') {
           @if (speaker(); as speaker) {
             <h1>Your DevFestMN speaker profile</h1>
+            @if (speaker.confirmed) {
+              <section class="kit">
+                <h2>Share your talk</h2>
+                <p>
+                  Your page is live. Your followers and colleagues are exactly who DevFestMN is for,
+                  so a post from you reaches people we can't. Here's one ready for each network;
+                  edit away.
+                </p>
+                <app-speaker-kit [speaker]="speaker" />
+              </section>
+            }
             <p>
               Anyone with this page's link can edit your profile, so please keep it private. Your
               profile appears on the site once we've confirmed your talk.
@@ -109,8 +121,18 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
       max-width: 160px;
       max-height: 160px;
     }
+    .kit {
+      padding: 24px;
+      margin: 24px 0;
+      border: 1px solid var(--color-border-soft);
+      border-radius: 8px;
+      text-align: left;
+    }
+    .kit h2 {
+      margin-top: 0;
+    }
   `,
-  imports: [FormsModule],
+  imports: [FormsModule, SpeakerKitComponent],
 })
 export class SpeakerInviteEditComponent {
   ds = inject(DataService);

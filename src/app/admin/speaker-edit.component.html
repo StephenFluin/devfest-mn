@@ -89,12 +89,31 @@
               <button mat-button type="button" (click)="resendInvite(invite.$key)">
                 Email it again
               </button>
+              @if (speaker.confirmed) {
+                <button mat-button type="button" (click)="emailKit(invite.$key)">
+                  Email their share kit
+                </button>
+                @if (invite.kitEmailedAt) {
+                  <span class="muted">(kit emailed {{ invite.kitEmailedAt | date: 'short' }})</span>
+                }
+              }
               {{ inviteStatus() }}
             </span>
           </p>
         }
       }
     </section>
+
+    @if (speaker.$key && speaker.confirmed) {
+      <section class="card" aria-labelledby="kit-heading">
+        <h3 id="kit-heading">Share kit</h3>
+        <p class="muted">
+          What the speaker sees on their edit page: their card, short link and a post per network.
+          Posts link through /s/{{ slugify(speaker.name) }}, so the UTM funnel credits them.
+        </p>
+        <app-speaker-kit [speaker]="speaker" />
+      </section>
+    }
 
     <section class="card" aria-labelledby="photos-heading">
       <h3 id="photos-heading">Photos</h3>

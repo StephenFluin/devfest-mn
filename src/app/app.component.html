@@ -41,6 +41,10 @@
   <div class="routeContainer" role="main">
     <router-outlet #routerOutlet="outlet"></router-outlet>
   </div>
+  <!-- Only needed after a ticket order, so it isn't part of the initial bundle. -->
+  @defer (when order()) {
+    <app-purchase-share />
+  }
   <footer>
     <div class="blocks">
       <div>

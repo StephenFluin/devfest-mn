@@ -13,8 +13,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { environment } from '../../environments/environment';
 import { slugify } from '../shared/slug';
-import { inviteLink, sendInviteEmail } from '../speaker-invite/invite-email';
+import { inviteLink, sendInviteEmail, sendSpeakerKit } from '../speaker-invite/invite-email';
 import { AuthService } from '../realtime-data/auth.service';
+import { SpeakerKitComponent } from '../speaker-invite/speaker-kit.component';
 
 @Component({
   templateUrl: './speaker-edit.component.html',
@@ -55,6 +56,7 @@ import { AuthService } from '../realtime-data/auth.service';
     MatButtonModule,
     UploaderComponent,
     DatePipe,
+    SpeakerKitComponent,
   ],
 })
 export class SpeakerEditComponent {
@@ -87,9 +89,21 @@ export class SpeakerEditComponent {
   });
 
   async resendInvite(token: string) {
+    await this.email(() => sendInviteEmail, token);
+  }
+
+  /** Emails a confirmed speaker their share card, link and ready-made posts. */
+  async emailKit(token: string) {
+    await this.email(() => sendSpeakerKit, token);
+  }
+
+  private async email(
+    send: () => (idToken: string | undefined, token: string) => Promise<void>,
+    token: string,
+  ) {
     this.inviteStatus.set('Sending...');
     try {
-      await sendInviteEmail(await this.auth.auth?.currentUser?.getIdToken(), token);
+      await send()(await this.auth.auth?.currentUser?.getIdToken(), token);
       this.inviteStatus.set('Sent.');
       this.invites.reload();
     } catch (err) {

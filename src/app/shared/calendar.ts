@@ -1,6 +1,6 @@
 import { environment } from '../../environments/environment';
 import { Session } from './data.service';
-import { sessionUrl, withOffset } from './event-data';
+import { eventUtcOffset, sessionUrl, withOffset } from './event-data';
 import { summarize } from './slug';
 
 /**
@@ -51,6 +51,21 @@ export function calendarEvent(session: Session, schedule: Session[]): CalendarEv
     url,
   };
 }
+
+/** The whole conference day, for people who just bought a ticket. Matches the structured data's hours. */
+export function conferenceCalendarEvent(): CalendarEvent {
+  return {
+    uid: `devfestmn-${environment.year}@devfest.mn`,
+    title: `DevFestMN ${environment.year}`,
+    start: new Date(`${environment.eventDate}T09:00:00${eventUtcOffset}`),
+    end: new Date(`${environment.eventDate}T17:00:00${eventUtcOffset}`),
+    location: `${environment.venueName}, ${environment.venueAddress}`,
+    description: `${environment.siteDescription}\n\n${environment.siteUrl}`,
+    url: environment.siteUrl,
+  };
+}
+
+export const conferenceIcsPath = `/calendar/devfestmn-${environment.year}.ics`;
 
 /** 20261205T150000Z */
 const utcStamp = (date: Date) =>

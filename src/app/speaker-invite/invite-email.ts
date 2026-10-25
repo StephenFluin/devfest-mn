@@ -1,4 +1,6 @@
 import { environment } from '../../environments/environment';
+import { speakerShareOptions } from '../shared/share';
+import { slugify } from '../shared/slug';
 
 /** Invite tokens are 24 random bytes, base64url encoded (see DataService.inviteSpeaker). */
 export const INVITE_TOKEN = /^[A-Za-z0-9_-]{32}$/;
@@ -28,9 +30,50 @@ export function inviteEmail(name: string, token: string) {
   };
 }
 
+/**
+ * The share kit sent to a confirmed speaker: their short link and a post for each network, so
+ * telling their followers about the talk is a copy and paste.
+ */
+export function speakerKitEmail(name: string, talks: string[]) {
+  const slug = slugify(name);
+  const posts = speakerShareOptions(slug, talks);
+  return {
+    subject: `You're announced! Share your DevFestMN ${environment.year} talk`,
+    text: [
+      `Hi ${name},`,
+      '',
+      `Your speaker page is live: ${speakerPageUrl(slug)}`,
+      '',
+      'Your followers and colleagues are exactly who DevFestMN is for, and a post from you reaches ' +
+        "people we can't. Here's a ready-made post for each network (edit away), each with your " +
+        'personal link so we can see how many people you bring:',
+      '',
+      ...posts
+        .filter((post) => post.network !== 'email')
+        .flatMap((post) => [`${post.label}:`, post.text, '']),
+      `Your share card (the image that appears when your link is posted) is attached to your link automatically.`,
+      '',
+      'Thank you for speaking!',
+      'The DevFestMN team',
+    ].join('\n'),
+  };
+}
+
+/** The speaker's short link, which redirects to their page tagged for the UTM funnel. */
+export const speakerPageUrl = (nameSlug: string) => `${environment.siteUrl}/s/${nameSlug}`;
+
 /** Asks the server to email an invite. Admins only; uses the signed-in admin's ID token. */
 export async function sendInviteEmail(idToken: string | undefined, token: string) {
-  const response = await fetch(`/api/admin/speaker-invites/${token}/email`, {
+  await postAsAdmin(`/api/admin/speaker-invites/${token}/email`, idToken);
+}
+
+/** Asks the server to email a confirmed speaker their share kit. Admins only. */
+export async function sendSpeakerKit(idToken: string | undefined, token: string) {
+  await postAsAdmin(`/api/admin/speaker-invites/${token}/kit`, idToken);
+}
+
+async function postAsAdmin(url: string, idToken: string | undefined) {
+  const response = await fetch(url, {
     method: 'POST',
     headers: { Authorization: `Bearer ${idToken}` },
   });

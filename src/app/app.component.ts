@@ -14,21 +14,29 @@ import { filter } from 'rxjs/operators';
 import { OurMeta } from './our-meta.service';
 
 import { ADirective } from './a.directive';
-import { captureAttribution, eventbriteAttribution, trackTicketPurchase } from './analytics.util';
+import {
+  captureAttribution,
+  completedOrder,
+  eventbriteAttribution,
+  trackTicketPurchase,
+} from './analytics.util';
 import { trackPageView } from './visit-tracker';
 import { cfpState } from './shared/cfp-deadline';
 import { DataService } from './shared/data.service';
+import { PurchaseShareComponent } from './tickets/purchase-share.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  imports: [ADirective, RouterLink, RouterOutlet],
+  imports: [ADirective, RouterLink, RouterOutlet, PurchaseShareComponent],
 })
 export class AppComponent {
   environment = environment;
   cfp = cfpState();
   /** For the Speakers nav link, which appears once any speakers are confirmed. */
   ds = inject(DataService);
+  /** Set when an Eventbrite order completes; shows the share prompt. */
+  order = completedOrder;
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
   isSecure = this.isBrowser && window?.location?.protocol === 'https:';

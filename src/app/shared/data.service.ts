@@ -73,6 +73,8 @@ export interface SpeakerInvite {
   createdAt?: number;
   /** Server time (ms) the invite was last emailed. */
   emailedAt?: number;
+  /** Server time (ms) the share kit was last emailed. */
+  kitEmailedAt?: number;
 }
 
 export interface Feedback {
