@@ -31,6 +31,14 @@ export const environment = {
   showVolunteer: false, //'https://signup.com/go/wWAHYET',
   surveyLink: 'https://forms.gle/73k2ZXYqiGpRabkv6',
   eventbriteEventId: '1996529152440',
+  /**
+   * Ad platform conversion tags, fired when a ticket order completes so paid campaigns learn which
+   * clicks sold tickets. Leave empty until there's a campaign to measure.
+   */
+  adConversions: {
+    /** Google Ads conversion "send_to" id, e.g. 'AW-123456789/AbC-D_efG-h12_34-567'. */
+    googleAds: '',
+  },
   venueName: 'University of St. Thomas | Schulze Hall',
   venueAddress: '46 S 11th St, Minneapolis, MN 55403',
   venueMapUrl:

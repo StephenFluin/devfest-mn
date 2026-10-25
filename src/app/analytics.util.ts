@@ -1,3 +1,6 @@
+import { signal } from '@angular/core';
+import { environment } from '../environments/environment';
+import { affiliateCode } from './shared/campaign';
 import { trackVisitCfp, trackVisitPurchase } from './visit-tracker';
 
 declare global {
@@ -6,14 +9,19 @@ declare global {
     EBWidgets: { createWidget(options: Record<string, unknown>): void };
   }
 }
+
+/** The Eventbrite order just completed in this page, so the app can thank and prompt the buyer. */
+export const completedOrder = signal<string | null>(null);
+
 export const trackTicketPurchase = function (orderData: { orderId: string }) {
   trackVisitPurchase(orderData.orderId);
-  window.gtag('event', 'purchase', {
-    transaction_id: orderData.orderId,
-    value: 50.0,
-    currency: 'USD',
-    event_label: 'Ticket Sale',
-  });
+  completedOrder.set(String(orderData.orderId));
+  const value = { value: 50.0, currency: 'USD', transaction_id: orderData.orderId };
+  window.gtag('event', 'purchase', { ...value, event_label: 'Ticket Sale' });
+  // Google Ads only learns which clicks sold tickets if the purchase is reported as a conversion.
+  if (environment.adConversions.googleAds) {
+    window.gtag('event', 'conversion', { ...value, send_to: environment.adConversions.googleAds });
+  }
 };
 
 /** A click through to the external call for papers form. */
@@ -26,6 +34,7 @@ const ATTRIBUTION_KEY = 'attribution';
 const ATTRIBUTION_DAYS = 30;
 const ATTRIBUTION_PARAMS = [
   'aff',
+  'promo',
   'utm_source',
   'utm_medium',
   'utm_campaign',
@@ -72,23 +81,21 @@ export function storedAttribution(): Attribution {
 
 /**
  * Options for EBWidgets.createWidget that carry the visitor's campaign into checkout. Eventbrite
- * reports orders by affiliate code (its `aff` tracking-link parameter), so an explicit `aff` wins,
- * otherwise the code is built from utm_source and utm_campaign, e.g. "linkedin-cfp_push".
+ * reports orders by affiliate code (its `aff` tracking-link parameter), so an explicit `aff` wins
+ * (campaign short links set it to the campaign's slug), otherwise the code is built from utm_source
+ * and utm_campaign, e.g. "linkedin-cfp_push". A campaign's promo code is pre-applied in checkout.
  * The raw UTM parameters ride along too in case Eventbrite records them.
  */
 export function eventbriteAttribution() {
   const stored = storedAttribution();
-  const affiliateCode = (
-    stored['aff'] ?? [stored['utm_source'], stored['utm_campaign']].filter(Boolean).join('-')
-  )
-    .toLowerCase()
-    .replace(/[^a-z0-9_-]+/g, '_')
-    .slice(0, 50);
+  const code = affiliateCode(stored);
+  const promoCode = stored['promo']?.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 30);
   const extraParams = Object.entries(stored)
     .filter(([name]) => name.startsWith('utm_'))
     .map(([name, value]) => ({ name, value: value.replace(/[&=#?+]/g, '_') })); // the widget only encodeURI()s these
   return {
-    ...(affiliateCode && { affiliateCode }),
+    ...(code && { affiliateCode: code }),
+    ...(promoCode && { promoCode }),
     ...(extraParams.length && { extraParams }),
   };
 }
