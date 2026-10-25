@@ -28,8 +28,25 @@
         <p>
           Creates an unconfirmed speaker and emails them a private link to edit their own profile.
         </p>
-        <label>Name <input name="name" [(ngModel)]="inviteName" required /></label>
-        <label>Email <input name="email" type="email" [(ngModel)]="inviteEmail" required /></label>
+        <label
+          >Name
+          <input
+            #nameInput
+            name="name"
+            [ngModel]="inviteName"
+            (ngModelChange)="setInviteField('name', $event, nameInput, emailInput)"
+            required
+        /></label>
+        <label
+          >Email
+          <input
+            #emailInput
+            name="email"
+            type="email"
+            [ngModel]="inviteEmail"
+            (ngModelChange)="setInviteField('email', $event, nameInput, emailInput)"
+            required
+        /></label>
         <button class="button" type="submit" [disabled]="sending()">Send Invite</button>
         <button class="button secondary" type="button" (click)="showInvite.set(false)">
           Cancel

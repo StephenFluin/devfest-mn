@@ -45,6 +45,28 @@ export class SpeakersComponent {
     });
   }
 
+  /**
+   * Updates an invite field, splitting a pasted address like `Luke Schlangen <luke@example.com>`
+   * into the name and email fields whichever field it lands in.
+   */
+  setInviteField(
+    field: 'name' | 'email',
+    value: string,
+    nameInput: HTMLInputElement,
+    emailInput: HTMLInputElement,
+  ) {
+    const match = value.match(/^\s*"?([^"<]*?)"?\s*<\s*([^<>\s]+@[^<>\s]+)\s*>\s*$/);
+    if (match) {
+      // Write the inputs directly too: if a model value didn't change, Angular won't redraw it.
+      nameInput.value = this.inviteName = match[1] || this.inviteName;
+      emailInput.value = this.inviteEmail = match[2];
+    } else if (field === 'name') {
+      this.inviteName = value;
+    } else {
+      this.inviteEmail = value;
+    }
+  }
+
   async sendInvite() {
     const name = this.inviteName.trim();
     const email = this.inviteEmail.trim();
