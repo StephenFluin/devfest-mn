@@ -57,14 +57,6 @@
         "campaigns": {
           ".read": "root.child('admin/'+auth.uid).exists()",
           ".write": "$year.matches(/^[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()"
-        },
-        "subscribers": {
-          ".read": "root.child('admin/'+auth.uid).exists()",
-          ".write": false
-        },
-        "sends": {
-          ".read": "root.child('admin/'+auth.uid).exists()",
-          ".write": "$year.matches(/^[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()"
         }
       }
     },
