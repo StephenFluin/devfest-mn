@@ -14,7 +14,7 @@ export class SessionsComponent {
   router = inject(Router);
   auth = inject(AuthService);
 
-  /** Admins also see unpublished sessions, such as new speakers' talks without a time yet. */
+  /** Admins also see unpublished sessions, such as new speakers' sessions without a time yet. */
   sessions = computed(() =>
     this.auth.isAdmin() ? this.ds.schedule() : this.ds.publishedSchedule(),
   );

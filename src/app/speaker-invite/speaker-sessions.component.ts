@@ -3,55 +3,55 @@ import { FormsModule } from '@angular/forms';
 
 import { environment } from '../../environments/environment';
 import { DataService, Session } from '../shared/data.service';
-import { TALK_LIMITS } from './talk-edit';
+import { SESSION_LIMITS } from './speaker-session-edit';
 
 /**
- * An invited speaker's talks on their edit page. They can change each talk's title and
+ * An invited speaker's sessions on their edit page. They can change each session's title and
  * description; when and where it is, its track and who's presenting are shown but stay with the
  * organizers. Saves go through the server, which checks the invite (see /api/speaker-edit in
  * server.ts).
  */
 @Component({
-  selector: 'app-speaker-talks',
+  selector: 'app-speaker-sessions',
   template: `
-    @for (talk of talks(); track talk.$key) {
-      <form class="talk" (ngSubmit)="save(talk)">
+    @for (session of sessions(); track session.$key) {
+      <form class="session" (ngSubmit)="save(session)">
         <label
-          >Talk title
+          >Session title
           <input
-            [name]="'title-' + talk.$key"
-            [(ngModel)]="talk.title"
+            [name]="'title-' + session.$key"
+            [(ngModel)]="session.title"
             required
             [maxlength]="limits.title"
         /></label>
         <label
           >Description (Markdown)
           <textarea
-            [name]="'description-' + talk.$key"
-            [(ngModel)]="talk.description"
+            [name]="'description-' + session.$key"
+            [(ngModel)]="session.description"
             rows="8"
             [maxlength]="limits.description"
           ></textarea>
         </label>
         <dl>
-          @if (talk.track && talk.track !== 'all') {
+          @if (session.track && session.track !== 'all') {
             <dt>Track</dt>
-            <dd>{{ talk.track }}</dd>
+            <dd>{{ session.track }}</dd>
           }
           <dt>When and where</dt>
           <dd>
-            @if (showSchedule && talk.startTime) {
-              {{ ds.customDateFormatter(talk.startTime) }}, {{ eventDate
-              }}{{ talk.room ? ' in ' + talk.room : '' }}
+            @if (showSchedule && session.startTime) {
+              {{ ds.customDateFormatter(session.startTime) }}, {{ eventDate
+              }}{{ session.room ? ' in ' + session.room : '' }}
             } @else {
               We'll let you know once the schedule is published.
             }
           </dd>
           <dt>On the site</dt>
           <dd>
-            {{ talk.published ? 'Yes' : "Not yet. We'll publish it once we've reviewed it." }}
+            {{ session.published ? 'Yes' : "Not yet. We'll publish it once we've reviewed it." }}
           </dd>
-          @if (coSpeakers(talk); as others) {
+          @if (coSpeakers(session); as others) {
             <dt>Presenting with</dt>
             <dd>{{ others }}</dd>
           }
@@ -60,22 +60,22 @@ import { TALK_LIMITS } from './talk-edit';
           To change the time, room or who's presenting, email
           <a href="mailto:info@devfest.mn">info&#64;devfest.mn</a>.
         </p>
-        <button type="submit" [disabled]="saving() === talk.$key">Save talk</button>
-        @if (status()[talk.$key]; as status) {
+        <button type="submit" [disabled]="saving() === session.$key">Save session</button>
+        @if (status()[session.$key]; as status) {
           <span role="status">{{ status }}</span>
         }
       </form>
     } @empty {
       <p>
-        Once we've added your talk to the schedule, you can edit its title and description here.
+        Once we've added your session to the schedule, you can edit its title and description here.
       </p>
     }
   `,
   styles: `
-    .talk {
+    .session {
       padding: 16px 0;
     }
-    .talk + .talk {
+    .session + .session {
       border-top: 1px solid var(--color-border-soft);
     }
     label {
@@ -102,12 +102,12 @@ import { TALK_LIMITS } from './talk-edit';
   `,
   imports: [FormsModule],
 })
-export class SpeakerTalksComponent {
+export class SpeakerSessionsComponent {
   ds = inject(DataService);
   readonly speakerKey = input.required<string>();
   readonly token = input.required<string>();
 
-  readonly limits = TALK_LIMITS;
+  readonly limits = SESSION_LIMITS;
   readonly showSchedule = environment.showSchedule;
   readonly eventDate = environment.eventDateDisplay;
 
@@ -115,47 +115,47 @@ export class SpeakerTalksComponent {
   status = signal<Record<string, string>>({});
 
   /** Copies, so form edits don't leak into the shared live data before saving. */
-  talks = computed<Session[]>(() =>
+  sessions = computed<Session[]>(() =>
     this.ds
       .sessionsFor(this.speakerKey(), { unpublished: true })
       .map((session) => ({ ...session })),
   );
 
-  /** The other speakers' names, if the talk has any. */
-  coSpeakers(talk: Session) {
-    return Object.values(talk.speakers ?? {})
+  /** The other speakers' names, if the session has any. */
+  coSpeakers(session: Session) {
+    return Object.values(session.speakers ?? {})
       .filter((key) => key !== this.speakerKey())
       .map((key) => this.ds.speaker(key)?.name)
       .filter(Boolean)
       .join(', ');
   }
 
-  async save(talk: Session) {
-    this.saving.set(talk.$key);
-    this.setStatus(talk, '');
+  async save(session: Session) {
+    this.saving.set(session.$key);
+    this.setStatus(session, '');
     try {
       const response = await fetch(
-        `/api/speaker-edit/${this.token()}/sessions/${encodeURIComponent(talk.$key)}`,
+        `/api/speaker-edit/${this.token()}/sessions/${encodeURIComponent(session.$key)}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: talk.title, description: talk.description }),
+          body: JSON.stringify({ title: session.title, description: session.description }),
         },
       );
       const result = await response.json().catch(() => ({}));
       if (!response.ok) {
         throw new Error(result.error ?? `Saving failed (${response.status})`);
       }
-      this.setStatus(talk, 'Saved. Thanks!');
+      this.setStatus(session, 'Saved. Thanks!');
     } catch (err) {
-      console.error('Unable to save talk', err);
-      this.setStatus(talk, `Sorry, saving failed: ${err.message}`);
+      console.error('Unable to save session', err);
+      this.setStatus(session, `Sorry, saving failed: ${err.message}`);
     } finally {
       this.saving.set(undefined);
     }
   }
 
-  private setStatus(talk: Session, message: string) {
-    this.status.update((status) => ({ ...status, [talk.$key]: message }));
+  private setStatus(session: Session, message: string) {
+    this.status.update((status) => ({ ...status, [session.$key]: message }));
   }
 }

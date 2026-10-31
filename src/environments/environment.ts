@@ -10,7 +10,7 @@ export const environment = {
   eventDateDisplay: 'Saturday, December 5th',
   cfpOpens: '2026-09-29',
   /**
-   * Last day to submit a talk (until 11:59pm Central). The call for speakers shows only while this
+   * Last day to submit a session (until 11:59pm Central). The call for speakers shows only while this
    * is set and hasn't passed; set it to null for a new year until the CFP is announced.
    */
   cfpCloses: '2026-10-20' as string | null,

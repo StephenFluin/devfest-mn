@@ -10,7 +10,7 @@ import { DataService, Speaker, SpeakerInvite } from '../shared/data.service';
 import { AUTH } from '../realtime-data/firebase';
 import { AuthService } from '../realtime-data/auth.service';
 import { SpeakerKitComponent } from './speaker-kit.component';
-import { SpeakerTalksComponent } from './speaker-talks.component';
+import { SpeakerSessionsComponent } from './speaker-sessions.component';
 
 /** Fields a speaker may edit on their own profile. Publishing stays with the organizers. */
 const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'linkedin'] as const;
@@ -18,7 +18,7 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
 /**
  * The page behind a speaker's invite link. Anyone with the link can edit that one speaker: the
  * visitor signs in anonymously (unless already signed in), then records a grant at
- * speakerGrants/<uid>, which the database rules only accept with a real invite token. Their talks'
+ * speakerGrants/<uid>, which the database rules only accept with a real invite token. Their sessions'
  * titles and descriptions are edited below the profile, through the server.
  */
 @Component({
@@ -37,7 +37,7 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
             <h1>Your DevFestMN speaker profile</h1>
             @if (speaker.published) {
               <section class="kit">
-                <h2>Share your talk</h2>
+                <h2>Share your session</h2>
                 <p>
                   Your page is live. Your followers and colleagues are exactly who DevFestMN is for,
                   so a post from you reaches people we can't. Here's one ready for each network;
@@ -48,7 +48,7 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
             }
             <p>
               Anyone with this page's link can edit your profile, so please keep it private. Your
-              profile appears on the site once we publish your talk.
+              profile appears on the site once we publish your session.
             </p>
             <form (ngSubmit)="save(speaker)">
               <label>Name <input name="name" [(ngModel)]="speaker.name" required /></label>
@@ -90,9 +90,9 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
                 <span>{{ status }}</span>
               }
             </form>
-            <section class="talks">
-              <h2>{{ talkCount() === 1 ? 'Your talk' : 'Your talks' }}</h2>
-              <app-speaker-talks [speakerKey]="speaker.$key" [token]="token()" />
+            <section class="sessions">
+              <h2>{{ sessionCount() === 1 ? 'Your session' : 'Your sessions' }}</h2>
+              <app-speaker-sessions [speakerKey]="speaker.$key" [token]="token()" />
             </section>
           } @else {
             <p>Loading your profile...</p>
@@ -137,11 +137,11 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
     .kit h2 {
       margin-top: 0;
     }
-    .talks {
+    .sessions {
       margin-top: 32px;
     }
   `,
-  imports: [FormsModule, SpeakerKitComponent, SpeakerTalksComponent],
+  imports: [FormsModule, SpeakerKitComponent, SpeakerSessionsComponent],
 })
 export class SpeakerInviteEditComponent {
   ds = inject(DataService);
@@ -155,7 +155,7 @@ export class SpeakerInviteEditComponent {
   uploading = signal(false);
   uploadStatus = signal('');
   token = computed(() => this.params().get('token'));
-  talkCount = computed(() =>
+  sessionCount = computed(() =>
     this.access.hasValue()
       ? this.ds.sessionsFor(this.access.value(), { unpublished: true }).length
       : 0,

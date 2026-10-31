@@ -72,7 +72,7 @@ export class SessionEditComponent {
   sessionData = computed<Session>(() => {
     const params = this.params();
     if (params.get('id') === 'new') {
-      // Made from a slot in the schedule grid, so meant to be public; invited speakers' talks
+      // Made from a slot in the schedule grid, so meant to be public; invited speakers' sessions
       // start unpublished instead (DataService.inviteSpeaker).
       return { startTime: params.get('time'), room: params.get('room'), published: true };
     }

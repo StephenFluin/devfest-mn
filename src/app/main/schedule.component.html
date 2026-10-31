@@ -37,12 +37,14 @@
   @if (authService.isAdmin()) {
     <button mat-raised-button color="primary" (click)="addSession()">Add Session</button>
     <section class="unpublished" aria-labelledby="unpublished-heading">
-      <h2 id="unpublished-heading">Unpublished talks</h2>
-      <p class="muted">Only admins see these. Publish a talk to put it on the public schedule.</p>
+      <h2 id="unpublished-heading">Unpublished sessions</h2>
+      <p class="muted">
+        Only admins see these. Publish a session to put it on the public schedule.
+      </p>
       <ul>
         @for (session of unpublished(); track session.$key) {
           <li>
-            <span class="talk">
+            <span class="session">
               <strong>{{ session.title || 'Untitled' }}</strong
               ><br />
               <span class="muted"
@@ -56,7 +58,7 @@
             <button mat-button type="button" (click)="delete(session)">Delete</button>
           </li>
         } @empty {
-          <li class="muted">Every talk is published.</li>
+          <li class="muted">Every session is published.</li>
         }
       </ul>
     </section>

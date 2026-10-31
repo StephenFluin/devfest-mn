@@ -105,23 +105,53 @@
     </section>
 
     @if (speaker.$key) {
-      <section class="card" aria-labelledby="talks-heading">
-        <h3 id="talks-heading">Talks</h3>
+      <section class="card" aria-labelledby="sessions-heading">
+        <h3 id="sessions-heading">Sessions</h3>
         <ul>
-          @for (talk of ds.sessionsFor(speaker.$key, { unpublished: true }); track talk.$key) {
+          @for (
+            session of ds.sessionsFor(speaker.$key, { unpublished: true });
+            track session.$key
+          ) {
             <li>
-              <a [routerLink]="['/admin/sessions', talk.$key, 'edit']">{{
-                talk.title || 'Untitled'
+              <a [routerLink]="['/admin/sessions', session.$key, 'edit']">{{
+                session.title || 'Untitled'
               }}</a>
-              @if (!talk.published) {
+              @if (!session.published) {
                 <span class="muted">(not published)</span>
               }
             </li>
           } @empty {
-            <li class="muted">No talks yet.</li>
+            <li class="muted">No sessions yet.</li>
           }
         </ul>
-        <button mat-stroked-button type="button" (click)="addTalk(speaker)">Add a talk</button>
+        <div class="session-actions">
+          <button mat-stroked-button type="button" (click)="createSession(speaker)">
+            Create New Session
+          </button>
+          @if (otherSessions(speaker.$key); as others) {
+            @if (others.length) {
+              <mat-form-field>
+                <mat-label>Add to Existing Session</mat-label>
+                <mat-select
+                  [value]="null"
+                  (selectionChange)="
+                    addToSession(speaker, $event.value); $event.source.value = null
+                  "
+                >
+                  @for (session of others; track session.$key) {
+                    <mat-option [value]="session.$key">
+                      {{ session.title || 'Untitled'
+                      }}{{ session.published ? '' : ' (not published)' }}
+                    </mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            }
+          }
+          @if (sessionStatus(); as status) {
+            <span role="status">{{ status }}</span>
+          }
+        </div>
       </section>
     }
 

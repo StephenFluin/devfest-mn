@@ -3,9 +3,9 @@ import { Session, Speaker } from './data.service';
 import { slugify, summarize } from './slug';
 
 /**
- * schema.org structured data for the conference and its talks. Every page describes the conference
+ * schema.org structured data for the conference and its sessions. Every page describes the conference
  * the same way and with the same @id, so search engines treat the home page, schedule, sessions,
- * and speakers as one event: the home page lists its speakers, the schedule its talks (subEvent),
+ * and speakers as one event: the home page lists its speakers, the schedule its sessions (subEvent),
  * and each session and speaker page points back to it.
  */
 export const EVENT_ID = `${environment.siteUrl}/#event`;
@@ -39,7 +39,7 @@ const venue = {
   },
 };
 
-/** A conference ticket is what gets you into any talk, so talks offer the same ticket. */
+/** A conference ticket is what gets you into any session, so sessions offer the same ticket. */
 const tickets = environment.showRegister && {
   offers: {
     '@type': 'Offer',
@@ -85,8 +85,8 @@ export function personRef(speaker: Speaker) {
 }
 
 /**
- * One talk, or null when it has no start time yet (search engines require one). `speakers` looks up
- * a speaker by key; only published speakers are public. On its own page a talk names the conference
+ * One session, or null when it has no start time yet (search engines require one). `speakers` looks up
+ * a speaker by key; only published speakers are public. On its own page a session names the conference
  * as its superEvent; in the schedule it's already nested in the conference's subEvent list.
  */
 export function sessionEvent(
@@ -119,7 +119,7 @@ export function sessionEvent(
   };
 }
 
-/** Talks with a start time, in schedule order. */
+/** Sessions with a start time, in schedule order. */
 export function scheduledSessionEvents(
   sessions: Session[],
   speakers: (key: string) => Speaker | undefined,

@@ -8,7 +8,7 @@ import montserrat700 from '@fontsource/montserrat/files/montserrat-latin-700-nor
 import { environment } from './environments/environment';
 
 /**
- * 1200x630 social share card for a speaker: photo, name, company, talk, and the event date over
+ * 1200x630 social share card for a speaker: photo, name, company, session, and the event date over
  * the site's hero photo. Laid out by satori (which draws text as shapes, so no system fonts are
  * needed) and rasterized by resvg; both run as WebAssembly bundled into the server.
  */
@@ -16,7 +16,7 @@ export interface CardSpeaker {
   name: string;
   company?: string;
   imageUrl?: string;
-  talks: string[];
+  sessions: string[];
 }
 
 const WIDTH = 1200;
@@ -80,11 +80,11 @@ export async function renderSpeakerCard(speaker: CardSpeaker, imagesFolder: stri
   const text = [
     el('div', { fontSize: 58, fontWeight: 700, color: '#111' }, speaker.name),
     speaker.company && el('div', { fontSize: 32, color: '#444', marginTop: 4 }, speaker.company),
-    speaker.talks.length &&
+    speaker.sessions.length &&
       el(
         'div',
         { fontSize: 36, color: '#0066cc', marginTop: 24 },
-        `“${speaker.talks.join('” and “')}”`,
+        `“${speaker.sessions.join('” and “')}”`,
       ),
   ].filter(Boolean);
 

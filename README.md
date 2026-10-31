@@ -4,7 +4,7 @@ This is the website for [DevFestMN](https://devfest.mn), the annual Twin Cities 
 GDG Twin Cities. The site is how attendees, speakers, and sponsors find and take part in the event:
 
 - **Attendees** see the date, venue, schedule, and speakers, and buy tickets through Eventbrite.
-- **Speakers** read the call for papers and submit talks.
+- **Speakers** read the call for papers and submit sessions.
 - **Sponsors** learn about sponsorship and see who already supports the event.
 - **Organizers** use the admin pages to manage speakers, sessions, and the schedule, and to track ticket sales.
 
@@ -33,7 +33,7 @@ Then open http://localhost:4200/. The app reloads automatically when you change 
 
 ## How the site is built and deployed
 
-The site is an Angular app with server-side rendering. Data such as talks, speakers, and the schedule lives in
+The site is an Angular app with server-side rendering. Data such as sessions, speakers, and the schedule lives in
 the Firebase Realtime Database, and speaker photos live in Firebase Storage.
 
 It's served by **Firebase App Hosting** (backend `devfestmn-2026-webapp`, configured in `firebase.json` and
@@ -65,9 +65,9 @@ We keep the same codebase every year but move to a new Firebase project.
 6. Carry the ticket history forward (see [Ticket burndown](#ticket-burndown)).
 7. Point last year's archive at its own subdomain (see [Archiving a past year](#archiving-a-past-year)).
 8. If you copy speakers or sessions over from an older year (before the **Published** flag), run
-   `node scripts/publish-flag.mts --flags --talks --year <year>` to see what it would change, then again with
+   `node scripts/publish-flag.mts --flags --sessions --year <year>` to see what it would change, then again with
    `--apply`. It renames speakers' old `confirmed` flag to `published`, publishes sessions saved before the flag
-   existed, and gives each speaker without a talk an unpublished "<Name>'s talk".
+   existed, and gives each speaker without a session an unpublished "<Name>'s session".
 
 ## Archiving a past year
 
@@ -207,7 +207,7 @@ LinkedIn, Bluesky and X, an email, a copy-to-clipboard version for Slack and Mas
 calendar entry (`/calendar/devfestmn-<year>.ics`). Each post links back tagged with the network, so the
 funnel shows which networks attendees' posts convert on.
 
-Published speakers see a **Share your talk** kit on their edit page (`/speaker-edit/<token>/edit`): their
+Published speakers see a **Share your session** kit on their edit page (`/speaker-edit/<token>/edit`): their
 share card, their `/s/<name>` link and a post per network. The same kit appears in the admin speaker editor,
 with **Email their share kit**, which sends it to an invited speaker. The `/s/` link takes `?m=<network>`
 so the funnel splits speaker traffic by network too.
@@ -218,13 +218,13 @@ Setup: deploy the database rules (`marketing` is new). Emailing share kits uses 
 ## Announcing speakers
 
 Speakers are added in the admin (`/admin/speakers/new/edit`) and only appear publicly once marked
-**Published**. Each speaker page sets its own title, description (leading with the talk), share image, and
+**Published**. Each speaker page sets its own title, description (leading with the session), share image, and
 `Person` structured data, and the home page lists published speakers as the event's `performer`s.
 
 1. Mark speakers **Published** in the admin. Once at least one is, the site adds the Speakers nav link, the
    home page's speakers section, and `/speakers` plus every published speaker in `/sitemap.xml`, with no
    deploy. Publishing a speaker makes them public, so publish everyone together to announce the lineup at once.
-2. Each published speaker's share image is a 1200x630 card (photo, name, company, talk) rendered by the server
+2. Each published speaker's share image is a 1200x630 card (photo, name, company, session) rendered by the server
    at `/og/speakers/<key>.png` (`src/speaker-card.ts`). Nothing to generate: cards update when the speaker or
    their sessions are saved, since the image URL carries their `updatedAt`.
 3. Give each speaker their short link, `https://devfest.mn/s/<name-slug>` (shown in the speaker editor). It
@@ -237,7 +237,7 @@ Speakers are added in the admin (`/admin/speakers/new/edit`) and only appear pub
 Sessions have the same **Published** checkbox (in the session editor). Unpublished sessions are left out of the
 schedule, session pages, speaker pages, share cards, calendar files and the sitemap; admins still see them on
 `/schedule` and `/sessions`, marked **Not published**, so they can lay out the day before announcing it. A
-session an admin creates from an empty slot on the schedule starts published; an invited speaker's talk starts
+session an admin creates from an empty slot on the schedule starts published; an invited speaker's session starts
 unpublished. The flag only hides sessions on the site: like unpublished speakers, they can still be read from the
 database, so don't put anything secret in them.
 
@@ -249,8 +249,8 @@ The token is random (not the speaker's database key, which is public), and anyon
 one speaker's name, bio, company, links, and photo, but can't publish, create, or delete speakers. The
 speaker editor shows the link again, with an **Email it again** button, for invited speakers.
 
-Inviting a speaker also creates an unpublished talk for them, titled "<Name>'s talk", for them to fill in. The
-speaker editor's **Talks** card lists their talks and has **Add a talk** for a speaker giving more than one.
+Inviting a speaker also creates an unpublished session for them, titled "<Name>'s session", for them to fill in. The
+speaker editor's **Sessions** card lists their sessions and has **Add a session** for a speaker giving more than one.
 
 Email goes through [Resend](https://resend.com) from the server (`src/mailer.ts`, behind a small `Mailer`
 interface so the provider can be swapped). Setup, once:
@@ -289,8 +289,9 @@ gcloud storage buckets add-iam-policy-binding gs://devfestmn-2026.firebasestorag
 Locally there are no Google credentials, so to try uploads run the server with
 `FIREBASE_DATABASE_EMULATOR_HOST` and `FIREBASE_STORAGE_EMULATOR_HOST` pointing at the emulators.
 
-Speakers can also edit the **title and description** of each talk they're on, from the same page. They can't
-create or publish talks or change anything else (time, room, length, track, notes or who's presenting). The database rules can't tell who presents a session (its
+Speakers can also edit the **title and description** of each session they're on, from the same page. They can't
+create or publish sessions or change anything else (time, room, length, track, notes or who's presenting).
+The database rules can't tell who presents a session (its
 speakers are stored under push IDs), so these saves go through the server
 (`POST /api/speaker-edit/<token>/sessions/<key>`), which checks the speaker is on that session and writes only
 those two fields with its service account. Locally, set `FIREBASE_DATABASE_EMULATOR_HOST` to try it.

@@ -65,7 +65,7 @@ export class SpeakerFullComponent {
       } else if (speaker.imageUrl) {
         meta.setImage(absolute(speaker.imageUrl), alt);
       }
-      const talks = sessions
+      const events = sessions
         .map((session) =>
           sessionEvent(session, (key) => this.ds.speaker(key), { standalone: true }),
         )
@@ -75,26 +75,26 @@ export class SpeakerFullComponent {
           speaker,
           path,
           this.links().map((link) => link.url),
-          talks,
+          events,
         ),
       );
     });
   }
 }
 
-/** Leads with the talk, since that's what people search for, then the bio. */
+/** Leads with the session, since that's what people search for, then the bio. */
 function describe(speaker: Speaker, sessions: Session[]) {
   const titles = sessions.map((session) => session.title).filter(Boolean);
   const who = speaker.company ? `${speaker.name} from ${speaker.company}` : speaker.name;
-  const talk = titles.length ? ` on “${titles.join('” and “')}”` : '';
-  const intro = `${who} speaks${talk} at DevFestMN ${environment.year}, ${environment.eventDateDisplay} in Minneapolis.`;
+  const about = titles.length ? ` on “${titles.join('” and “')}”` : '';
+  const intro = `${who} speaks${about} at DevFestMN ${environment.year}, ${environment.eventDateDisplay} in Minneapolis.`;
   // Add the bio only when it fits; a bio cut to a few words reads worse than none.
   const full = speaker.bio ? `${intro} ${summarize(speaker.bio, 1000)}` : intro;
   return full.length <= 160 ? full : summarize(intro);
 }
 
-/** The speaker, performing in their scheduled talks (or the conference, before talks have times). */
-function personData(speaker: Speaker, path: string, sameAs: string[], talks: object[]) {
+/** The speaker, performing in their scheduled sessions (or the conference, before sessions have times). */
+function personData(speaker: Speaker, path: string, sameAs: string[], sessions: object[]) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Person',
@@ -104,6 +104,6 @@ function personData(speaker: Speaker, path: string, sameAs: string[], talks: obj
     ...(speaker.bio && { description: summarize(speaker.bio) }),
     ...(speaker.company && { worksFor: { '@type': 'Organization', name: speaker.company } }),
     ...(sameAs.length && { sameAs }),
-    performerIn: talks.length ? talks : conferenceEvent(),
+    performerIn: sessions.length ? sessions : conferenceEvent(),
   };
 }

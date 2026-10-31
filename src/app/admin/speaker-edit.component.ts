@@ -11,6 +11,8 @@ import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { push } from 'firebase/database';
 import { environment } from '../../environments/environment';
 import { slugify } from '../shared/slug';
 import { inviteLink, sendInviteEmail, sendSpeakerKit } from '../speaker-invite/invite-email';
@@ -20,6 +22,15 @@ import { SpeakerKitComponent } from '../speaker-invite/speaker-kit.component';
 @Component({
   templateUrl: './speaker-edit.component.html',
   styles: `
+    .session-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 16px;
+    }
+    .session-actions mat-form-field {
+      min-width: 280px;
+    }
     .profile {
       display: grid;
       grid-template-columns: 160px 1fr;
@@ -57,6 +68,7 @@ import { SpeakerKitComponent } from '../speaker-invite/speaker-kit.component';
     UploaderComponent,
     DatePipe,
     SpeakerKitComponent,
+    MatSelectModule,
   ],
 })
 export class SpeakerEditComponent {
@@ -68,11 +80,34 @@ export class SpeakerEditComponent {
 
   private params = toSignal(this.route.paramMap, { requireSync: true });
 
-  /** A new unpublished talk with this speaker on it, opened in the session editor. */
-  async addTalk(speaker: Speaker) {
-    const talk = this.ds.addPlaceholderTalk(speaker.name ?? 'New speaker', speaker.$key);
-    await talk;
-    this.router.navigate(['/admin/sessions', talk.key, 'edit']);
+  sessionStatus = signal('');
+
+  /** Sessions this speaker isn't on yet, by title, for Add to Existing Session. */
+  otherSessions(speakerKey: string) {
+    return this.ds
+      .schedule()
+      .filter((session) => !Object.values(session.speakers ?? {}).includes(speakerKey))
+      .sort((a, b) => (a.title ?? '').localeCompare(b.title ?? ''));
+  }
+
+  /** Adds the speaker to a session's speakers, the same way the session editor does. */
+  async addToSession(speaker: Speaker, sessionKey: string) {
+    if (!sessionKey) return;
+    const session = this.ds.schedule().find((item) => item.$key === sessionKey);
+    try {
+      await push(this.ds.ref(`schedule/${sessionKey}/speakers`), speaker.$key);
+      this.sessionStatus.set(`Added to "${session?.title || 'Untitled'}".`);
+    } catch (error) {
+      console.error('Error adding speaker to session', error);
+      this.sessionStatus.set(`Couldn't add them: ${error.message ?? error}`);
+    }
+  }
+
+  /** A new unpublished session with this speaker on it, opened in the session editor. */
+  async createSession(speaker: Speaker) {
+    const session = this.ds.addPlaceholderSession(speaker.name ?? 'New speaker', speaker.$key);
+    await session;
+    this.router.navigate(['/admin/sessions', session.key, 'edit']);
   }
 
   /** A copy, so form edits don't leak into the shared live data before saving. */

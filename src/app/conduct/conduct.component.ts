@@ -90,7 +90,7 @@ import { Component } from '@angular/core';
         </li>
         <li>Deliberate intimidation, stalking or following (online or in person).</li>
         <li>Advocating for, or encouraging, any of the above behavior.</li>
-        <li>Sustained disruption of community events, including talks and, presentations.</li>
+        <li>Sustained disruption of community events, including sessions and presentations.</li>
       </ul>
 
       <h3>Consequences of Unacceptable Behavior</h3>

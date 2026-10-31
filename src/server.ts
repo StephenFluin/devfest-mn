@@ -19,7 +19,11 @@ import { INVITE_TOKEN, inviteEmail, speakerKitEmail } from './app/speaker-invite
 import { calendarEvent, conferenceCalendarEvent, icsFile } from './app/shared/calendar';
 import { cfpStateAt } from './app/shared/cfp-deadline';
 import type { Session, SpeakerInvite } from './app/shared/data.service';
-import { presents, SESSION_KEY, talkUpdate } from './app/speaker-invite/talk-edit';
+import {
+  presents,
+  SESSION_KEY,
+  speakerSessionUpdate,
+} from './app/speaker-invite/speaker-session-edit';
 import { publicDatabase, rateLimiter, readJson, serviceDatabase } from './server-helpers';
 import { UntypedJson } from './app/shared/untyped-json';
 import { BurndownOrder, discountKey, DiscountUsage } from './app/shared/campaign';
@@ -84,7 +88,7 @@ async function sitemapEntries(): Promise<SitemapEntry[]> {
     fetchPublic('speakers'),
   ]);
   const schedule = allSessions.filter(([, session]) => session.published);
-  // Speaker pages show their talks and session pages show their speakers, so each page changes
+  // Speaker pages show their sessions and session pages show their speakers, so each page changes
   // when either side is saved.
   const speakerUpdated = new Map(speakers.map(([key, speaker]) => [key, speaker.updatedAt ?? 0]));
   const sessionsOf = (speakerKey: string) =>
@@ -296,7 +300,7 @@ async function speakerCardData(key: string) {
       name: speaker.name,
       company: speaker.company,
       imageUrl: speaker.imageUrl,
-      talks: sessions.map((session) => session.title).filter(Boolean),
+      sessions: sessions.map((session) => session.title).filter(Boolean),
     },
   };
 }
@@ -624,7 +628,7 @@ app.post('/api/admin/speaker-invites/:token/email', async (req, res) => {
 
 /**
  * Emails an invited, published speaker their share kit: their short link and ready-to-post messages
- * about their talk, so announcing themselves takes one click. Same permission model as the invite
+ * about their session, so announcing themselves takes one click. Same permission model as the invite
  * email above.
  */
 app.post('/api/admin/speaker-invites/:token/kit', async (req, res) => {
@@ -673,14 +677,14 @@ app.post('/api/admin/speaker-invites/:token/kit', async (req, res) => {
         .json({ error: 'Publish the speaker first; the kit links to their public page' });
       return;
     }
-    const talks = Object.values<UntypedJson>(schedule ?? {})
+    const titles = Object.values<UntypedJson>(schedule ?? {})
       .filter((session) => session.published && presents(session, invite.speaker))
       .map((session) => session.title)
       .filter(Boolean);
     await createMailer().send({
       to: invite.email,
       replyTo: environment.contactEmail,
-      ...speakerKitEmail(speaker.name, talks),
+      ...speakerKitEmail(speaker.name, titles),
     });
     await db(`${base}/speakerInvites/${token}`, {
       method: 'PATCH',
@@ -802,10 +806,10 @@ app.post(
   },
 );
 
-const talkLimit = rateLimiter(30, 60_000, 'saves');
+const speakerSessionLimit = rateLimiter(30, 60_000, 'saves');
 
 /**
- * Saves an invited speaker's edit to the title and description of a talk they present. Like the
+ * Saves an invited speaker's edit to the title and description of a session they present. Like the
  * photo upload, holding the invite token is the permission, and the server writes with its own
  * service account: the database rules can't tell who presents a session (its speakers are stored
  * under push IDs), so they leave the schedule to admins. Only the title, description and
@@ -816,13 +820,13 @@ app.post(
   express.json({ limit: '32kb' }),
   async (req, res) => {
     try {
-      if (!talkLimit(res)) return;
+      if (!speakerSessionLimit(res)) return;
       const { token, session: sessionKey } = req.params;
       if (!INVITE_TOKEN.test(token) || !SESSION_KEY.test(sessionKey)) {
-        res.status(400).json({ error: 'Not a talk you can edit' });
+        res.status(400).json({ error: 'Not a session you can edit' });
         return;
       }
-      const result = talkUpdate(req.body);
+      const result = speakerSessionUpdate(req.body);
       if ('error' in result) {
         res.status(400).json(result);
         return;
@@ -838,12 +842,12 @@ app.post(
         return;
       }
       if (!presents(session, invite.speaker)) {
-        res.status(403).json({ error: "You're not a speaker on this talk" });
+        res.status(403).json({ error: "You're not a speaker on this session" });
         return;
       }
       const db = await serviceDatabase();
       if (!db) {
-        res.status(503).json({ error: 'Saving talks is not configured on this server' });
+        res.status(503).json({ error: 'Saving sessions is not configured on this server' });
         return;
       }
       await readJson(
@@ -854,8 +858,8 @@ app.post(
       );
       res.json({ saved: true });
     } catch (error) {
-      console.error('Error saving speaker talk:', error);
-      res.status(502).json({ error: 'Unable to save the talk' });
+      console.error('Error saving speaker session:', error);
+      res.status(502).json({ error: 'Unable to save the session' });
     }
   },
 );

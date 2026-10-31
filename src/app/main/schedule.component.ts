@@ -38,7 +38,7 @@ export interface Schedule {
       padding: 12px 0;
       border-top: 1px solid var(--color-border-soft);
     }
-    .unpublished .talk {
+    .unpublished .session {
       flex: 1;
       min-width: 240px;
     }
@@ -68,7 +68,7 @@ export class ScheduleComponent {
   data = computed(() => (this.showAgenda() ? this.populatedAgenda() : this.allSessions()));
 
   /**
-   * For admins: every unpublished session, including speakers' talks that have no time or room yet
+   * For admins: every unpublished session, including speakers' sessions that have no time or room yet
    * and so aren't in the grid.
    */
   unpublished = computed(() =>
@@ -97,14 +97,14 @@ export class ScheduleComponent {
   }
 
   constructor() {
-    // The conference with its scheduled talks as sub-events.
+    // The conference with its scheduled sessions as sub-events.
     effect(() => {
-      const talks = scheduledSessionEvents(this.ds.publishedSchedule(), (key) =>
+      const events = scheduledSessionEvents(this.ds.publishedSchedule(), (key) =>
         this.ds.speaker(key),
       );
       this.meta.setStructuredData({
         '@context': 'https://schema.org',
-        ...conferenceEvent(talks.length ? { subEvent: talks } : {}),
+        ...conferenceEvent(events.length ? { subEvent: events } : {}),
       });
     });
   }

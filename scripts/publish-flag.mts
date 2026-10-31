@@ -1,21 +1,21 @@
 // Moves the year's data to the `published` flag, once per year's project:
 //
-//   --flags  Speakers: renames `confirmed` to `published`. Sessions: marks any without the flag as
-//            published, since every session was public before the flag existed.
-//   --talks  Gives every speaker who isn't on any session an unpublished "<Name>'s talk", like
-//            inviting a speaker does now, so they can fill it in from their edit link. Run this
-//            only once the code that understands `published` is live: older code shows every
-//            session, including these.
+//   --flags     Speakers: renames `confirmed` to `published`. Sessions: marks any without the flag
+//               as published, since every session was public before the flag existed.
+//   --sessions  Gives every speaker who isn't on any session an unpublished "<Name>'s session",
+//               like inviting a speaker does now, so they can fill it in from their edit link. Run
+//               this only once the code that understands `published` is live: older code shows
+//               every session, including these.
 //
 // Usage (uses your Firebase CLI login, `npx firebase login`):
-//   node scripts/publish-flag.mts --flags --talks [--year 2026] [--project devfestmn-2026] [--apply]
+//   node scripts/publish-flag.mts --flags --sessions [--year 2026] [--project devfestmn-2026] [--apply]
 //
 // Without --apply it prints the changes and writes nothing. Both steps can be run again safely.
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { placeholderTalkTitle } from '../src/app/speaker-invite/talk-edit.ts';
+import { placeholderSessionTitle } from '../src/app/speaker-invite/speaker-session-edit.ts';
 
 const args = process.argv.slice(2);
 const option = (name: string, fallback: string) => {
@@ -25,8 +25,8 @@ const option = (name: string, fallback: string) => {
 const year = option('--year', '2026');
 const project = option('--project', `devfestmn-${year}`);
 const apply = args.includes('--apply');
-if (!args.includes('--flags') && !args.includes('--talks')) {
-  console.error('Pass --flags, --talks or both. See the top of this file.');
+if (!args.includes('--flags') && !args.includes('--sessions')) {
+  console.error('Pass --flags, --sessions or both. See the top of this file.');
   process.exit(1);
 }
 
@@ -65,14 +65,14 @@ if (args.includes('--flags')) {
   }
 }
 
-if (args.includes('--talks')) {
+if (args.includes('--sessions')) {
   const presenting = new Set(
     Object.values(schedule).flatMap((session) => Object.values(session.speakers ?? {})),
   );
   for (const [key, speaker] of Object.entries(speakers)) {
     if (presenting.has(key) || !speaker.name) continue;
     updates[`schedule/${pushId()}`] = {
-      title: placeholderTalkTitle(speaker.name),
+      title: placeholderSessionTitle(speaker.name),
       published: false,
       speakers: { [pushId()]: key },
       updatedAt: { '.sv': 'timestamp' },

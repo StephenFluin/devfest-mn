@@ -19,13 +19,13 @@ import { DataService } from './data.service';
 const STORAGE_KEY = `agenda${environment.year}`;
 
 /**
- * The talks someone has saved to My Agenda.
+ * The sessions someone has saved to My Agenda.
  *
- * Signed out, saved talks live in this browser's localStorage. Signed in, they live in the
- * database at agendas/<uid>, so they follow the person between devices. When someone with talks
- * saved on this device signs in, those talks are copied into their account and then cleared here,
+ * Signed out, saved sessions live in this browser's localStorage. Signed in, they live in the
+ * database at agendas/<uid>, so they follow the person between devices. When someone with sessions
+ * saved on this device signs in, those sessions are copied into their account and then cleared here,
  * so they don't reappear for whoever uses this browser after they sign out. Until a copy succeeds
- * (offline, say) the talk stays here and still shows as saved.
+ * (offline, say) the session stays here and still shows as saved.
  */
 @Injectable({ providedIn: 'root' })
 export class AgendaService {
@@ -44,7 +44,7 @@ export class AgendaService {
     return uid ? this.agendaRef(uid) : undefined;
   }, 'key');
 
-  /** Keys of every saved talk, from this device and the signed-in account. */
+  /** Keys of every saved session, from this device and the signed-in account. */
   keys = computed(
     () =>
       new Set([
@@ -55,7 +55,7 @@ export class AgendaService {
       ]),
   );
 
-  /** Talks being copied into the account right now, so each is only written once. */
+  /** Sessions being copied into the account right now, so each is only written once. */
   private copying = new Set<string>();
 
   constructor() {
@@ -63,7 +63,7 @@ export class AgendaService {
       return;
     }
     afterNextRender(() => this.local.set(readStored()));
-    // Keep tabs in step when another tab saves or removes a talk.
+    // Keep tabs in step when another tab saves or removes a session.
     const onStorage = (event: StorageEvent) => {
       if (event.key === STORAGE_KEY || event.key === null) {
         this.local.set(readStored());
@@ -101,8 +101,8 @@ export class AgendaService {
   }
 
   /**
-   * Moves talks saved on this device into the signed-in account. Waits for the schedule, because
-   * the database only accepts talks that exist; talks that have since been removed from the
+   * Moves sessions saved on this device into the signed-in account. Waits for the schedule, because
+   * the database only accepts sessions that exist; sessions that have since been removed from the
    * schedule are dropped instead.
    */
   private copyToAccount() {
@@ -127,7 +127,7 @@ export class AgendaService {
             this.setLocal(this.local().filter((item) => item !== key));
           }
         })
-        .catch((error) => console.error('failure while copying saved talk to account', error))
+        .catch((error) => console.error('failure while copying saved session to account', error))
         .finally(() => this.copying.delete(key));
     }
   }

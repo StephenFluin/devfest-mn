@@ -78,13 +78,13 @@ export function attendeeShareOptions() {
     `Join me at DevFestMN ${environment.year}`,
     (link) =>
       `I just got my ticket to ${EVENT} in Minneapolis. ` +
-      `A day of talks on AI, cloud, mobile and the web. Join me! ${link} #DevFestMN`,
+      `A day of sessions on AI, cloud, mobile and the web. Join me! ${link} #DevFestMN`,
   );
 }
 
-/** What a published speaker can post about their talk. The link is their /s/ short link. */
-export function speakerShareOptions(nameSlug: string, talks: string[]) {
-  const about = talks.length ? ` about “${talks.join('” and “')}”` : '';
+/** What a published speaker can post about their session. The link is their /s/ short link. */
+export function speakerShareOptions(nameSlug: string, sessions: string[]) {
+  const about = sessions.length ? ` about “${sessions.join('” and “')}”` : '';
   return NETWORKS.map(({ network, label }) => {
     // The /s/ redirect sets utm_source=speaker and the speaker's campaign; `m` is the medium.
     const link = `${environment.siteUrl}/s/${nameSlug}?m=${network === 'copy' ? 'chat' : network}`;
@@ -95,7 +95,7 @@ export function speakerShareOptions(nameSlug: string, talks: string[]) {
       network,
       label,
       text,
-      href: composeUrl(network, text, `Come see my talk at DevFestMN ${environment.year}`),
+      href: composeUrl(network, text, `Come see my session at DevFestMN ${environment.year}`),
     };
   });
 }

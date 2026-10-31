@@ -28,7 +28,7 @@ import { speakerPageUrl } from './invite-email';
           Your link, which shows this card when posted:
           <a [href]="link()">{{ link() }}</a>
         </p>
-        <app-share-buttons [options]="options()" label="Share your talk" />
+        <app-share-buttons [options]="options()" label="Share your session" />
       </div>
     }
   `,

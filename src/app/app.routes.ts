@@ -46,7 +46,7 @@ export const MainRoutes: Routes = [
     data: {
       title: 'Speaker Call for Papers',
       description:
-        'Submit a talk for DevFestMN 2026. We want sessions on AI and agents, Google technologies, web, mobile, cloud, security, and careers from speakers of every experience level.',
+        'Submit a session for DevFestMN 2026. We want sessions on AI and agents, Google technologies, web, mobile, cloud, security, and careers from speakers of every experience level.',
     },
   },
   {

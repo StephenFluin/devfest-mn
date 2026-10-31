@@ -22,7 +22,7 @@ export function inviteEmail(name: string, token: string) {
       inviteLink(token),
       '',
       "Anyone with this link can edit your profile, so please don't share it. " +
-        'Your profile will appear on the site once we publish your talk.',
+        'Your profile will appear on the site once we publish your session.',
       '',
       'Thanks,',
       'The DevFestMN team',
@@ -32,13 +32,13 @@ export function inviteEmail(name: string, token: string) {
 
 /**
  * The share kit sent to a published speaker: their short link and a post for each network, so
- * telling their followers about the talk is a copy and paste.
+ * telling their followers about the session is a copy and paste.
  */
-export function speakerKitEmail(name: string, talks: string[]) {
+export function speakerKitEmail(name: string, sessions: string[]) {
   const slug = slugify(name);
-  const posts = speakerShareOptions(slug, talks);
+  const posts = speakerShareOptions(slug, sessions);
   return {
-    subject: `You're announced! Share your DevFestMN ${environment.year} talk`,
+    subject: `You're announced! Share your DevFestMN ${environment.year} session`,
     text: [
       `Hi ${name},`,
       '',
