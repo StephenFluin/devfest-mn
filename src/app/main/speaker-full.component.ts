@@ -51,7 +51,7 @@ export class SpeakerFullComponent {
       meta.setDescription(describe(speaker, sessions));
       meta.setType('profile');
       const alt = `${speaker.name}, speaker at DevFestMN ${environment.year}`;
-      if (speaker.confirmed) {
+      if (speaker.published) {
         // Rendered by the server (src/speaker-card.ts). The version changes whenever the
         // speaker or one of their sessions is saved, so shares pick up the new card.
         const version = Math.max(

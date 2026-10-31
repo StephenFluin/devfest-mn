@@ -78,8 +78,8 @@ export class HomeComponent {
   slugify = slugify;
   private ds = inject(DataService);
 
-  /** Confirmed speakers; the home page's speakers section appears once there are any. */
-  speakers = this.ds.confirmedSpeakers;
+  /** Published speakers; the home page's speakers section appears once there are any. */
+  speakers = this.ds.publishedSpeakers;
   featuredSpeakers = computed(() => this.speakers().slice(0, 6));
 
   constructor() {
@@ -97,7 +97,7 @@ export class HomeComponent {
     }
   }
 
-  /** Event structured data; re-set when the confirmed speakers (its performers) change. */
+  /** Event structured data; re-set when the published speakers (its performers) change. */
   private eventData = effect(() => {
     const performers = this.speakers();
     this.meta.setStructuredData({

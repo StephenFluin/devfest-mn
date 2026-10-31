@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
 import { DataService } from '../shared/data.service';
@@ -14,5 +14,8 @@ export class SessionsComponent {
   router = inject(Router);
   auth = inject(AuthService);
 
-  sessions = this.ds.schedule;
+  /** Admins also see unpublished sessions, such as new speakers' talks without a time yet. */
+  sessions = computed(() =>
+    this.auth.isAdmin() ? this.ds.schedule() : this.ds.publishedSchedule(),
+  );
 }

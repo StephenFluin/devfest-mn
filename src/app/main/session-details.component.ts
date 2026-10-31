@@ -52,7 +52,7 @@ export class SessionDetailsComponent {
   /** Links to add this session to a calendar, once it has a time. */
   calendar = computed(() => {
     const session = this.session();
-    const event = session && calendarEvent(session, this.ds.schedule());
+    const event = session && calendarEvent(session, this.ds.publishedSchedule());
     return event && { google: googleCalendarUrl(event), ics: icsPath(session) };
   });
 

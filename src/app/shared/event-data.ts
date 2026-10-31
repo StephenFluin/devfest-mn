@@ -86,7 +86,7 @@ export function personRef(speaker: Speaker) {
 
 /**
  * One talk, or null when it has no start time yet (search engines require one). `speakers` looks up
- * a speaker by key; only confirmed speakers are public. On its own page a talk names the conference
+ * a speaker by key; only published speakers are public. On its own page a talk names the conference
  * as its superEvent; in the schedule it's already nested in the conference's subEvent list.
  */
 export function sessionEvent(
@@ -97,7 +97,7 @@ export function sessionEvent(
   if (!session.title || !session.startTime) return null;
   const performers = Object.values<string>(session.speakers ?? {})
     .map(speakers)
-    .filter((speaker) => speaker?.confirmed && speaker.name)
+    .filter((speaker) => speaker?.published && speaker.name)
     .map(personRef);
   return {
     '@type': 'Event',

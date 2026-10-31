@@ -33,7 +33,7 @@ import { PurchaseShareComponent } from './tickets/purchase-share.component';
 export class AppComponent {
   environment = environment;
   cfp = cfpState();
-  /** For the Speakers nav link, which appears once any speakers are confirmed. */
+  /** For the Speakers nav link, which appears once any speakers are published. */
   ds = inject(DataService);
   /** Set when an Eventbrite order completes; shows the share prompt. */
   order = completedOrder;

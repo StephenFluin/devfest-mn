@@ -13,6 +13,7 @@ import {
 } from 'firebase/database';
 import { environment } from '../../environments/environment';
 import { DATABASE, listResource } from '../realtime-data/firebase';
+import { placeholderTalkTitle } from '../speaker-invite/talk-edit';
 
 export interface Session {
   $key?: string;
@@ -27,6 +28,8 @@ export interface Session {
   /** Markdown rendered to HTML. Left for Angular to sanitize when bound to [innerHTML]. */
   renderedDescription?: string;
   notes?: string;
+  /** Shown on the public site. Speakers' talks start unpublished, so organizers can review them. */
+  published?: boolean;
   /** Only in the session editor; stored separately at adminNotes/<session>. */
   adminNotes?: string;
   /** Server time (ms) of the last save in the admin. */
@@ -39,7 +42,7 @@ export interface Speaker {
   bio?: string;
   /** Markdown rendered to HTML. Left for Angular to sanitize when bound to [innerHTML]. */
   renderedBio?: string;
-  confirmed?: boolean;
+  published?: boolean;
   company?: string;
   twitter?: string;
   imageUrl?: string;
@@ -165,12 +168,15 @@ export class DataService {
   }
 
   /**
-   * Speakers marked Confirmed in the admin, which are the public ones. The speakers page, nav link,
+   * Speakers marked Published in the admin, which are the public ones. The speakers page, nav link,
    * home page section and sitemap entries all appear once there's at least one.
    */
-  confirmedSpeakers = computed(() =>
-    this.speakers().filter((speaker) => speaker.confirmed && speaker.name),
+  publishedSpeakers = computed(() =>
+    this.speakers().filter((speaker) => speaker.published && speaker.name),
   );
+
+  /** Sessions marked Published in the admin, which are the public ones. */
+  publishedSchedule = computed(() => this.schedule().filter((session) => session.published));
 
   private speakerMap = computed(() => new Map(this.speakers().map((s) => [s.$key, s])));
 
@@ -178,10 +184,13 @@ export class DataService {
     return this.speakerMap().get(key);
   }
 
-  /** Sessions the speaker is presenting, from each session's speakers map (id -> speaker key). */
-  sessionsFor(speakerKey: string | undefined): Session[] {
+  /**
+   * Sessions the speaker is presenting, from each session's speakers map (id -> speaker key). Only
+   * published ones, unless `unpublished` is set.
+   */
+  sessionsFor(speakerKey: string | undefined, { unpublished = false } = {}): Session[] {
     if (!speakerKey) return [];
-    return this.schedule().filter((session) =>
+    return (unpublished ? this.schedule() : this.publishedSchedule()).filter((session) =>
       Object.values(session.speakers ?? {}).includes(speakerKey),
     );
   }
@@ -253,10 +262,15 @@ export class DataService {
       });
   }
 
-  /** Creates an unconfirmed speaker plus an invite for them, and returns the invite's token. */
+  /**
+   * Creates an unpublished speaker, an unpublished talk for them to fill in, and an invite, and
+   * returns the invite's token. Speakers can edit their talks but not create them, so each starts
+   * with one; an admin adds any others, and sets the time and room.
+   */
   async inviteSpeaker(name: string, email: string): Promise<string> {
-    const speaker = this.save('speakers', { name, confirmed: false });
+    const speaker = this.save('speakers', { name, published: false });
     await speaker;
+    await this.addPlaceholderTalk(name, speaker.key);
     const bytes = crypto.getRandomValues(new Uint8Array(24));
     const token = btoa(String.fromCharCode(...bytes))
       .replace(/\+/g, '-')
@@ -269,6 +283,15 @@ export class DataService {
       createdAt: serverTimestamp(),
     });
     return token;
+  }
+
+  /** An unpublished session with just a default title and the speaker on it. */
+  addPlaceholderTalk(name: string, speakerKey: string) {
+    return this.save('schedule', {
+      title: placeholderTalkTitle(name),
+      published: false,
+      speakers: { [push(this.ref('schedule')).key]: speakerKey },
+    });
   }
 
   /** Admin only: invites sent to a speaker, so their edit link can be found again. */

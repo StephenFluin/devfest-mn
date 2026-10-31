@@ -46,7 +46,7 @@
               ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
             },
             "landing": {
-              ".validate": "newData.isString() && newData.val().matches(/^\\/[^\\s]{0,200}$/)"
+              ".validate": "newData.isString() && newData.val().matches(/^\\/[^ ]{0,200}$/)"
             },
             "promo": {
               ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{2,30}$/)"
@@ -55,6 +55,14 @@
           }
         },
         "campaigns": {
+          ".read": "root.child('admin/'+auth.uid).exists()",
+          ".write": "$year.matches(/^[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()"
+        },
+        "subscribers": {
+          ".read": "root.child('admin/'+auth.uid).exists()",
+          ".write": false
+        },
+        "sends": {
           ".read": "root.child('admin/'+auth.uid).exists()",
           ".write": "$year.matches(/^[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()"
         }
@@ -80,7 +88,7 @@
         ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()",
         "$speaker_id": {
           ".write": "$year.matches(/^devfest[0-9]{4}$/) && data.exists() && newData.exists() && root.child($year+'/speakerGrants/'+auth.uid+'/speaker').val() === $speaker_id",
-          "confirmed": {
+          "published": {
             ".validate": "root.child('admin/'+auth.uid).exists() || newData.val() === data.val()"
           }
         }

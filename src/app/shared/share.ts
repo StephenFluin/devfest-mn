@@ -82,7 +82,7 @@ export function attendeeShareOptions() {
   );
 }
 
-/** What a confirmed speaker can post about their talk. The link is their /s/ short link. */
+/** What a published speaker can post about their talk. The link is their /s/ short link. */
 export function speakerShareOptions(nameSlug: string, talks: string[]) {
   const about = talks.length ? ` about “${talks.join('” and “')}”` : '';
   return NETWORKS.map(({ network, label }) => {

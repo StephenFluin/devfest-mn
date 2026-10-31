@@ -47,6 +47,10 @@ import { TALK_LIMITS } from './talk-edit';
               We'll let you know once the schedule is published.
             }
           </dd>
+          <dt>On the site</dt>
+          <dd>
+            {{ talk.published ? 'Yes' : "Not yet. We'll publish it once we've reviewed it." }}
+          </dd>
           @if (coSpeakers(talk); as others) {
             <dt>Presenting with</dt>
             <dd>{{ others }}</dd>
@@ -112,7 +116,9 @@ export class SpeakerTalksComponent {
 
   /** Copies, so form edits don't leak into the shared live data before saving. */
   talks = computed<Session[]>(() =>
-    this.ds.sessionsFor(this.speakerKey()).map((session) => ({ ...session })),
+    this.ds
+      .sessionsFor(this.speakerKey(), { unpublished: true })
+      .map((session) => ({ ...session })),
   );
 
   /** The other speakers' names, if the talk has any. */

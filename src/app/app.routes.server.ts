@@ -9,7 +9,7 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'speaker-edit/**', renderMode: RenderMode.Client },
   { path: 'speakers', renderMode: RenderMode.Server },
   { path: 'schedule', renderMode: RenderMode.Server },
-  // Rendered per request: it lists confirmed speakers and opens and closes the CFP by date, so a
+  // Rendered per request: it lists published speakers and opens and closes the CFP by date, so a
   // copy built at deploy time would go stale.
   { path: '', renderMode: RenderMode.Server },
   { path: '**', renderMode: RenderMode.Server },

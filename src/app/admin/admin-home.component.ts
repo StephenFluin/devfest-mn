@@ -32,8 +32,8 @@ import { environment } from '../../environments/environment';
           <span class="value">{{ ds.schedule().length }}</span>
         </div>
         <div class="tile">
-          <span class="label">Confirmed speakers</span>
-          <span class="value">{{ confirmed() }}</span>
+          <span class="label">Published speakers</span>
+          <span class="value">{{ published() }}</span>
           <span class="note">of {{ ds.speakers().length }} total</span>
         </div>
         <div class="tile">
@@ -125,7 +125,7 @@ export class AdminHomeComponent {
     ),
   );
 
-  confirmed = () => this.ds.speakers().filter((speaker) => speaker.confirmed).length;
+  published = () => this.ds.speakers().filter((speaker) => speaker.published).length;
 
   readonly links = [
     {

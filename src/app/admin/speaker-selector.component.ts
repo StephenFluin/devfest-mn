@@ -34,7 +34,7 @@ import { environment } from '../../environments/environment';
             <span class="who">
               <strong>{{ speaker.name }}</strong>
               <span class="muted"
-                >{{ speaker.company }}{{ speaker.confirmed ? '' : ' · not confirmed' }}</span
+                >{{ speaker.company }}{{ speaker.published ? '' : ' · not published' }}</span
               >
             </span>
             <button

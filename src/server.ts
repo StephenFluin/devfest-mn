@@ -79,10 +79,11 @@ async function sitemapEntries(): Promise<SitemapEntry[]> {
   const latest = (items: SitemapEntry[]) =>
     Math.max(0, ...items.map((item) => item.updated ?? 0)) || undefined;
 
-  const [schedule, speakers] = await Promise.all([
+  const [allSessions, speakers] = await Promise.all([
     fetchPublic('schedule'),
     fetchPublic('speakers'),
   ]);
+  const schedule = allSessions.filter(([, session]) => session.published);
   // Speaker pages show their talks and session pages show their speakers, so each page changes
   // when either side is saved.
   const speakerUpdated = new Map(speakers.map(([key, speaker]) => [key, speaker.updatedAt ?? 0]));
@@ -105,7 +106,7 @@ async function sitemapEntries(): Promise<SitemapEntry[]> {
     entries.push({ path: 'schedule', updated: latest(sessions) }, ...sessions);
   }
   const speakerPages = speakers
-    .filter(([, speaker]) => speaker.name && speaker.confirmed)
+    .filter(([, speaker]) => speaker.name && speaker.published)
     .map(([key, speaker]) => ({
       path: `speakers/${key}/${slugify(speaker.name)}`,
       updated:
@@ -114,7 +115,7 @@ async function sitemapEntries(): Promise<SitemapEntry[]> {
           ...sessionsOf(key).map(([, session]) => session.updatedAt ?? 0),
         ) || undefined,
     }));
-  // Speakers are public once any are confirmed.
+  // Speakers are public once any are published.
   if (speakerPages.length) {
     entries.push({ path: 'speakers', updated: latest(speakerPages) }, ...speakerPages);
     // The home page lists the speakers too.
@@ -130,7 +131,7 @@ const escapeXml = (value: string) =>
 
 /**
  * sitemap.xml lists the public pages that are switched on for the current phase of the event,
- * plus a page for every scheduled session and confirmed speaker once those are live. lastmod
+ * plus a page for every scheduled session and published speaker once those are live. lastmod
  * comes from updatedAt, which the admin sets whenever a speaker or session is saved.
  */
 app.get('/sitemap.xml', async (req, res) => {
@@ -184,18 +185,18 @@ async function loadSpeakerSlugs(): Promise<Map<string, string>> {
   if (!response.ok) {
     throw new Error(`Firebase responded with ${response.status}`);
   }
-  const speakers: Record<string, { name?: string; confirmed?: boolean }> =
+  const speakers: Record<string, { name?: string; published?: boolean }> =
     (await response.json()) ?? {};
   return new Map(
     Object.entries(speakers)
-      .filter(([, speaker]) => speaker.name && speaker.confirmed)
+      .filter(([, speaker]) => speaker.name && speaker.published)
       .map(([key, speaker]) => [slugify(speaker.name), key]),
   );
 }
 
 app.get('/s/:slug', async (req, res) => {
   try {
-    // Cached briefly so a new speaker's link works within a minute of being confirmed.
+    // Cached briefly so a new speaker's link works within a minute of being published.
     if (!speakerSlugs || Date.now() - speakerSlugs.at > 60_000) {
       speakerSlugs = { at: Date.now(), slugs: loadSpeakerSlugs() };
     }
@@ -246,9 +247,9 @@ app.get('/calendar/:file', async (req, res) => {
     if (!response.ok) {
       throw new Error(`Firebase responded with ${response.status}`);
     }
-    const schedule: Session[] = Object.entries<Session>((await response.json()) ?? {}).map(
-      ([$key, session]) => ({ ...session, $key }),
-    );
+    const schedule: Session[] = Object.entries<Session>((await response.json()) ?? {})
+      .map(([$key, session]) => ({ ...session, $key }))
+      .filter((session) => session.published);
     const session = schedule.find((item) => item.$key === key);
     const event = session && calendarEvent(session, schedule);
     if (!event) {
@@ -266,7 +267,7 @@ app.get('/calendar/:file', async (req, res) => {
 });
 
 /**
- * Share card for a confirmed speaker, /og/speakers/<key>.png. Speaker pages link it with
+ * Share card for a published speaker, /og/speakers/<key>.png. Speaker pages link it with
  * ?v=<latest updatedAt of the speaker and their sessions>, so an edit gives a new URL and the CDN
  * can keep each version for a day. Cards are cached per speaker and re-rendered only when that
  * version changes, so made-up ?v values can't force renders.
@@ -284,9 +285,9 @@ async function speakerCardData(key: string) {
       },
     ),
   );
-  if (!speaker?.confirmed || !speaker.name) return null;
-  const sessions = Object.values<UntypedJson>(schedule ?? {}).filter((session) =>
-    Object.values(session.speakers ?? {}).includes(key),
+  if (!speaker?.published || !speaker.name) return null;
+  const sessions = Object.values<UntypedJson>(schedule ?? {}).filter(
+    (session) => session.published && presents(session, key),
   );
   return {
     // Matches the version speaker pages put in the URL (speaker-full.component.ts).
@@ -622,7 +623,7 @@ app.post('/api/admin/speaker-invites/:token/email', async (req, res) => {
 });
 
 /**
- * Emails an invited, confirmed speaker their share kit: their short link and ready-to-post messages
+ * Emails an invited, published speaker their share kit: their short link and ready-to-post messages
  * about their talk, so announcing themselves takes one click. Same permission model as the invite
  * email above.
  */
@@ -666,14 +667,14 @@ app.post('/api/admin/speaker-invites/:token/kit', async (req, res) => {
       (await db(`${base}/speakers/${encodeURIComponent(invite.speaker)}`)).json(),
       (await db(`${base}/schedule`)).json(),
     ]);
-    if (!speaker?.confirmed || !speaker.name) {
+    if (!speaker?.published || !speaker.name) {
       res
         .status(409)
-        .json({ error: 'Confirm the speaker first; the kit links to their public page' });
+        .json({ error: 'Publish the speaker first; the kit links to their public page' });
       return;
     }
     const talks = Object.values<UntypedJson>(schedule ?? {})
-      .filter((session) => Object.values(session.speakers ?? {}).includes(invite.speaker))
+      .filter((session) => session.published && presents(session, invite.speaker))
       .map((session) => session.title)
       .filter(Boolean);
     await createMailer().send({

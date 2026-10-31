@@ -39,6 +39,9 @@
                     >
                       <div class="title">
                         {{ data().gridData[time][room].title }}
+                        @if (!data().gridData[time][room].published) {
+                          <span class="speaker-badge">Not published</span>
+                        }
                         @if (auth.isAdmin()) {
                           <a
                             [routerLink]="[
@@ -101,6 +104,9 @@
                 >
                   <div class="title">
                     {{ data().gridData[time]['all'].title }}
+                    @if (!data().gridData[time]['all'].published) {
+                      <span class="speaker-badge">Not published</span>
+                    }
                     @if (auth.isAdmin()) {
                       <a
                         [routerLink]="[

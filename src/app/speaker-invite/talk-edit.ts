@@ -36,3 +36,11 @@ export function talkUpdate(
   // null clears the field in the database.
   return { update: { title, description: description || null } };
 }
+
+/**
+ * The title of the talk created for a newly invited speaker, until they write their own. Also used
+ * by scripts/publish-flag.mts.
+ */
+export function placeholderTalkTitle(name: string) {
+  return `${name.trim()}'s talk`;
+}

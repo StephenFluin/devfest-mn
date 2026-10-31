@@ -14,6 +14,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { KeyValuePipe } from '@angular/common';
 import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
 import { environment } from '../../environments/environment';
@@ -48,6 +49,7 @@ import { eventUtcOffset } from '../shared/event-data';
     RouterLink,
     MatSelectModule,
     TextFieldModule,
+    MatCheckboxModule,
   ],
 })
 export class SessionEditComponent {
@@ -70,7 +72,9 @@ export class SessionEditComponent {
   sessionData = computed<Session>(() => {
     const params = this.params();
     if (params.get('id') === 'new') {
-      return { startTime: params.get('time'), room: params.get('room') };
+      // Made from a slot in the schedule grid, so meant to be public; invited speakers' talks
+      // start unpublished instead (DataService.inviteSpeaker).
+      return { startTime: params.get('time'), room: params.get('room'), published: true };
     }
     const item = this.ds.schedule().find((item) => item.$key === params.get('id'));
     return item && { ...item, adminNotes: this.adminNotes() };

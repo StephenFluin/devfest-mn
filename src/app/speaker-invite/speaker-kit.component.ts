@@ -7,7 +7,7 @@ import { slugify } from '../shared/slug';
 import { speakerPageUrl } from './invite-email';
 
 /**
- * A confirmed speaker's share kit: their share card, short link and a ready-made post per network.
+ * A published speaker's share kit: their share card, short link and a ready-made post per network.
  * Shown to the speaker on their edit page and to admins in the speaker editor. Speakers reach the
  * exact audience the event wants, and the /s/ link credits their visits and sales to them.
  */

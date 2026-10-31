@@ -38,8 +38,8 @@
             <mat-hint>Markdown</mat-hint>
           </mat-form-field>
         </div>
-        <mat-checkbox [(ngModel)]="speaker.confirmed">
-          Confirmed (shown on the public site)
+        <mat-checkbox [(ngModel)]="speaker.published">
+          Published (shown on the public site)
         </mat-checkbox>
       </div>
     </section>
@@ -89,7 +89,7 @@
               <button mat-button type="button" (click)="resendInvite(invite.$key)">
                 Email it again
               </button>
-              @if (speaker.confirmed) {
+              @if (speaker.published) {
                 <button mat-button type="button" (click)="emailKit(invite.$key)">
                   Email their share kit
                 </button>
@@ -104,7 +104,28 @@
       }
     </section>
 
-    @if (speaker.$key && speaker.confirmed) {
+    @if (speaker.$key) {
+      <section class="card" aria-labelledby="talks-heading">
+        <h3 id="talks-heading">Talks</h3>
+        <ul>
+          @for (talk of ds.sessionsFor(speaker.$key, { unpublished: true }); track talk.$key) {
+            <li>
+              <a [routerLink]="['/admin/sessions', talk.$key, 'edit']">{{
+                talk.title || 'Untitled'
+              }}</a>
+              @if (!talk.published) {
+                <span class="muted">(not published)</span>
+              }
+            </li>
+          } @empty {
+            <li class="muted">No talks yet.</li>
+          }
+        </ul>
+        <button mat-stroked-button type="button" (click)="addTalk(speaker)">Add a talk</button>
+      </section>
+    }
+
+    @if (speaker.$key && speaker.published) {
       <section class="card" aria-labelledby="kit-heading">
         <h3 id="kit-heading">Share kit</h3>
         <p class="muted">

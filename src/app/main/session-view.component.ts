@@ -6,6 +6,7 @@ import snarkdown from 'snarkdown';
 import { slugify, summarize } from '../shared/slug';
 
 import { DataService, Session } from '../shared/data.service';
+import { AuthService } from '../realtime-data/auth.service';
 import { OurMeta } from '../our-meta.service';
 import { SessionDetailsComponent } from './session-details.component';
 import { environment } from '../../environments/environment';
@@ -18,10 +19,13 @@ import { sessionEvent } from '../shared/event-data';
 export class SessionViewComponent {
   year = environment.year;
   private ds = inject(DataService);
+  private auth = inject(AuthService);
   private params = toSignal(inject(ActivatedRoute).paramMap, { requireSync: true });
 
   session = computed<Session | undefined>(() => {
-    const item = this.ds.schedule().find((s) => s.$key === this.params().get('id'));
+    // Admins can open unpublished sessions from the schedule grid.
+    const sessions = this.auth.isAdmin() ? this.ds.schedule() : this.ds.publishedSchedule();
+    const item = sessions.find((s) => s.$key === this.params().get('id'));
     if (!item) {
       return undefined;
     }

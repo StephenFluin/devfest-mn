@@ -30,14 +30,23 @@ export class ScheduleComponent {
   router = inject(Router);
 
   showAgenda = signal(false);
-  allSessions = computed(() => this.buildGrid(this.ds.schedule()));
+  /** Admins also see unpublished sessions, so they can lay out the schedule before publishing. */
+  allSessions = computed(() =>
+    this.buildGrid(
+      (this.authService.isAdmin() ? this.ds.schedule() : this.ds.publishedSchedule()).filter(
+        (session) => session.startTime,
+      ),
+    ),
+  );
   populatedAgenda = computed(() => this.filterToMyAgenda(this.allSessions(), this.agenda.keys()));
   data = computed(() => (this.showAgenda() ? this.populatedAgenda() : this.allSessions()));
 
   constructor() {
     // The conference with its scheduled talks as sub-events.
     effect(() => {
-      const talks = scheduledSessionEvents(this.ds.schedule(), (key) => this.ds.speaker(key));
+      const talks = scheduledSessionEvents(this.ds.publishedSchedule(), (key) =>
+        this.ds.speaker(key),
+      );
       this.meta.setStructuredData({
         '@context': 'https://schema.org',
         ...conferenceEvent(talks.length ? { subEvent: talks } : {}),

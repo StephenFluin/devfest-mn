@@ -5,16 +5,16 @@ import { slugify } from '../shared/slug';
 @Component({
   selector: 'app-speaker-container',
   template: `
-    @if (speaker() && (speaker().confirmed || showEdit())) {
-      <div class="speaker-card" [class.unconfirmed]="!speaker().confirmed">
+    @if (speaker() && (speaker().published || showEdit())) {
+      <div class="speaker-card" [class.unpublished]="!speaker().published">
         @if (speaker().imageUrl) {
           <div class="thumb" [style.background-image]="'url(' + speaker().imageUrl + ')'"></div>
         } @else {
           <div class="thumb thumb-initials" aria-hidden="true">{{ initials() }}</div>
         }
         <div class="speaker-content">
-          @if (!speaker().confirmed && showEdit()) {
-            <span class="speaker-badge">Not confirmed</span>
+          @if (!speaker().published && showEdit()) {
+            <span class="speaker-badge">Not published</span>
           }
           <a
             class="speaker-name"

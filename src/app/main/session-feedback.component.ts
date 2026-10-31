@@ -20,7 +20,7 @@ export class SessionFeedbackComponent {
   private params = toSignal(inject(ActivatedRoute).paramMap, { requireSync: true });
 
   session = computed(() =>
-    this.ds.schedule().find((item) => item.$key === this.params().get('id')),
+    this.ds.publishedSchedule().find((item) => item.$key === this.params().get('id')),
   );
 
   constructor() {

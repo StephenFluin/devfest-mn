@@ -25,6 +25,9 @@
           ></textarea>
           <mat-hint>Markdown</mat-hint>
         </mat-form-field>
+        <mat-checkbox class="span-all" [(ngModel)]="session.published">
+          Published (shown on the public site)
+        </mat-checkbox>
       </div>
     </section>
 

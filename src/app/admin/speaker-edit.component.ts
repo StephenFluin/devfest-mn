@@ -68,6 +68,13 @@ export class SpeakerEditComponent {
 
   private params = toSignal(this.route.paramMap, { requireSync: true });
 
+  /** A new unpublished talk with this speaker on it, opened in the session editor. */
+  async addTalk(speaker: Speaker) {
+    const talk = this.ds.addPlaceholderTalk(speaker.name ?? 'New speaker', speaker.$key);
+    await talk;
+    this.router.navigate(['/admin/sessions', talk.key, 'edit']);
+  }
+
   /** A copy, so form edits don't leak into the shared live data before saving. */
   speakerData = computed<Speaker>(() => {
     const params = this.params();
@@ -92,7 +99,7 @@ export class SpeakerEditComponent {
     await this.email(() => sendInviteEmail, token);
   }
 
-  /** Emails a confirmed speaker their share card, link and ready-made posts. */
+  /** Emails a published speaker their share card, link and ready-made posts. */
   async emailKit(token: string) {
     await this.email(() => sendSpeakerKit, token);
   }

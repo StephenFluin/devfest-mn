@@ -9,7 +9,7 @@
       />
     </picture>
   </div>
-  <div class="callout">Confirmed Speakers</div>
+  <div class="callout">Speakers</div>
 
   @if (auth.isAdmin()) {
     <div class="admin-actions">
@@ -26,7 +26,7 @@
     @if (showInvite()) {
       <form class="invite-form" (ngSubmit)="sendInvite()">
         <p>
-          Creates an unconfirmed speaker and emails them a private link to edit their own profile.
+          Creates an unpublished speaker and emails them a private link to edit their own profile.
         </p>
         <label
           >Name

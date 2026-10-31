@@ -648,7 +648,7 @@ button.button.warn {
   padding: 16px;
 }
 
-.speaker-card.unconfirmed {
+.speaker-card.unpublished {
   border-style: dashed;
 }
 
@@ -698,7 +698,7 @@ button.button.warn {
   color: var(--color-text-muted);
 }
 
-/* Admin-only extras on the card: an unconfirmed badge and an edit link pinned to the corner. */
+/* Admin-only extras on the card: an unpublished badge and an edit link pinned to the corner. */
 .speaker-badge {
   align-self: flex-start;
   margin-bottom: 2px;

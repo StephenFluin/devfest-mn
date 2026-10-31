@@ -32,7 +32,7 @@ export class SpeakersComponent {
     // Name a few speakers so the page shows up for searches on them.
     effect(() => {
       const names = this.speakers()
-        .filter((speaker) => speaker.confirmed && speaker.name)
+        .filter((speaker) => speaker.published && speaker.name)
         .map((speaker) => speaker.name);
       if (!names.length) return;
       const listed =

@@ -12,7 +12,7 @@ import { AuthService } from '../realtime-data/auth.service';
 import { SpeakerKitComponent } from './speaker-kit.component';
 import { SpeakerTalksComponent } from './speaker-talks.component';
 
-/** Fields a speaker may edit on their own profile. Confirming stays with the organizers. */
+/** Fields a speaker may edit on their own profile. Publishing stays with the organizers. */
 const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'linkedin'] as const;
 
 /**
@@ -35,7 +35,7 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
         @case ('resolved') {
           @if (speaker(); as speaker) {
             <h1>Your DevFestMN speaker profile</h1>
-            @if (speaker.confirmed) {
+            @if (speaker.published) {
               <section class="kit">
                 <h2>Share your talk</h2>
                 <p>
@@ -48,7 +48,7 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
             }
             <p>
               Anyone with this page's link can edit your profile, so please keep it private. Your
-              profile appears on the site once we've confirmed your talk.
+              profile appears on the site once we publish your talk.
             </p>
             <form (ngSubmit)="save(speaker)">
               <label>Name <input name="name" [(ngModel)]="speaker.name" required /></label>
@@ -156,7 +156,9 @@ export class SpeakerInviteEditComponent {
   uploadStatus = signal('');
   token = computed(() => this.params().get('token'));
   talkCount = computed(() =>
-    this.access.hasValue() ? this.ds.sessionsFor(this.access.value()).length : 0,
+    this.access.hasValue()
+      ? this.ds.sessionsFor(this.access.value(), { unpublished: true }).length
+      : 0,
   );
 
   /** Resolves to the invited speaker's key once this visitor may edit them. */
