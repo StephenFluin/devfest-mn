@@ -275,5 +275,12 @@ gcloud storage buckets add-iam-policy-binding gs://devfestmn-2026.firebasestorag
 Locally there are no Google credentials, so to try uploads run the server with
 `FIREBASE_DATABASE_EMULATOR_HOST` and `FIREBASE_STORAGE_EMULATOR_HOST` pointing at the emulators.
 
+Speakers can also edit the **title and description** of each talk they're on, from the same page. They can't
+create talks or change anything else (time, room, length, track, notes or who's presenting): an admin creates
+the session and adds the speaker to it first. The database rules can't tell who presents a session (its
+speakers are stored under push IDs), so these saves go through the server
+(`POST /api/speaker-edit/<token>/sessions/<key>`), which checks the speaker is on that session and writes only
+those two fields with its service account. Locally, set `FIREBASE_DATABASE_EMULATOR_HOST` to try it.
+
 To revoke a link, delete its entry under `devfest<year>/speakerInvites` in the Realtime Database console. Anyone
 who already opened it keeps access until you also delete their entry under `devfest<year>/speakerGrants`.

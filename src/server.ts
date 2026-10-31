@@ -18,7 +18,9 @@ import { randomUUID } from 'node:crypto';
 import { INVITE_TOKEN, inviteEmail, speakerKitEmail } from './app/speaker-invite/invite-email';
 import { calendarEvent, conferenceCalendarEvent, icsFile } from './app/shared/calendar';
 import { cfpStateAt } from './app/shared/cfp-deadline';
-import type { Session } from './app/shared/data.service';
+import type { Session, SpeakerInvite } from './app/shared/data.service';
+import { presents, SESSION_KEY, talkUpdate } from './app/speaker-invite/talk-edit';
+import { publicDatabase, rateLimiter, readJson, serviceDatabase } from './server-helpers';
 import { UntypedJson } from './app/shared/untyped-json';
 import { BurndownOrder, discountKey, DiscountUsage } from './app/shared/campaign';
 import { addCampaignRoutes } from './campaign-routes';
@@ -795,6 +797,64 @@ app.post(
     } catch (error) {
       console.error('Error uploading speaker photo:', error);
       res.status(502).json({ error: 'Unable to upload the photo' });
+    }
+  },
+);
+
+const talkLimit = rateLimiter(30, 60_000, 'saves');
+
+/**
+ * Saves an invited speaker's edit to the title and description of a talk they present. Like the
+ * photo upload, holding the invite token is the permission, and the server writes with its own
+ * service account: the database rules can't tell who presents a session (its speakers are stored
+ * under push IDs), so they leave the schedule to admins. Only the title, description and
+ * updatedAt are ever written, so the time, room and the rest stay with the organizers.
+ */
+app.post(
+  '/api/speaker-edit/:token/sessions/:session',
+  express.json({ limit: '32kb' }),
+  async (req, res) => {
+    try {
+      if (!talkLimit(res)) return;
+      const { token, session: sessionKey } = req.params;
+      if (!INVITE_TOKEN.test(token) || !SESSION_KEY.test(sessionKey)) {
+        res.status(400).json({ error: 'Not a talk you can edit' });
+        return;
+      }
+      const result = talkUpdate(req.body);
+      if ('error' in result) {
+        res.status(400).json(result);
+        return;
+      }
+      const base = `devfest${environment.year}`;
+      // Invites (by token) and the schedule are public, so these need no credentials.
+      const [invite, session] = await Promise.all([
+        readJson<SpeakerInvite | null>(publicDatabase(`${base}/speakerInvites/${token}`)),
+        readJson<Session | null>(publicDatabase(`${base}/schedule/${sessionKey}`)),
+      ]);
+      if (!invite?.speaker) {
+        res.status(404).json({ error: 'No such invite' });
+        return;
+      }
+      if (!presents(session, invite.speaker)) {
+        res.status(403).json({ error: "You're not a speaker on this talk" });
+        return;
+      }
+      const db = await serviceDatabase();
+      if (!db) {
+        res.status(503).json({ error: 'Saving talks is not configured on this server' });
+        return;
+      }
+      await readJson(
+        db(`${base}/schedule/${sessionKey}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ ...result.update, updatedAt: { '.sv': 'timestamp' } }),
+        }),
+      );
+      res.json({ saved: true });
+    } catch (error) {
+      console.error('Error saving speaker talk:', error);
+      res.status(502).json({ error: 'Unable to save the talk' });
     }
   },
 );

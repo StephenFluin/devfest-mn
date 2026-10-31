@@ -10,6 +10,7 @@ import { DataService, Speaker, SpeakerInvite } from '../shared/data.service';
 import { AUTH } from '../realtime-data/firebase';
 import { AuthService } from '../realtime-data/auth.service';
 import { SpeakerKitComponent } from './speaker-kit.component';
+import { SpeakerTalksComponent } from './speaker-talks.component';
 
 /** Fields a speaker may edit on their own profile. Confirming stays with the organizers. */
 const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'linkedin'] as const;
@@ -17,7 +18,8 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
 /**
  * The page behind a speaker's invite link. Anyone with the link can edit that one speaker: the
  * visitor signs in anonymously (unless already signed in), then records a grant at
- * speakerGrants/<uid>, which the database rules only accept with a real invite token.
+ * speakerGrants/<uid>, which the database rules only accept with a real invite token. Their talks'
+ * titles and descriptions are edited below the profile, through the server.
  */
 @Component({
   template: `
@@ -88,6 +90,10 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
                 <span>{{ status }}</span>
               }
             </form>
+            <section class="talks">
+              <h2>{{ talkCount() === 1 ? 'Your talk' : 'Your talks' }}</h2>
+              <app-speaker-talks [speakerKey]="speaker.$key" [token]="token()" />
+            </section>
           } @else {
             <p>Loading your profile...</p>
           }
@@ -131,8 +137,11 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
     .kit h2 {
       margin-top: 0;
     }
+    .talks {
+      margin-top: 32px;
+    }
   `,
-  imports: [FormsModule, SpeakerKitComponent],
+  imports: [FormsModule, SpeakerKitComponent, SpeakerTalksComponent],
 })
 export class SpeakerInviteEditComponent {
   ds = inject(DataService);
@@ -145,6 +154,10 @@ export class SpeakerInviteEditComponent {
   status = signal('');
   uploading = signal(false);
   uploadStatus = signal('');
+  token = computed(() => this.params().get('token'));
+  talkCount = computed(() =>
+    this.access.hasValue() ? this.ds.sessionsFor(this.access.value()).length : 0,
+  );
 
   /** Resolves to the invited speaker's key once this visitor may edit them. */
   access = resource({
