@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { DataService, Session } from '../shared/data.service';
 
@@ -20,7 +20,33 @@ export interface Schedule {
 
 @Component({
   templateUrl: './schedule.component.html',
-  imports: [ScheduleGridComponent, MatButtonModule],
+  styles: `
+    .unpublished {
+      max-width: 800px;
+      margin: 40px auto;
+      text-align: left;
+    }
+    .unpublished ul {
+      list-style: none;
+      padding: 0;
+    }
+    .unpublished li {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 16px;
+      padding: 12px 0;
+      border-top: 1px solid var(--color-border-soft);
+    }
+    .unpublished .talk {
+      flex: 1;
+      min-width: 240px;
+    }
+    .unpublished .muted {
+      color: var(--color-text-muted);
+    }
+  `,
+  imports: [ScheduleGridComponent, MatButtonModule, RouterLink],
 })
 export class ScheduleComponent {
   ds = inject(DataService);
@@ -40,6 +66,35 @@ export class ScheduleComponent {
   );
   populatedAgenda = computed(() => this.filterToMyAgenda(this.allSessions(), this.agenda.keys()));
   data = computed(() => (this.showAgenda() ? this.populatedAgenda() : this.allSessions()));
+
+  /**
+   * For admins: every unpublished session, including speakers' talks that have no time or room yet
+   * and so aren't in the grid.
+   */
+  unpublished = computed(() =>
+    this.authService.isAdmin() ? this.ds.schedule().filter((session) => !session.published) : [],
+  );
+
+  speakerNames(session: Session) {
+    return Object.values(session.speakers ?? {})
+      .map((key) => this.ds.speaker(key)?.name ?? 'Unknown speaker')
+      .join(', ');
+  }
+
+  /** Where the session is, e.g. "10 AM, Room A", or what it's still missing. */
+  slot(session: Session) {
+    const when = session.startTime ? this.ds.customDateFormatter(session.startTime) : 'No time yet';
+    return session.room ? `${when}, ${session.room}` : `${when}, no room yet`;
+  }
+
+  publish(session: Session) {
+    this.ds.save('schedule', { $key: session.$key, published: true });
+  }
+
+  delete(session: Session) {
+    if (!confirm(`Delete "${session.title || 'this session'}"? This can't be undone.`)) return;
+    this.ds.delete('schedule', session);
+  }
 
   constructor() {
     // The conference with its scheduled talks as sub-events.
