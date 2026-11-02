@@ -45,6 +45,14 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
                 </p>
                 <app-speaker-kit [speaker]="speaker" />
               </section>
+            } @else {
+              <section class="kit">
+                <h2>Share your session</h2>
+                <p>
+                  Once we publish your profile, your share card, your personal link and a
+                  ready-made post for each network will appear here.
+                </p>
+              </section>
             }
             <p>
               Anyone with this page's link can edit your profile, so please keep it private. Your

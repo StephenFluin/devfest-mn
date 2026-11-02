@@ -164,6 +164,15 @@
         </p>
         <app-speaker-kit [speaker]="speaker" />
       </section>
+    } @else if (speaker.$key) {
+      <section class="card" aria-labelledby="kit-heading">
+        <h3 id="kit-heading">Share kit</h3>
+        <p class="muted">
+          Appears here and on the speaker's edit page once they're published: their card, their
+          /s/{{ slugify(speaker.name) }} link (tracked automatically, no campaign needed) and a post
+          per network.
+        </p>
+      </section>
     }
 
     <section class="card" aria-labelledby="photos-heading">
