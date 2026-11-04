@@ -49,8 +49,8 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
               <section class="kit">
                 <h2>Share your session</h2>
                 <p>
-                  Once we publish your profile, your share card, your personal link and a
-                  ready-made post for each network will appear here.
+                  Once we publish your profile, your share card, your personal link and a ready-made
+                  post for each network will appear here.
                 </p>
               </section>
             }
