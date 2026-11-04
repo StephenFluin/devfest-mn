@@ -271,13 +271,18 @@ export class DataService {
     const speaker = this.save('speakers', { name, published: false });
     await speaker;
     await this.addPlaceholderSession(name, speaker.key);
+    return this.createSpeakerInvite(speaker.key, name, email);
+  }
+
+  /** Creates a private edit link for an existing speaker without changing their profile or sessions. */
+  async createSpeakerInvite(speakerKey: string, name: string, email: string): Promise<string> {
     const bytes = crypto.getRandomValues(new Uint8Array(24));
     const token = btoa(String.fromCharCode(...bytes))
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=+$/, '');
     await set(this.ref(`speakerInvites/${token}`), {
-      speaker: speaker.key,
+      speaker: speakerKey,
       name,
       email,
       createdAt: serverTimestamp(),

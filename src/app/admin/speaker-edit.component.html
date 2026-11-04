@@ -76,6 +76,41 @@
         </p>
       }
       @if (invites.hasValue()) {
+        @if (speaker.$key && !invites.value().length) {
+          <p class="muted">
+            Create a private edit link so this speaker can update their profile and sessions.
+            Creating the link won't send an email.
+          </p>
+          <div class="session-actions">
+            <mat-form-field>
+              <mat-label>Speaker email</mat-label>
+              <input
+                matInput
+                type="email"
+                email
+                [(ngModel)]="inviteEmail"
+                #inviteAddress="ngModel"
+              />
+              @if (inviteAddress.invalid) {
+                <mat-error>Enter a valid email address.</mat-error>
+              }
+            </mat-form-field>
+            <button
+              mat-stroked-button
+              type="button"
+              [disabled]="
+                creatingInvite() ||
+                invites.isLoading() ||
+                !speaker.name?.trim() ||
+                !inviteEmail.trim() ||
+                inviteAddress.invalid
+              "
+              (click)="createInvite(speaker)"
+            >
+              Create invite link
+            </button>
+          </div>
+        }
         @for (invite of invites.value(); track invite.$key) {
           <p class="share">
             <span class="muted">
@@ -87,7 +122,7 @@
             <a [href]="inviteLink(invite.$key)">{{ inviteLink(invite.$key) }}</a>
             <span>
               <button mat-button type="button" (click)="resendInvite(invite.$key)">
-                Email it again
+                {{ invite.emailedAt ? 'Email it again' : 'Email invite' }}
               </button>
               @if (speaker.published) {
                 <button mat-button type="button" (click)="emailKit(invite.$key)">
@@ -97,10 +132,15 @@
                   <span class="muted">(kit emailed {{ invite.kitEmailedAt | date: 'short' }})</span>
                 }
               }
-              {{ inviteStatus() }}
             </span>
           </p>
         }
+      }
+      @if (invites.error()) {
+        <p role="alert">Couldn't load invite links. Reload the page to try again.</p>
+      }
+      @if (inviteStatus(); as status) {
+        <p role="status">{{ status }}</p>
       }
     </section>
 

@@ -249,6 +249,10 @@ The token is random (not the speaker's database key, which is public), and anyon
 one speaker's name, bio, company, links, and photo, but can't publish, create, or delete speakers. The
 speaker editor shows the link again, with an **Email it again** button, for invited speakers.
 
+For a speaker created without an invite, open their admin editor, enter their email under **Links**,
+and click **Create invite link**. This adds a private edit link to the existing speaker without changing
+their profile or sessions. Copy the link or click **Email invite** to send it.
+
 Inviting a speaker also creates an unpublished session for them, titled "<Name>'s session", for them to fill in. The
 speaker editor's **Sessions** card lists their sessions and has **Add a session** for a speaker giving more than one.
 
