@@ -1,4 +1,4 @@
-import { Component, computed, HostListener } from '@angular/core';
+import { Component, computed, HostListener, signal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 
 interface Photo {
@@ -23,7 +23,7 @@ interface Photo {
             <h2 class="year-header">{{ yearGroup.year }}</h2>
             <div class="photo-grid">
               @for (photo of yearGroup.photos; track photo.url) {
-                <button type="button" class="photo-item" (click)="selectedPhoto = photo">
+                <button type="button" class="photo-item" (click)="selectedPhoto.set(photo)">
                   <img
                     [src]="photo.thumbnail"
                     loading="lazy"
@@ -38,7 +38,7 @@ interface Photo {
       </div>
 
       <!-- Fullscreen Modal -->
-      @if (selectedPhoto) {
+      @if (selectedPhoto(); as selected) {
         <!-- Clicking the backdrop closes the photo; keyboard users have Escape and the close button. -->
         <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
         <div class="fullscreen-overlay" (click)="closeFullscreen()">
@@ -54,12 +54,12 @@ interface Photo {
             </button>
             <img
               loading="lazy"
-              [src]="selectedPhoto.url"
-              alt="Gallery photo from {{ selectedPhoto.year }}"
+              [src]="selected.url"
+              alt="Gallery photo from {{ selected.year }}"
               class="fullscreen-image"
             />
             <div class="photo-info">
-              <h3>{{ selectedPhoto.year }}</h3>
+              <h3>{{ selected.year }}</h3>
             </div>
           </div>
         </div>
@@ -255,15 +255,15 @@ export class GalleryComponent {
     return photosByYear;
   });
 
-  selectedPhoto: Photo | null = null;
+  selectedPhoto = signal<Photo | null>(null);
 
   closeFullscreen(): void {
-    this.selectedPhoto = null;
+    this.selectedPhoto.set(null);
   }
 
   @HostListener('document:keydown.escape')
   onEscapeKey(): void {
-    if (this.selectedPhoto) {
+    if (this.selectedPhoto()) {
       this.closeFullscreen();
     }
   }
@@ -279,16 +279,17 @@ export class GalleryComponent {
   }
 
   navigate(offset: number): void {
-    if (!this.selectedPhoto) {
+    const selected = this.selectedPhoto();
+    if (!selected) {
       return;
     }
     // Flatten in display order so navigation crosses year boundaries
     const allPhotos = this.photosByYear().flatMap((group) => group.photos);
-    const index = allPhotos.findIndex((photo) => photo.url === this.selectedPhoto!.url);
+    const index = allPhotos.findIndex((photo) => photo.url === selected.url);
     if (index === -1) {
       return;
     }
     const nextIndex = (index + offset + allPhotos.length) % allPhotos.length;
-    this.selectedPhoto = allPhotos[nextIndex];
+    this.selectedPhoto.set(allPhotos[nextIndex]);
   }
 }

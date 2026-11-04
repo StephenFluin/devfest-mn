@@ -187,13 +187,13 @@ export class EmailInvitesComponent {
     { initialValue: null },
   );
 
-  email = '';
-  name = '';
+  email = signal('');
+  name = signal('');
   busy = signal(false);
   message = signal('');
   failed = signal(false);
 
-  validEmail = () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim());
+  validEmail = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email().trim()));
 
   /** Invited emails, with whoever has signed in for each, then people added by user ID. */
   rows = computed<Row[]>(() => {
@@ -227,13 +227,13 @@ export class EmailInvitesComponent {
   async add(event: Event) {
     event.preventDefault();
     if (!this.validEmail()) return;
-    const email = this.email.trim().toLowerCase();
+    const email = this.email().trim().toLowerCase();
     const me = this.auth.auth?.currentUser;
     await this.write(
       {
         [`${this.invitesPath()}/${inviteKey(email)}`]: {
           email,
-          name: this.name.trim() || null,
+          name: this.name().trim() || null,
           addedBy: me?.email ?? me?.displayName ?? null,
           addedAt: serverTimestamp(),
         },
@@ -241,8 +241,8 @@ export class EmailInvitesComponent {
       `Added ${email}. They'll have access the next time they sign in.`,
     );
     if (!this.failed()) {
-      this.email = '';
-      this.name = '';
+      this.email.set('');
+      this.name.set('');
     }
   }
 

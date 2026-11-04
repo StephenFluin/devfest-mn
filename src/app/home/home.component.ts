@@ -1,4 +1,4 @@
-import { Component, computed, DOCUMENT, effect, inject, PLATFORM_ID } from '@angular/core';
+import { Component, computed, DOCUMENT, effect, inject, PLATFORM_ID, signal } from '@angular/core';
 import { DatePipe, isPlatformServer } from '@angular/common';
 
 import { environment } from '../../environments/environment';
@@ -70,7 +70,7 @@ import { conferenceEvent, personRef } from '../shared/event-data';
 })
 export class HomeComponent {
   environment = environment;
-  faqSelection = 1;
+  faqSelection = signal(1);
   private meta = inject(OurMeta);
   cfpCountdown = cfpCountdown();
   cfp = cfpState();
@@ -107,7 +107,7 @@ export class HomeComponent {
   });
 
   setFaqSelection(question) {
-    this.faqSelection = question;
+    this.faqSelection.set(question);
   }
 }
 

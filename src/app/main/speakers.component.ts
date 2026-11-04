@@ -21,8 +21,8 @@ export class SpeakersComponent {
   speakers = this.ds.speakers;
 
   showInvite = signal(false);
-  inviteName = '';
-  inviteEmail = '';
+  inviteName = signal('');
+  inviteEmail = signal('');
   sending = signal(false);
   /** The invite just created, so the admin can copy the link if the email didn't go out. */
   sent = signal<{ name: string; link: string; error?: string } | null>(null);
@@ -58,24 +58,26 @@ export class SpeakersComponent {
     const match = value.match(/^\s*"?([^"<]*?)"?\s*<\s*([^<>\s]+@[^<>\s]+)\s*>\s*$/);
     if (match) {
       // Write the inputs directly too: if a model value didn't change, Angular won't redraw it.
-      nameInput.value = this.inviteName = match[1] || this.inviteName;
-      emailInput.value = this.inviteEmail = match[2];
+      this.inviteName.set(match[1] || this.inviteName());
+      this.inviteEmail.set(match[2]);
+      nameInput.value = this.inviteName();
+      emailInput.value = this.inviteEmail();
     } else if (field === 'name') {
-      this.inviteName = value;
+      this.inviteName.set(value);
     } else {
-      this.inviteEmail = value;
+      this.inviteEmail.set(value);
     }
   }
 
   async sendInvite() {
-    const name = this.inviteName.trim();
-    const email = this.inviteEmail.trim();
+    const name = this.inviteName().trim();
+    const email = this.inviteEmail().trim();
     if (!name || !email || this.sending()) return;
     this.sending.set(true);
     try {
       const token = await this.ds.inviteSpeaker(name, email);
-      this.inviteName = '';
-      this.inviteEmail = '';
+      this.inviteName.set('');
+      this.inviteEmail.set('');
       this.showInvite.set(false);
       try {
         await sendInviteEmail(await this.auth.auth?.currentUser?.getIdToken(), token);

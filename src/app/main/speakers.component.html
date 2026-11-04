@@ -33,7 +33,7 @@
           <input
             #nameInput
             name="name"
-            [ngModel]="inviteName"
+            [ngModel]="inviteName()"
             (ngModelChange)="setInviteField('name', $event, nameInput, emailInput)"
             required
         /></label>
@@ -43,7 +43,7 @@
             #emailInput
             name="email"
             type="email"
-            [ngModel]="inviteEmail"
+            [ngModel]="inviteEmail()"
             (ngModelChange)="setInviteField('email', $event, nameInput, emailInput)"
             required
         /></label>
