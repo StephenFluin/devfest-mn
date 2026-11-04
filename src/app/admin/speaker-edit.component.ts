@@ -172,10 +172,14 @@ export class SpeakerEditComponent {
     }
   }
 
-  save(speaker: Speaker, event: Event) {
+  async save(speaker: Speaker, event: Event) {
     event.preventDefault();
-    this.ds.save('speakers', speaker);
+    const saved = this.ds.save('speakers', speaker);
     this.router.navigate(['/', 'speakers']);
+    if (!speaker.promoCode && speaker.name?.trim()) {
+      await saved;
+      await this.ds.ensureSpeakerPromoCode(speaker.$key ?? saved.key);
+    }
   }
 
   delete(speaker) {

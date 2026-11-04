@@ -26,7 +26,7 @@ import {
 } from './app/speaker-invite/speaker-session-edit';
 import { publicDatabase, rateLimiter, readJson, serviceDatabase } from './server-helpers';
 import { UntypedJson } from './app/shared/untyped-json';
-import { BurndownOrder, discountKey, DiscountUsage } from './app/shared/campaign';
+import { BurndownOrder, discountKey, DiscountUsage, PROMO_CODE } from './app/shared/campaign';
 import { addCampaignRoutes } from './campaign-routes';
 
 // Set timezone to Central Time for SSR
@@ -191,21 +191,25 @@ app.get('/sitemap.txt', async (req, res) => {
  * rather than a 301, because browsers cache 301s forever and the destination or tags may change.
  * Unknown names go to the speakers page.
  */
-let speakerSlugs: { at: number; slugs: Promise<Map<string, string>> } | undefined;
+interface SpeakerLink {
+  key: string;
+  promoCode?: string;
+}
+let speakerSlugs: { at: number; slugs: Promise<Map<string, SpeakerLink>> } | undefined;
 
-async function loadSpeakerSlugs(): Promise<Map<string, string>> {
+async function loadSpeakerSlugs(): Promise<Map<string, SpeakerLink>> {
   const response = await fetch(
     `${environment.firebaseConfig.databaseURL}/devfest${environment.year}/speakers.json`,
   );
   if (!response.ok) {
     throw new Error(`Firebase responded with ${response.status}`);
   }
-  const speakers: Record<string, { name?: string; published?: boolean }> =
+  const speakers: Record<string, { name?: string; published?: boolean; promoCode?: string }> =
     (await response.json()) ?? {};
   return new Map(
     Object.entries(speakers)
       .filter(([, speaker]) => speaker.name && speaker.published)
-      .map(([key, speaker]) => [slugify(speaker.name), key]),
+      .map(([key, speaker]) => [slugify(speaker.name), { key, promoCode: speaker.promoCode }]),
   );
 }
 
@@ -216,9 +220,9 @@ app.get('/s/:slug', async (req, res) => {
       speakerSlugs = { at: Date.now(), slugs: loadSpeakerSlugs() };
     }
     const slug = slugify(req.params.slug);
-    const key = (await speakerSlugs.slugs).get(slug);
+    const speaker = (await speakerSlugs.slugs).get(slug);
     res.set('Cache-Control', 'no-store');
-    if (!key) {
+    if (!speaker) {
       res.redirect(302, '/speakers');
       return;
     }
@@ -229,7 +233,9 @@ app.get('/s/:slug', async (req, res) => {
       utm_medium: medium,
       utm_campaign: `speaker_${slug}`,
     });
-    res.redirect(302, `/speakers/${key}/${slug}?${params}`);
+    // Speakers can write to their own record, so only pass along something shaped like a code.
+    if (PROMO_CODE.test(speaker.promoCode ?? '')) params.set('promo', speaker.promoCode);
+    res.redirect(302, `/speakers/${speaker.key}/${slug}?${params}`);
   } catch (error) {
     speakerSlugs = undefined;
     console.error('Error resolving speaker link:', error);
@@ -695,7 +701,7 @@ app.post('/api/admin/speaker-invites/:token/kit', async (req, res) => {
     await createMailer().send({
       to: invite.email,
       replyTo: environment.contactEmail,
-      ...speakerKitEmail(speaker.name, titles),
+      ...speakerKitEmail(speaker.name, titles, speaker.promoCode),
     });
     await db(`${base}/speakerInvites/${token}`, {
       method: 'PATCH',

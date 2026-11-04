@@ -1,6 +1,6 @@
 import { environment } from '../../environments/environment';
 import { speakerShareOptions } from '../shared/share';
-import { slugify } from '../shared/slug';
+import { SPEAKER_PROMO_PERCENT, slugify } from '../shared/slug';
 
 /** Invite tokens are 24 random bytes, base64url encoded (see DataService.createSpeakerInvite). */
 export const INVITE_TOKEN = /^[A-Za-z0-9_-]{32}$/;
@@ -34,9 +34,9 @@ export function inviteEmail(name: string, token: string) {
  * The share kit sent to a published speaker: their short link and a post for each network, so
  * telling their followers about the session is a copy and paste.
  */
-export function speakerKitEmail(name: string, sessions: string[]) {
+export function speakerKitEmail(name: string, sessions: string[], promoCode?: string) {
   const slug = slugify(name);
-  const posts = speakerShareOptions(slug, sessions);
+  const posts = speakerShareOptions(slug, sessions, promoCode);
   return {
     subject: `You're announced! Share your DevFestMN ${environment.year} session`,
     text: [
@@ -44,6 +44,13 @@ export function speakerKitEmail(name: string, sessions: string[]) {
       '',
       `Your speaker page is live: ${speakerPageUrl(slug)}`,
       '',
+      ...(promoCode
+        ? [
+            `Your audience gets ${SPEAKER_PROMO_PERCENT}% off tickets with your code, ${promoCode}. ` +
+              'Your personal link applies it automatically.',
+            '',
+          ]
+        : []),
       'Your followers and colleagues are exactly who DevFestMN is for, and a post from you reaches ' +
         "people we can't. Here's a ready-made post for each network (edit away), each with your " +
         'personal link so we can see how many people you bring:',
@@ -61,6 +68,11 @@ export function speakerKitEmail(name: string, sessions: string[]) {
 
 /** The speaker's short link, which redirects to their page tagged for the UTM funnel. */
 export const speakerPageUrl = (nameSlug: string) => `${environment.siteUrl}/s/${nameSlug}`;
+
+/** Asks the server to create a speaker's promo code, if they don't have one. Admins only. */
+export async function createSpeakerPromoCode(idToken: string | undefined, speakerKey: string) {
+  await postAsAdmin(`/api/admin/speakers/${speakerKey}/promo-code`, idToken);
+}
 
 /** Asks the server to email an invite. Admins only; uses the signed-in admin's ID token. */
 export async function sendInviteEmail(idToken: string | undefined, token: string) {

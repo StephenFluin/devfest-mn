@@ -256,6 +256,16 @@ their profile or sessions. Copy the link or click **Email invite** to send it.
 Inviting a speaker also creates an unpublished session for them, titled "<Name>'s session", for them to fill in. The
 speaker editor's **Sessions** card lists their sessions and has **Add a session** for a speaker giving more than one.
 
+Every speaker also gets a promo code when they're created, by invite or in the admin, for their audience: their
+name in capitals (`JANE-DOE`), 10% off every ticket type, unlimited uses. Their `/s/` link pre-applies it, their share
+kit mentions it, and the Campaigns page's **Word of mouth** table counts the uses after **Update from Eventbrite**. The
+code stays the same if they're renamed, and deleting a speaker doesn't delete it from Eventbrite. If Eventbrite is
+down the admin sees an alert, and saving the speaker in the admin tries again. For speakers from before codes existed:
+
+```bash
+node scripts/speaker-promo-codes.mts --apply
+```
+
 Email goes through [Resend](https://resend.com) from the server (`src/mailer.ts`, behind a small `Mailer`
 interface so the provider can be swapped). Setup, once:
 

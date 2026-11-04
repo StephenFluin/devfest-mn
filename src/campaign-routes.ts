@@ -8,6 +8,8 @@ import {
   campaignUrl,
   PROMO_CODE,
 } from './app/shared/campaign';
+import { SESSION_KEY } from './app/speaker-invite/speaker-session-edit';
+import { SPEAKER_PROMO_PERCENT, speakerPromoCode } from './app/shared/slug';
 import { svgToPng } from './speaker-card';
 import {
   eventbrite,
@@ -92,6 +94,50 @@ export function addCampaignRoutes(app: Express) {
   const discountLimit = rateLimiter(10, 60_000, 'promo codes');
   let organizationId: Promise<string> | undefined;
 
+  /** The organization that owns the token; discounts belong to it rather than to the event. */
+  const organization = (token: string) => {
+    organizationId ??= eventbrite<{ organizations: { id: string }[] }>(
+      token,
+      '/users/me/organizations/',
+    )
+      .then((result) => {
+        const id = result.organizations[0]?.id;
+        if (!id) throw new Error('The Eventbrite token has no organization');
+        return id;
+      })
+      .catch((error) => {
+        organizationId = undefined;
+        throw error;
+      });
+    return organizationId;
+  };
+
+  /** Creates a coded discount on this year's event, and returns its id. */
+  const createDiscount = async (
+    token: string,
+    code: string,
+    percentOff: number,
+    quantity?: number,
+  ) =>
+    (
+      await eventbrite<{ id: string }>(
+        token,
+        `/organizations/${await organization(token)}/discounts/`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            discount: {
+              type: 'coded',
+              code,
+              percent_off: percentOff.toFixed(2),
+              event_id: environment.eventbriteEventId,
+              ...(quantity !== undefined && { quantity_available: quantity }),
+            },
+          }),
+        },
+      )
+    ).id;
+
   /**
    * Creates the campaign's promo code in Eventbrite as a coded discount on this year's event, and
    * records the discount's id on the campaign. The campaign itself is saved by the admin in the
@@ -142,46 +188,18 @@ export function addCampaignRoutes(app: Express) {
           res.status(500).json({ error: 'EVENTBRITE_TOKEN is not configured' });
           return;
         }
-        organizationId ??= eventbrite<{ organizations: { id: string }[] }>(
-          token,
-          '/users/me/organizations/',
-        )
-          .then((result) => {
-            const id = result.organizations[0]?.id;
-            if (!id) throw new Error('The Eventbrite token has no organization');
-            return id;
-          })
-          .catch((error) => {
-            organizationId = undefined;
-            throw error;
-          });
-        const discount = await eventbrite<{ id: string }>(
-          token,
-          `/organizations/${await organizationId}/discounts/`,
-          {
-            method: 'POST',
-            body: JSON.stringify({
-              discount: {
-                type: 'coded',
-                code,
-                percent_off: percentOff.toFixed(2),
-                event_id: environment.eventbriteEventId,
-                ...(quantity !== undefined && { quantity_available: quantity }),
-              },
-            }),
-          },
-        );
+        const discountId = await createDiscount(token, code, percentOff, quantity);
         await readJson(
           await admin.db(campaignPath, {
             method: 'PATCH',
             body: JSON.stringify({
-              discountId: discount.id,
+              discountId,
               percentOff,
               promoQuantity: quantity ?? null,
             }),
           }),
         );
-        res.json({ discountId: discount.id });
+        res.json({ discountId });
       } catch (error) {
         console.error('Error creating promo code:', error);
         // Eventbrite explains rejected codes (e.g. one that already exists) in its response.
@@ -190,4 +208,59 @@ export function addCampaignRoutes(app: Express) {
       }
     },
   );
+
+  /**
+   * Gives a speaker their promo code when they're created: unlimited uses, on every ticket type.
+   * Safe to repeat. If an earlier try created the code but didn't save it, this picks it up.
+   */
+  app.post('/api/admin/speakers/:key/promo-code', async (req, res) => {
+    try {
+      if (!discountLimit(res)) return;
+      const admin = await requireAdmin(req, res, 'create promo codes');
+      if (!admin) return;
+      const key = req.params.key;
+      if (!SESSION_KEY.test(key)) {
+        res.status(400).json({ error: 'Not a speaker key' });
+        return;
+      }
+      const path = `devfest${environment.year}/speakers/${key}`;
+      const speaker = await readJson<{ name?: string; promoCode?: string } | null>(
+        await admin.db(path),
+      );
+      if (!speaker) {
+        res.status(404).json({ error: 'No such speaker' });
+        return;
+      }
+      if (speaker.promoCode) {
+        res.json({ promoCode: speaker.promoCode });
+        return;
+      }
+      const code = speakerPromoCode(speaker.name);
+      if (!PROMO_CODE.test(code)) {
+        res.status(409).json({ error: `Can't make a promo code from the name "${speaker.name}"` });
+        return;
+      }
+      const token = eventbriteToken();
+      if (!token) {
+        res.status(500).json({ error: 'EVENTBRITE_TOKEN is not configured' });
+        return;
+      }
+      const existing = await eventbrite<{ discounts?: { code?: string }[] }>(
+        token,
+        `/organizations/${await organization(token)}/discounts/` +
+          `?scope=event&event_id=${environment.eventbriteEventId}&code=${code}`,
+      );
+      if (!existing.discounts?.some((discount) => discount.code === code)) {
+        await createDiscount(token, code, SPEAKER_PROMO_PERCENT);
+      }
+      await readJson(
+        await admin.db(path, { method: 'PATCH', body: JSON.stringify({ promoCode: code }) }),
+      );
+      res.json({ promoCode: code });
+    } catch (error) {
+      console.error('Error creating speaker promo code:', error);
+      const detail = String(error?.message ?? '').match(/"error_description":\s*"([^"]+)"/)?.[1];
+      res.status(502).json({ error: detail ?? 'Unable to create the promo code in Eventbrite' });
+    }
+  });
 }

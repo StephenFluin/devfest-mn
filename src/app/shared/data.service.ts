@@ -13,6 +13,8 @@ import {
 } from 'firebase/database';
 import { environment } from '../../environments/environment';
 import { DATABASE, listResource } from '../realtime-data/firebase';
+import { AuthService } from '../realtime-data/auth.service';
+import { createSpeakerPromoCode } from '../speaker-invite/invite-email';
 import { placeholderSessionTitle } from '../speaker-invite/speaker-session-edit';
 
 export interface Session {
@@ -49,6 +51,8 @@ export interface Speaker {
   website?: string;
   /** Full LinkedIn profile URL. */
   linkedin?: string;
+  /** Eventbrite promo code for the speaker's audience, pre-applied by their /s/ link. */
+  promoCode?: string;
   /** Server time (ms) of the last save in the admin. */
   updatedAt?: number;
 }
@@ -91,6 +95,7 @@ export interface Feedback {
 @Injectable({ providedIn: 'root' })
 export class DataService {
   db = inject(DATABASE);
+  private auth = inject(AuthService);
   private year = environment.year;
 
   speakers = listResource<Speaker>(
@@ -271,7 +276,18 @@ export class DataService {
     const speaker = this.save('speakers', { name, published: false });
     await speaker;
     await this.addPlaceholderSession(name, speaker.key);
+    await this.ensureSpeakerPromoCode(speaker.key);
     return this.createSpeakerInvite(speaker.key, name, email);
+  }
+
+  /** Gives a speaker their promo code. A failure doesn't lose the speaker; saving them again retries. */
+  async ensureSpeakerPromoCode(speakerKey: string) {
+    try {
+      await createSpeakerPromoCode(await this.auth.auth?.currentUser?.getIdToken(), speakerKey);
+    } catch (err) {
+      console.error('Unable to create promo code', err);
+      alert(`The speaker's promo code wasn't created: ${err.message}. Saving them again retries.`);
+    }
   }
 
   /** Creates a private edit link for an existing speaker without changing their profile or sessions. */

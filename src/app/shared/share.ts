@@ -1,4 +1,5 @@
 import { environment } from '../../environments/environment';
+import { SPEAKER_PROMO_PERCENT } from './slug';
 
 /**
  * Ready-to-post messages that attendees and speakers can share, each with a link tagged so the UTM
@@ -83,14 +84,15 @@ export function attendeeShareOptions() {
 }
 
 /** What a published speaker can post about their session. The link is their /s/ short link. */
-export function speakerShareOptions(nameSlug: string, sessions: string[]) {
+export function speakerShareOptions(nameSlug: string, sessions: string[], promoCode?: string) {
   const about = sessions.length ? ` about “${sessions.join('” and “')}”` : '';
+  const offer = promoCode ? ` Use code ${promoCode} for ${SPEAKER_PROMO_PERCENT}% off.` : '';
   return NETWORKS.map(({ network, label }) => {
     // The /s/ redirect sets utm_source=speaker and the speaker's campaign; `m` is the medium.
     const link = `${environment.siteUrl}/s/${nameSlug}?m=${network === 'copy' ? 'chat' : network}`;
     const text =
       `I'm speaking at ${EVENT} in Minneapolis${about}. ` +
-      `Come say hi! Tickets and details: ${link} #DevFestMN`;
+      `Come say hi!${offer} Tickets and details: ${link} #DevFestMN`;
     return {
       network,
       label,

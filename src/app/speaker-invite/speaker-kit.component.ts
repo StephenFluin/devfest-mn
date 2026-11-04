@@ -3,7 +3,7 @@ import { environment } from '../../environments/environment';
 import { DataService, Speaker } from '../shared/data.service';
 import { speakerShareOptions } from '../shared/share';
 import { ShareButtonsComponent } from '../shared/share-buttons.component';
-import { slugify } from '../shared/slug';
+import { SPEAKER_PROMO_PERCENT, slugify } from '../shared/slug';
 import { speakerPageUrl } from './invite-email';
 
 /**
@@ -28,6 +28,13 @@ import { speakerPageUrl } from './invite-email';
           Your link, which shows this card when posted:
           <a [href]="link()">{{ link() }}</a>
         </p>
+        @if (speaker.promoCode) {
+          <p>
+            Your audience gets {{ percentOff }}% off tickets with your code,
+            <strong>{{ speaker.promoCode }}</strong
+            >. Your link applies it automatically.
+          </p>
+        }
         <app-share-buttons [options]="options()" label="Share your session" />
       </div>
     }
@@ -52,6 +59,7 @@ import { speakerPageUrl } from './invite-email';
 export class SpeakerKitComponent {
   private ds = inject(DataService);
   readonly speaker = input.required<Speaker | undefined>();
+  percentOff = SPEAKER_PROMO_PERCENT;
 
   private slug = computed(() => slugify(this.speaker()?.name));
   private sessions = computed(() => this.ds.sessionsFor(this.speaker()?.$key));
@@ -62,6 +70,7 @@ export class SpeakerKitComponent {
       this.sessions()
         .map((session) => session.title)
         .filter(Boolean),
+      this.speaker()?.promoCode,
     ),
   );
   /** Same versioned URL the speaker page uses for its og:image, so the preview is the real card. */

@@ -6,6 +6,14 @@ export function slugify(value: string | undefined): string {
     .replace(/^-+|-+$/g, '');
 }
 
+/** Percent off with a speaker's promo code, on every ticket type. */
+export const SPEAKER_PROMO_PERCENT = 10;
+
+/** A speaker's Eventbrite promo code, e.g. "Jane Doe" -> "JANE-DOE". Eventbrite's limit is 30 characters. */
+export function speakerPromoCode(name: string | undefined): string {
+  return slugify(name).slice(0, 30).replace(/-+$/, '').toUpperCase();
+}
+
 /** Plain-text first ~160 characters of a markdown string, for meta descriptions. */
 export function summarize(markdown: string, max = 160): string {
   const text = markdown

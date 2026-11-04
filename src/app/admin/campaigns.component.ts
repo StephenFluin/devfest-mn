@@ -20,9 +20,11 @@ import {
   campaignQrUrl,
   campaignStats,
   campaignUrl,
+  discountKey,
   DiscountUsage,
   PROMO_CODE,
 } from '../shared/campaign';
+import { DataService } from '../shared/data.service';
 import { slugify } from '../shared/slug';
 import { VisitSession } from '../shared/visit-session';
 import { syncEventbrite } from './eventbrite-sync';
@@ -422,6 +424,7 @@ const BUILT_IN = [
                 <th scope="col">Sales</th>
                 <th scope="col">Tickets</th>
                 <th scope="col">Revenue</th>
+                <th scope="col" title="Tickets bought with a speaker's promo code">Code uses</th>
               </tr>
             </thead>
             <tbody>
@@ -436,6 +439,7 @@ const BUILT_IN = [
                   <td>{{ loop.sales | number }}</td>
                   <td>{{ loop.tickets | number }}</td>
                   <td>{{ loop.revenue | currency: 'USD' : 'symbol' : '1.0-0' }}</td>
+                  <td>{{ loop.source === 'speaker' ? (speakerCodeUses() | number) : '—' }}</td>
                 </tr>
               }
             </tbody>
@@ -553,6 +557,7 @@ export class CampaignsComponent {
       this.auth.isAdmin() ? ref(this.db, `analytics/${environment.year}/sessions`) : undefined,
     { initialValue: null },
   );
+  private ds = inject(DataService);
   private burndown = objectResource<{
     orders?: Record<string, BurndownOrder> | BurndownOrder[];
     discounts?: Record<string, DiscountUsage>;
@@ -605,6 +610,17 @@ export class CampaignsComponent {
   });
 
   /** Attendee and speaker share links: visits by utm_source, orders by affiliate code prefix. */
+  speakerCodeUses = computed(() => {
+    const discounts = this.burndown()?.discounts ?? {};
+    return this.ds
+      .speakers()
+      .reduce(
+        (uses, { promoCode }) =>
+          uses + (promoCode ? (discounts[discountKey(promoCode)]?.sold ?? 0) : 0),
+        0,
+      );
+  });
+
   builtIn = computed(() =>
     BUILT_IN.map((loop) => {
       const row = { ...loop, visits: 0, engaged: 0, sales: 0, tickets: 0, revenue: 0 };
