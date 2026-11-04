@@ -123,12 +123,31 @@ export class SpeakerEditComponent {
   auth = inject(AuthService);
   inviteLink = inviteLink;
   inviteStatus = signal('');
+  inviteEmail = '';
+  creatingInvite = signal(false);
 
   /** Invites sent to this speaker, whose links let them edit their own profile. */
   invites = resource({
     params: () => this.speakerData()?.$key,
     loader: ({ params }) => this.ds.invitesFor(params),
   });
+
+  async createInvite(speaker: Speaker) {
+    const email = this.inviteEmail.trim();
+    if (!speaker.$key || !speaker.name?.trim() || !email || this.creatingInvite()) return;
+    this.creatingInvite.set(true);
+    this.inviteStatus.set('Creating invite link...');
+    try {
+      await this.ds.createSpeakerInvite(speaker.$key, speaker.name.trim(), email);
+      this.inviteEmail = '';
+      this.inviteStatus.set('Invite link created. Copy the link below or email it to the speaker.');
+      this.invites.reload();
+    } catch (err) {
+      this.inviteStatus.set(`Couldn't create the invite link: ${err.message ?? err}`);
+    } finally {
+      this.creatingInvite.set(false);
+    }
+  }
 
   async resendInvite(token: string) {
     await this.email(() => sendInviteEmail, token);

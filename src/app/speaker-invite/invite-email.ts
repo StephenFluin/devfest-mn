@@ -2,7 +2,7 @@ import { environment } from '../../environments/environment';
 import { speakerShareOptions } from '../shared/share';
 import { slugify } from '../shared/slug';
 
-/** Invite tokens are 24 random bytes, base64url encoded (see DataService.inviteSpeaker). */
+/** Invite tokens are 24 random bytes, base64url encoded (see DataService.createSpeakerInvite). */
 export const INVITE_TOKEN = /^[A-Za-z0-9_-]{32}$/;
 
 export function inviteLink(token: string) {
