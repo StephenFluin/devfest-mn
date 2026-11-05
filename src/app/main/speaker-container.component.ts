@@ -8,7 +8,13 @@ import { slugify } from '../shared/slug';
     @if (speaker() && (speaker().published || showEdit())) {
       <div class="speaker-card" [class.unpublished]="!speaker().published">
         @if (speaker().imageUrl) {
-          <div class="thumb" [style.background-image]="'url(' + speaker().imageUrl + ')'"></div>
+          <img
+            class="thumb"
+            [src]="speaker().imageUrl"
+            [alt]="'Photo of ' + speaker().name"
+            width="72"
+            height="72"
+          />
         } @else {
           <div class="thumb thumb-initials" aria-hidden="true">{{ initials() }}</div>
         }
