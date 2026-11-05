@@ -1,4 +1,4 @@
-import { Component, computed, DOCUMENT, effect, inject, PLATFORM_ID, signal } from '@angular/core';
+import { Component, DOCUMENT, effect, inject, PLATFORM_ID, signal } from '@angular/core';
 import { DatePipe, isPlatformServer } from '@angular/common';
 
 import { environment } from '../../environments/environment';
@@ -80,7 +80,7 @@ export class HomeComponent {
 
   /** Published speakers; the home page's speakers section appears once there are any. */
   speakers = this.ds.publishedSpeakers;
-  featuredSpeakers = computed(() => this.speakers().slice(0, 6));
+  featuredSpeakers = this.speakers;
 
   constructor() {
     // The hero photo is the largest thing on screen, but as a CSS background the browser only
