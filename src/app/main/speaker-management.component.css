@@ -1,0 +1,127 @@
+:host {
+  display: block;
+  margin-bottom: 24px;
+}
+.management {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  text-align: left;
+  overflow: hidden;
+}
+.heading,
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+}
+.heading {
+  background: var(--color-surface);
+}
+.heading h2 {
+  margin: 0 0 4px;
+  font:
+    600 20px/1.3 Montserrat,
+    sans-serif;
+  color: var(--color-text);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.heading p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+.controls {
+  border-top: 1px solid var(--color-border);
+  padding-block: 12px;
+}
+.actions,
+.filters,
+.views {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 500;
+  margin: 0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.actions button {
+  border-color: var(--color-heading);
+  color: var(--color-heading);
+}
+.actions .add {
+  background: var(--color-heading);
+  color: var(--color-bg);
+}
+.filters button[aria-pressed='true'] {
+  color: var(--color-heading);
+  background: var(--color-surface);
+  box-shadow: inset 0 -2px var(--color-heading);
+}
+.filters span {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+.views {
+  gap: 0;
+  padding: 3px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+.views button[aria-pressed='true'] {
+  background: var(--color-heading);
+  color: var(--color-bg);
+}
+svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+button:hover {
+  text-decoration: underline;
+}
+button:focus-visible {
+  outline: 2px solid var(--color-heading);
+  outline-offset: 3px;
+}
+@media (max-width: 700px) {
+  .heading,
+  .controls {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 16px;
+    gap: 12px;
+  }
+  .filters {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .filters button {
+    padding-inline: 8px;
+    gap: 6px;
+    font-size: 13px;
+  }
+  button {
+    min-height: 44px;
+    padding-inline: 10px;
+  }
+}

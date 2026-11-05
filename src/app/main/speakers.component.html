@@ -12,19 +12,20 @@
   <div class="callout">Speakers</div>
 
   @if (auth.isAdmin()) {
-    <div class="admin-actions">
-      <button type="button" class="button" (click)="addSpeaker()">Add Speaker</button>
-      <button
-        type="button"
-        class="button secondary"
-        [attr.aria-expanded]="showInvite()"
-        (click)="showInvite.set(!showInvite())"
-      >
-        Invite Speaker
-      </button>
-    </div>
+    <app-speaker-management
+      [total]="speakers().length"
+      [published]="publishedCount()"
+      [visible]="visibleSpeakers().length"
+      [view]="view()"
+      [publication]="publication()"
+      [inviteOpen]="showInvite()"
+      (viewChange)="view.set($event)"
+      (publicationChange)="publication.set($event)"
+      (addSpeaker)="addSpeaker()"
+      (toggleInvite)="showInvite.set(!showInvite())"
+    />
     @if (showInvite()) {
-      <form class="invite-form" (ngSubmit)="sendInvite()">
+      <form id="invite-speaker-form" class="invite-form" (ngSubmit)="sendInvite()">
         <p>
           Creates an unpublished speaker and emails them a private link to edit their own profile.
         </p>
@@ -65,14 +66,131 @@
       </p>
     }
   }
-  <div class="speaker-list-container">
-    @for (speaker of speakers(); track speaker.$key) {
-      <app-speaker-container
-        [speaker]="speaker"
-        [showEdit]="auth.isAdmin()"
-      ></app-speaker-container>
+  @if (auth.isAdmin() && view() === 'table') {
+    <p class="table-help">
+      Click a column heading to sort. Last updated times are in your local time zone.
+    </p>
+    @if (invites.error()) {
+      <p role="status">
+        Private links could not be loaded.
+        <button type="button" class="text-button" (click)="invites.reload()">Try again</button>
+      </p>
     }
-  </div>
+    <p class="link-status" role="status">{{ linkStatus() }}</p>
+    <div class="speaker-table-scroll" role="region" aria-label="Speaker management" tabindex="0">
+      <table class="speaker-table">
+        <caption>
+          Speakers and their sessions
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col" [attr.aria-sort]="ariaSort('name')">
+              <button type="button" (click)="sortBy('name')">
+                Name<span aria-hidden="true">{{ sortIndicator('name') }}</span>
+              </button>
+            </th>
+            <th scope="col" [attr.aria-sort]="ariaSort('sessions')">
+              <button type="button" (click)="sortBy('sessions')">
+                Sessions<span aria-hidden="true">{{ sortIndicator('sessions') }}</span>
+              </button>
+            </th>
+            <th scope="col" [attr.aria-sort]="ariaSort('published')">
+              <button type="button" (click)="sortBy('published')">
+                Published<span aria-hidden="true">{{ sortIndicator('published') }}</span>
+              </button>
+            </th>
+            <th scope="col" [attr.aria-sort]="ariaSort('updatedAt')">
+              <button type="button" (click)="sortBy('updatedAt')">
+                Last updated<span aria-hidden="true">{{ sortIndicator('updatedAt') }}</span>
+              </button>
+            </th>
+            <th scope="col">Admin</th>
+            <th scope="col">Speaker edit link</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.speaker.$key) {
+            <tr>
+              <th scope="row">
+                <a [routerLink]="['/speakers', row.speaker.$key, slugify(row.speaker.name)]">{{
+                  row.speaker.name || 'Unnamed speaker'
+                }}</a>
+              </th>
+              <td>
+                <ul class="speaker-sessions">
+                  @for (session of row.sessions; track session.$key) {
+                    <li>
+                      <a [routerLink]="['/schedule', session.$key, slugify(session.title)]">{{
+                        session.title || 'Untitled session'
+                      }}</a>
+                      @if (!session.published) {
+                        <span class="muted">(Unpublished)</span>
+                      }
+                    </li>
+                  } @empty {
+                    <li class="muted">No sessions</li>
+                  }
+                </ul>
+              </td>
+              <td>{{ row.speaker.published ? 'Published' : 'Unpublished' }}</td>
+              <td>
+                @if (row.speaker.updatedAt) {
+                  <time
+                    [attr.datetime]="
+                      row.speaker.updatedAt | date: 'yyyy-MM-ddTHH:mm:ss.SSSZZZZZ' : '+0000'
+                    "
+                    >{{ row.speaker.updatedAt | date: 'medium' }}</time
+                  >
+                } @else {
+                  <span class="muted">Not recorded</span>
+                }
+              </td>
+              <td>
+                <a
+                  class="admin-edit"
+                  [routerLink]="['/admin/speakers', row.speaker.$key, 'edit']"
+                  [attr.aria-label]="'Edit ' + (row.speaker.name || 'speaker') + ' as admin'"
+                >
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <path d="m13 3 4 4M3 17l1-5L13 3a2 2 0 0 1 4 4l-9 9-5 1Z" />
+                  </svg>
+                  Edit as admin
+                </a>
+              </td>
+              <td>
+                <app-speaker-edit-link
+                  [speakerKey]="row.speaker.$key"
+                  [name]="row.speaker.name || 'speaker'"
+                  [link]="row.invite ? inviteLink(row.invite.$key) : undefined"
+                  [copied]="!!row.invite && copiedInvite() === row.invite.$key"
+                  [loading]="invites.isLoading()"
+                  [failed]="!!invites.error()"
+                  (copyLink)="copyInvite(row.invite.$key, row.speaker.name || 'speaker')"
+                />
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6">No speakers match this filter.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <div class="speaker-list-container">
+      @for (speaker of visibleSpeakers(); track speaker.$key) {
+        <app-speaker-container
+          [speaker]="speaker"
+          [showEdit]="auth.isAdmin()"
+        ></app-speaker-container>
+      } @empty {
+        @if (auth.isAdmin()) {
+          <p>No speakers match this filter.</p>
+        }
+      }
+    </div>
+  }
   @if (auth.isAdmin()) {
     <div class="admin-actions">
       <button type="button" class="button" (click)="addSpeaker()">Add Speaker</button>
@@ -127,5 +245,82 @@
   }
   .invite-sent {
     word-break: break-all;
+  }
+  .link-status:empty {
+    display: none;
+  }
+  .speaker-table-scroll {
+    overflow-x: auto;
+  }
+  .speaker-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  .speaker-table th,
+  .speaker-table td {
+    padding: 14px 10px;
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: top;
+  }
+  .speaker-table thead {
+    background: var(--color-surface);
+  }
+  .speaker-table thead button,
+  .text-button {
+    border: 0;
+    background: none;
+    color: var(--color-heading);
+    font: inherit;
+    cursor: pointer;
+    padding: 0;
+    text-align: left;
+  }
+  .speaker-table thead button {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .speaker-table a,
+  .text-button {
+    text-decoration: underline;
+  }
+  .speaker-table .admin-edit {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 8px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    color: var(--color-text);
+    font-size: 13px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .admin-edit svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+  }
+  .admin-edit:hover {
+    background: var(--color-surface);
+  }
+  .admin-edit:focus-visible {
+    outline: 2px solid var(--color-heading);
+    outline-offset: 3px;
+  }
+  .speaker-sessions {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    min-width: 180px;
+  }
+  .speaker-sessions li + li {
+    margin-top: 8px;
+  }
+  .muted {
+    color: var(--color-text-muted);
   }
 </style>

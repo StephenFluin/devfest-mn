@@ -1,4 +1,4 @@
-import { Component, computed, DOCUMENT, inject, VERSION } from '@angular/core';
+import { Component, computed, DOCUMENT, inject, signal, VERSION } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
@@ -46,6 +46,9 @@ const NAV = [
           <h1 id="gate-heading">Sign in to the admin</h1>
           <p class="muted">For DevFestMN organizers and volunteers. Use your Google account.</p>
           <button mat-flat-button type="button" (click)="signIn()">Sign in with Google</button>
+          @if (signInError()) {
+            <p role="alert">{{ signInError() }}</p>
+          }
         </section>
       </div>
     } @else {
@@ -241,14 +244,29 @@ export class AdminComponent {
   readonly year = environment.year;
   readonly nav = NAV;
   private router = inject(Router);
+  readonly signInError = signal('');
 
   /** Signs in, then opens the admin's default page (signed out, every page shows sign-in). */
   async signIn() {
+    this.signInError.set('');
     try {
       await this.auth.login();
       this.router.navigateByUrl('/admin');
-    } catch {
-      // Closed the popup or sign-in failed; stay on the sign-in card.
+    } catch (error) {
+      const code = error.code;
+      if (code === 'auth/unauthorized-domain') {
+        this.signInError.set(
+          'This address is not authorized for Google sign-in. For the local preview, open http://localhost:4200/admin.',
+        );
+      } else if (code === 'auth/popup-blocked' || code === 'auth/popup-closed-by-user') {
+        this.signInError.set(
+          'The Google sign-in window was blocked or closed. Allow popups, or open this page in your regular browser and try again.',
+        );
+      } else {
+        this.signInError.set(
+          `Google sign-in failed (${code ?? 'unknown error'}). Please try again.`,
+        );
+      }
     }
   }
 
