@@ -1,17 +1,31 @@
-import { Component, effect, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
-import { DataService } from '../shared/data.service';
+import { Component, computed, effect, inject, resource, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
+import { get } from 'firebase/database';
+import { DataService, SpeakerInvite } from '../shared/data.service';
 import { AuthService } from '../realtime-data/auth.service';
 import { SpeakerContainerComponent } from './speaker-container.component';
 import { OurMeta } from '../our-meta.service';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
 import { inviteLink, sendInviteEmail } from '../speaker-invite/invite-email';
+import { slugify } from '../shared/slug';
+import { SpeakerManagementComponent } from './speaker-management.component';
+import { SpeakerEditLinkComponent } from './speaker-edit-link.component';
+
+type SpeakerSort = 'name' | 'sessions' | 'published' | 'updatedAt';
 
 @Component({
   templateUrl: './speakers.component.html',
 
-  imports: [FormsModule, SpeakerContainerComponent],
+  imports: [
+    FormsModule,
+    SpeakerContainerComponent,
+    SpeakerManagementComponent,
+    SpeakerEditLinkComponent,
+    RouterLink,
+    DatePipe,
+  ],
 })
 export class SpeakersComponent {
   ds = inject(DataService);
@@ -19,6 +33,118 @@ export class SpeakersComponent {
   auth = inject(AuthService);
 
   speakers = this.ds.speakers;
+  publishedCount = computed(() => this.speakers().filter((speaker) => speaker.published).length);
+  slugify = slugify;
+  inviteLink = inviteLink;
+  view = signal<'tiles' | 'table'>('tiles');
+  publication = signal<'all' | 'published' | 'unpublished'>('all');
+  sortColumn = signal<SpeakerSort>('name');
+  sortDirection = signal<'ascending' | 'descending'>('ascending');
+  linkStatus = signal('');
+  copiedInvite = signal<string | null>(null);
+
+  /** Private tokens stay in memory and are only fetched for an admin's table view. */
+  invites = resource({
+    params: () => (this.auth.isAdmin() && this.view() === 'table' ? this.auth.uid() : undefined),
+    loader: async () => {
+      const snapshot = await get(this.ds.ref('speakerInvites'));
+      const invites: SpeakerInvite[] = [];
+      snapshot.forEach((child) => {
+        invites.push({ ...child.val(), $key: child.key });
+      });
+      return invites;
+    },
+  });
+
+  private inviteBySpeaker = computed(() => {
+    const latest = new Map<string, SpeakerInvite>();
+    if (this.auth.isAdmin() && this.invites.hasValue()) {
+      for (const invite of this.invites.value()) {
+        const previous = latest.get(invite.speaker);
+        if (!previous || (invite.createdAt ?? 0) > (previous.createdAt ?? 0)) {
+          latest.set(invite.speaker, invite);
+        }
+      }
+    }
+    return latest;
+  });
+
+  visibleSpeakers = computed(() => {
+    const admin = this.auth.isAdmin();
+    return this.speakers().filter((speaker) => {
+      if (!admin) return speaker.published;
+      return (
+        this.publication() === 'all' || !!speaker.published === (this.publication() === 'published')
+      );
+    });
+  });
+
+  rows = computed(() => {
+    const rows = this.visibleSpeakers().map((speaker) => ({
+      speaker,
+      sessions: this.ds.sessionsFor(speaker.$key, { unpublished: true }),
+      invite: this.inviteBySpeaker().get(speaker.$key),
+    }));
+    const direction = this.sortDirection() === 'ascending' ? 1 : -1;
+    const column = this.sortColumn();
+    return rows.sort((a, b) => {
+      let comparison: number;
+      switch (column) {
+        case 'published':
+          comparison = Number(!!a.speaker.published) - Number(!!b.speaker.published);
+          break;
+        case 'updatedAt':
+          comparison = (a.speaker.updatedAt ?? 0) - (b.speaker.updatedAt ?? 0);
+          break;
+        case 'sessions':
+          comparison = a.sessions
+            .map((session) => session.title ?? '')
+            .join(', ')
+            .localeCompare(b.sessions.map((session) => session.title ?? '').join(', '));
+          break;
+        default:
+          comparison = (a.speaker.name ?? '').localeCompare(b.speaker.name ?? '');
+      }
+      return comparison * direction || (a.speaker.name ?? '').localeCompare(b.speaker.name ?? '');
+    });
+  });
+
+  sortBy(column: SpeakerSort) {
+    if (this.sortColumn() === column) {
+      this.sortDirection.update((direction) =>
+        direction === 'ascending' ? 'descending' : 'ascending',
+      );
+    } else {
+      this.sortColumn.set(column);
+      this.sortDirection.set(column === 'updatedAt' ? 'descending' : 'ascending');
+    }
+  }
+
+  ariaSort(column: SpeakerSort) {
+    return this.sortColumn() === column ? this.sortDirection() : 'none';
+  }
+
+  sortIndicator(column: SpeakerSort) {
+    return this.sortColumn() === column
+      ? this.sortDirection() === 'ascending'
+        ? ' ↑'
+        : ' ↓'
+      : ' ↕';
+  }
+
+  async copyInvite(token: string, name: string) {
+    this.linkStatus.set('');
+    this.copiedInvite.set(null);
+    try {
+      await navigator.clipboard.writeText(inviteLink(token));
+      this.copiedInvite.set(token);
+      this.linkStatus.set(`Copied the speaker edit link for ${name}. You can now send it to them.`);
+    } catch {
+      this.linkStatus.set(
+        'Could not copy the link. Right-click Open speaker editor and copy its address.',
+      );
+    }
+  }
 
   showInvite = signal(false);
   inviteName = signal('');
@@ -76,6 +202,7 @@ export class SpeakersComponent {
     this.sending.set(true);
     try {
       const token = await this.ds.inviteSpeaker(name, email);
+      this.invites.reload();
       this.inviteName.set('');
       this.inviteEmail.set('');
       this.showInvite.set(false);
