@@ -5,6 +5,7 @@ import {
   NavigationEnd,
   Router,
   RouterLink,
+  RouterLinkActive,
   RouterOutlet,
 } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
@@ -28,7 +29,7 @@ import { PurchaseShareComponent } from './tickets/purchase-share.component';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  imports: [ADirective, RouterLink, RouterOutlet, PurchaseShareComponent],
+  imports: [ADirective, RouterLink, RouterLinkActive, RouterOutlet, PurchaseShareComponent],
 })
 export class AppComponent {
   environment = environment;

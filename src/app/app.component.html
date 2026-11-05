@@ -24,18 +24,28 @@
         >
       }
       @if (environment.showSchedule) {
-        <a [routerLink]="['/schedule']">Schedule</a>
+        <a [routerLink]="['/schedule']" routerLinkActive="active" ariaCurrentWhenActive="page"
+          >Schedule</a
+        >
       }
       @if (cfp() === 'open') {
-        <a [routerLink]="['speaker-cfp']">Be a Speaker</a>
+        <a [routerLink]="['/speaker-cfp']" routerLinkActive="active" ariaCurrentWhenActive="page"
+          >Be a Speaker</a
+        >
       }
       @if (ds.publishedSpeakers().length) {
-        <a [routerLink]="['/speakers']">Speakers</a>
+        <a [routerLink]="['/speakers']" routerLinkActive="active" ariaCurrentWhenActive="page"
+          >Speakers</a
+        >
       }
       @if (environment.showSponsor) {
-        <a [routerLink]="['/sponsors']">Sponsor</a>
+        <a [routerLink]="['/sponsors']" routerLinkActive="active" ariaCurrentWhenActive="page"
+          >Sponsor</a
+        >
       }
-      <a [routerLink]="['/gallery']">Gallery</a>
+      <a [routerLink]="['/gallery']" routerLinkActive="active" ariaCurrentWhenActive="page"
+        >Gallery</a
+      >
     </div>
   </div>
   <div class="routeContainer" role="main">
