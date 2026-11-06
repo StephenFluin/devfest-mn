@@ -18,6 +18,7 @@ import { slugify } from '../shared/slug';
 import { inviteLink, sendInviteEmail, sendSpeakerKit } from '../speaker-invite/invite-email';
 import { AuthService } from '../realtime-data/auth.service';
 import { SpeakerKitComponent } from '../speaker-invite/speaker-kit.component';
+import { formChanged, UnsavedChangesForm, warnOnPageUnload } from '../shared/unsaved-changes';
 
 @Component({
   templateUrl: './speaker-edit.component.html',
@@ -71,7 +72,7 @@ import { SpeakerKitComponent } from '../speaker-invite/speaker-kit.component';
     MatSelectModule,
   ],
 })
-export class SpeakerEditComponent {
+export class SpeakerEditComponent implements UnsavedChangesForm {
   ds = inject(DataService);
   route = inject(ActivatedRoute);
   router = inject(Router);
@@ -110,15 +111,30 @@ export class SpeakerEditComponent {
     this.router.navigate(['/admin/sessions', session.key, 'edit']);
   }
 
-  /** A copy, so form edits don't leak into the shared live data before saving. */
-  speakerData = computed<Speaker>(() => {
+  private original = computed<Speaker | undefined>(() => {
     const params = this.params();
     if (params.get('id') === 'new') {
       return {};
     }
-    const item = this.ds.speakers().find((item) => item.$key === params.get('id'));
+    return this.ds.speakers().find((item) => item.$key === params.get('id'));
+  });
+
+  /** A copy, so form edits don't leak into the shared live data before saving. */
+  speakerData = computed<Speaker>(() => {
+    const item = this.original();
     return item && { ...item };
   });
+
+  /** Set once saved or deleted, when leaving the page no longer loses anything. */
+  private finished = false;
+
+  constructor() {
+    warnOnPageUnload(this);
+  }
+
+  hasUnsavedChanges() {
+    return !this.finished && formChanged(this.original(), this.speakerData());
+  }
 
   auth = inject(AuthService);
   inviteLink = inviteLink;
@@ -174,6 +190,7 @@ export class SpeakerEditComponent {
 
   async save(speaker: Speaker, event: Event) {
     event.preventDefault();
+    this.finished = true;
     const saved = this.ds.save('speakers', speaker);
     this.router.navigate(['/', 'speakers']);
     if (!speaker.promoCode && speaker.name?.trim()) {
@@ -184,6 +201,7 @@ export class SpeakerEditComponent {
 
   delete(speaker) {
     if (confirm(`Delete ${speaker.name || 'this speaker'}? This can't be undone.`)) {
+      this.finished = true;
       this.ds.delete('speakers', speaker);
       this.router.navigate(['/', 'speakers']);
     }
