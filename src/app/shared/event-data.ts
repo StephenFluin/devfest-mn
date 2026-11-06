@@ -26,6 +26,34 @@ export const withOffset = (time: string) =>
     ? time
     : `${time.length === 16 ? `${time}:00` : time}${eventUtcOffset}`;
 
+/** A moment as Minneapolis time on the event date, e.g. "2026-12-05T10:00:00-06:00". */
+const inEventZone = (date: Date) => {
+  const [hours, minutes] = eventUtcOffset.split(':').map(Number);
+  const offset = (hours * 60 + Math.sign(hours) * minutes) * 60_000;
+  return `${new Date(date.getTime() + offset).toISOString().slice(0, 19)}${eventUtcOffset}`;
+};
+
+const HOUR = 3_600_000;
+
+/**
+ * A session runs one hour per block, or until the next session in its room (or the next session
+ * for everyone) starts, whichever is sooner. Null if it has no start time yet.
+ */
+export function sessionEnd(session: Session, schedule: Session[]): Date | null {
+  if (!session.startTime) return null;
+  const start = new Date(withOffset(session.startTime)).getTime();
+  if (isNaN(start)) return null;
+  const sharesRoom = (other: Session) =>
+    other.track === 'all' || session.track === 'all' || other.room === session.room;
+  const nextStart = Math.min(
+    ...schedule
+      .filter((other) => other.$key !== session.$key && other.startTime && sharesRoom(other))
+      .map((other) => new Date(withOffset(other.startTime)).getTime())
+      .filter((time) => time > start),
+  );
+  return new Date(Math.min(start + (session.blocks || 1) * HOUR, nextStart));
+}
+
 const venue = {
   '@type': 'Place',
   name: environment.venueName,
@@ -85,16 +113,19 @@ export function personRef(speaker: Speaker) {
 }
 
 /**
- * One session, or null when it has no start time yet (search engines require one). `speakers` looks up
- * a speaker by key; only published speakers are public. On its own page a session names the conference
- * as its superEvent; in the schedule it's already nested in the conference's subEvent list.
+ * One session, or null when it has no start time yet (search engines require one). `schedule` is
+ * every public session, which decides when this one ends. `speakers` looks up a speaker by key; only
+ * published speakers are public. On its own page a session names the conference as its superEvent;
+ * in the schedule it's already nested in the conference's subEvent list.
  */
 export function sessionEvent(
   session: Session,
+  schedule: Session[],
   speakers: (key: string) => Speaker | undefined,
   { standalone = false } = {},
 ) {
   if (!session.title || !session.startTime) return null;
+  const end = sessionEnd(session, schedule);
   const performers = Object.values<string>(session.speakers ?? {})
     .map(speakers)
     .filter((speaker) => speaker?.published && speaker.name)
@@ -107,10 +138,12 @@ export function sessionEvent(
     ...(session.description && { description: summarize(session.description, 500) }),
     image: [`${environment.siteUrl}${environment.socialImage}`],
     startDate: withOffset(session.startTime),
+    ...(end && { endDate: inEventZone(end) }),
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    // Search engines want an address on the location itself, so a room repeats the venue's.
     location: session.room
-      ? { '@type': 'Place', name: session.room, containedInPlace: venue }
+      ? { '@type': 'Place', name: session.room, address: venue.address, containedInPlace: venue }
       : venue,
     ...(performers.length && { performer: performers }),
     organizer,
@@ -126,6 +159,6 @@ export function scheduledSessionEvents(
 ) {
   return [...sessions]
     .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
-    .map((session) => sessionEvent(session, speakers))
+    .map((session) => sessionEvent(session, sessions, speakers))
     .filter(Boolean);
 }

@@ -1,6 +1,6 @@
 import { environment } from '../../environments/environment';
 import { Session } from './data.service';
-import { eventUtcOffset, sessionUrl, withOffset } from './event-data';
+import { eventUtcOffset, sessionEnd, sessionUrl, withOffset } from './event-data';
 import { summarize } from './slug';
 
 /**
@@ -18,25 +18,12 @@ export interface CalendarEvent {
   url: string;
 }
 
-const HOUR = 3_600_000;
-
-/**
- * A session runs one hour per block, or until the next session in its room (or the next session
- * for everyone) starts, whichever is sooner. Null if it has no start time yet.
- */
+/** A session with its start and end (see sessionEnd). Null if it has no start time yet. */
 export function calendarEvent(session: Session, schedule: Session[]): CalendarEvent | null {
   if (!session.title || !session.startTime) return null;
   const start = new Date(withOffset(session.startTime));
-  if (isNaN(start.getTime())) return null;
-  const sharesRoom = (other: Session) =>
-    other.track === 'all' || session.track === 'all' || other.room === session.room;
-  const nextStart = Math.min(
-    ...schedule
-      .filter((other) => other.$key !== session.$key && other.startTime && sharesRoom(other))
-      .map((other) => new Date(withOffset(other.startTime)).getTime())
-      .filter((time) => time > start.getTime()),
-  );
-  const end = new Date(Math.min(start.getTime() + (session.blocks || 1) * HOUR, nextStart));
+  const end = sessionEnd(session, schedule);
+  if (!end) return null;
   const url = sessionUrl(session);
   const summary = session.description ? summarize(session.description, 600) : '';
   return {
