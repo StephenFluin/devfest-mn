@@ -7,7 +7,7 @@ export function slugify(value: string | undefined): string {
 }
 
 /** Percent off with a speaker's promo code, on every ticket type. */
-export const SPEAKER_PROMO_PERCENT = 10;
+export const SPEAKER_PROMO_PERCENT = 20;
 
 /** A speaker's Eventbrite promo code, e.g. "Jane Doe" -> "JANE-DOE". Eventbrite's limit is 30 characters. */
 export function speakerPromoCode(name: string | undefined): string {

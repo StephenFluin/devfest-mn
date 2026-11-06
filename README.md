@@ -257,7 +257,7 @@ Inviting a speaker also creates an unpublished session for them, titled "<Name>'
 speaker editor's **Sessions** card lists their sessions and has **Add a session** for a speaker giving more than one.
 
 Every speaker also gets a promo code when they're created, by invite or in the admin, for their audience: their
-name in capitals (`JANE-DOE`), 10% off every ticket type, unlimited uses. Their `/s/` link pre-applies it, their share
+name in capitals (`JANE-DOE`), 20% off every ticket type, unlimited uses. Their `/s/` link pre-applies it, their share
 kit mentions it, and the Campaigns page's **Word of mouth** table counts the uses after **Update from Eventbrite**. The
 code stays the same if they're renamed, and deleting a speaker doesn't delete it from Eventbrite. If Eventbrite is
 down the admin sees an alert, and saving the speaker in the admin tries again. For speakers from before codes existed:
