@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 
 import { environment } from '../../environments/environment';
 import { DataService, Session } from '../shared/data.service';
+import { formChanged } from '../shared/unsaved-changes';
 import { SESSION_LIMITS } from './speaker-session-edit';
 
 /**
@@ -115,11 +116,14 @@ export class SpeakerSessionsComponent {
   status = signal<Record<string, string>>({});
 
   /** Copies, so form edits don't leak into the shared live data before saving. */
-  sessions = computed<Session[]>(() =>
-    this.ds
-      .sessionsFor(this.speakerKey(), { unpublished: true })
-      .map((session) => ({ ...session })),
-  );
+  sessions = computed<Session[]>(() => this.originals().map((session) => ({ ...session })));
+
+  private originals = computed(() => this.ds.sessionsFor(this.speakerKey(), { unpublished: true }));
+
+  hasUnsavedChanges() {
+    const originals = this.originals();
+    return this.sessions().some((session, index) => formChanged(originals[index], session));
+  }
 
   /** The other speakers' names, if the session has any. */
   coSpeakers(session: Session) {

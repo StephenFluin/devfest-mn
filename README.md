@@ -266,6 +266,10 @@ down the admin sees an alert, and saving the speaker in the admin tries again. F
 node scripts/speaker-promo-codes.mts --apply
 ```
 
+The speaker and session forms, for both admins and invited speakers, ask for confirmation before someone leaves with
+unsaved changes (`src/app/shared/unsaved-changes.ts`). Add a form to this with the route's `canDeactivate` and
+`warnOnPageUnload`.
+
 Email goes through [Resend](https://resend.com) from the server (`src/mailer.ts`, behind a small `Mailer`
 interface so the provider can be swapped). Setup, once:
 

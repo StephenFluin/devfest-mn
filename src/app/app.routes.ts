@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import AdminRoutes from './admin/admin.routes';
+import { confirmLeavingUnsaved } from './shared/unsaved-changes';
 
 export const MainRoutes: Routes = [
   {
@@ -60,6 +61,7 @@ export const MainRoutes: Routes = [
   {
     // The private link emailed to an invited speaker; the token is the only credential.
     path: 'speaker-edit/:token/edit',
+    canDeactivate: [confirmLeavingUnsaved],
     loadComponent: () =>
       import('./speaker-invite/speaker-invite-edit.component').then(
         (m) => m.SpeakerInviteEditComponent,

@@ -1,4 +1,12 @@
-import { Component, computed, inject, PLATFORM_ID, resource, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  PLATFORM_ID,
+  resource,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
@@ -11,6 +19,7 @@ import { AUTH } from '../realtime-data/firebase';
 import { AuthService } from '../realtime-data/auth.service';
 import { SpeakerKitComponent } from './speaker-kit.component';
 import { SpeakerSessionsComponent } from './speaker-sessions.component';
+import { formChanged, UnsavedChangesForm, warnOnPageUnload } from '../shared/unsaved-changes';
 
 /** Fields a speaker may edit on their own profile. Publishing stays with the organizers. */
 const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'linkedin'] as const;
@@ -151,7 +160,7 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
   `,
   imports: [FormsModule, SpeakerKitComponent, SpeakerSessionsComponent],
 })
-export class SpeakerInviteEditComponent {
+export class SpeakerInviteEditComponent implements UnsavedChangesForm {
   ds = inject(DataService);
   private authService = inject(AuthService);
   private auth = inject(AUTH);
@@ -189,12 +198,27 @@ export class SpeakerInviteEditComponent {
     },
   });
 
+  private original = computed<Speaker | undefined>(() =>
+    this.access.hasValue() ? this.ds.speaker(this.access.value()) : undefined,
+  );
+
   /** A copy, so form edits don't leak into the shared live data before saving. */
   speaker = computed<Speaker | undefined>(() => {
-    if (!this.access.hasValue()) return undefined;
-    const item = this.ds.speaker(this.access.value());
+    const item = this.original();
     return item && { ...item };
   });
+
+  private sessionForms = viewChild(SpeakerSessionsComponent);
+
+  constructor() {
+    warnOnPageUnload(this);
+  }
+
+  hasUnsavedChanges() {
+    return (
+      formChanged(this.original(), this.speaker()) || !!this.sessionForms()?.hasUnsavedChanges()
+    );
+  }
 
   /**
    * Uploads through the server, since the Storage rules only let admins upload. The photo is

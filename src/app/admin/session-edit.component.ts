@@ -19,6 +19,7 @@ import { KeyValuePipe } from '@angular/common';
 import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
 import { environment } from '../../environments/environment';
 import { eventUtcOffset } from '../shared/event-data';
+import { formChanged, UnsavedChangesForm, warnOnPageUnload } from '../shared/unsaved-changes';
 
 @Component({
   templateUrl: './session-edit.component.html',
@@ -52,7 +53,7 @@ import { eventUtcOffset } from '../shared/event-data';
     MatCheckboxModule,
   ],
 })
-export class SessionEditComponent {
+export class SessionEditComponent implements UnsavedChangesForm {
   ds = inject(DataService);
   route = inject(ActivatedRoute);
   router = inject(Router);
@@ -68,8 +69,7 @@ export class SessionEditComponent {
     { initialValue: '' },
   );
 
-  /** A copy, so form edits don't leak into the shared live data before saving. */
-  sessionData = computed<Session>(() => {
+  private original = computed<Session | undefined>(() => {
     const params = this.params();
     if (params.get('id') === 'new') {
       // Made from a slot in the schedule grid, so meant to be public; invited speakers' sessions
@@ -79,6 +79,23 @@ export class SessionEditComponent {
     const item = this.ds.schedule().find((item) => item.$key === params.get('id'));
     return item && { ...item, adminNotes: this.adminNotes() };
   });
+
+  /** A copy, so form edits don't leak into the shared live data before saving. */
+  sessionData = computed<Session>(() => {
+    const item = this.original();
+    return item && { ...item };
+  });
+
+  /** Set once saved or deleted, when leaving the page no longer loses anything. */
+  private finished = false;
+
+  constructor() {
+    warnOnPageUnload(this);
+  }
+
+  hasUnsavedChanges() {
+    return !this.finished && formChanged(this.original(), this.sessionData());
+  }
 
   environment = environment;
 
@@ -141,6 +158,7 @@ export class SessionEditComponent {
     if (event) {
       event.preventDefault();
     }
+    this.finished = true;
     this.setTime(session, this.timeOf(session.startTime));
     // null also clears notes saved on the public session before they moved.
     const { adminNotes, ...publicSession } = session;
@@ -152,6 +170,7 @@ export class SessionEditComponent {
 
   delete(session) {
     if (!confirm(`Delete "${session.title || 'this session'}"? This can't be undone.`)) return;
+    this.finished = true;
     this.ds.delete('schedule', session);
     set(this.ds.ref(`adminNotes/${session.$key}`), null);
     this.router.navigate(['/', 'schedule']);

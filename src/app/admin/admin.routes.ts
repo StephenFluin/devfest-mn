@@ -3,6 +3,7 @@ import { CanMatchFn, Routes } from '@angular/router';
 import { AuthService } from '../realtime-data/auth.service';
 import { environment } from '../../environments/environment';
 import { eventUtcOffset } from '../shared/event-data';
+import { confirmLeavingUnsaved } from '../shared/unsaved-changes';
 
 /**
  * The database rules are what actually protect admin data; this keeps non-admins from loading
@@ -42,16 +43,19 @@ export const AdminRoutes: Routes = [
             children: [
               {
                 path: 'speakers/:id/edit',
+                canDeactivate: [confirmLeavingUnsaved],
                 loadComponent: () =>
                   import('./speaker-edit.component').then((m) => m.SpeakerEditComponent),
               },
               {
                 path: 'sessions/:id/edit',
+                canDeactivate: [confirmLeavingUnsaved],
                 loadComponent: () =>
                   import('./session-edit.component').then((m) => m.SessionEditComponent),
               },
               {
                 path: 'sessions/:id/edit/:time/:room',
+                canDeactivate: [confirmLeavingUnsaved],
                 loadComponent: () =>
                   import('./session-edit.component').then((m) => m.SessionEditComponent),
               },
