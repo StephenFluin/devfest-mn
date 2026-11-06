@@ -57,9 +57,12 @@ export class SessionViewComponent {
         if (session.description) {
           meta.setDescription(summarize(session.description));
         }
-        const event = sessionEvent(session, (key) => this.ds.speaker(key), {
-          standalone: true,
-        });
+        const event = sessionEvent(
+          session,
+          this.ds.publishedSchedule(),
+          (key) => this.ds.speaker(key),
+          { standalone: true },
+        );
         if (event) {
           meta.setStructuredData({ '@context': 'https://schema.org', ...event });
         }

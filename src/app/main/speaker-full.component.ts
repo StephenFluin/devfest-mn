@@ -67,7 +67,9 @@ export class SpeakerFullComponent {
       }
       const events = sessions
         .map((session) =>
-          sessionEvent(session, (key) => this.ds.speaker(key), { standalone: true }),
+          sessionEvent(session, this.ds.publishedSchedule(), (key) => this.ds.speaker(key), {
+            standalone: true,
+          }),
         )
         .filter(Boolean);
       meta.setStructuredData(
