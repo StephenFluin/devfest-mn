@@ -81,11 +81,6 @@ export const environment = {
       type: 'Community',
       list: [
         {
-          name: 'SomeConf',
-          logo: '/a/images/sponsors/someconf.webp',
-          url: 'https://someconf.com/?apply_somecoupon=devfest2026',
-        },
-        {
           name: 'ImpactPharm',
           logo: '/a/images/sponsors/impactpharm.webp',
           url: 'http://impactpharm.app/',
