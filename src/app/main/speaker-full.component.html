@@ -24,13 +24,9 @@
       <div style="margin-top: 16px">
         Speaking on
         @for (session of sessions(); track session.$key; let last = $last) {
-          @if (environment.showSchedule) {
-            <a [routerLink]="['/', 'schedule', session.$key, slugify(session.title)]">{{
-              session.title
-            }}</a>
-          } @else {
-            <strong>{{ session.title }}</strong>
-          }
+          <a [routerLink]="['/', 'schedule', session.$key, slugify(session.title)]">{{
+            session.title
+          }}</a>
           {{ last ? '' : ' and ' }}
         }
       </div>
