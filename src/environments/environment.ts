@@ -28,7 +28,8 @@ export const environment = {
   showSchedule: false,
   showSponsor: true,
   showFeedback: false,
-  showVolunteer: false, //'https://signup.com/go/wWAHYET',
+  /** Volunteer sign-up link, shown on the home page FAQ and the CFP page; false until sign-ups open. */
+  showVolunteer: 'https://signup.com/go/KNszSDn' as string | false,
   surveyLink: 'https://forms.gle/73k2ZXYqiGpRabkv6',
   eventbriteEventId: '1996529152440',
   /**
