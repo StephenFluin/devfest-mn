@@ -105,21 +105,23 @@ async function sitemapEntries(): Promise<SitemapEntry[]> {
   const sessionsOf = (speakerKey: string) =>
     schedule.filter(([, session]) => Object.values(session.speakers ?? {}).includes(speakerKey));
 
+  // Session pages are linked from speaker pages, so they're listed even before the schedule is public.
+  const sessions = schedule
+    .filter(([, session]) => session.title)
+    .map(([key, session]) => ({
+      path: `schedule/${key}/${slugify(session.title)}`,
+      updated:
+        Math.max(
+          session.updatedAt ?? 0,
+          ...Object.values<string>(session.speakers ?? {}).map(
+            (speakerKey) => speakerUpdated.get(speakerKey) ?? 0,
+          ),
+        ) || undefined,
+    }));
   if (environment.showSchedule) {
-    const sessions = schedule
-      .filter(([, session]) => session.title)
-      .map(([key, session]) => ({
-        path: `schedule/${key}/${slugify(session.title)}`,
-        updated:
-          Math.max(
-            session.updatedAt ?? 0,
-            ...Object.values<string>(session.speakers ?? {}).map(
-              (speakerKey) => speakerUpdated.get(speakerKey) ?? 0,
-            ),
-          ) || undefined,
-      }));
-    entries.push({ path: 'schedule', updated: latest(sessions) }, ...sessions);
+    entries.push({ path: 'schedule', updated: latest(sessions) });
   }
+  entries.push(...sessions);
   const speakerPages = speakers
     .filter(([, speaker]) => speaker.name && speaker.published)
     .map(([key, speaker]) => ({

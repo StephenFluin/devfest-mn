@@ -1,6 +1,9 @@
 @if (session()) {
   <div>
-    <a style="float: left; width: 24px; height: 24px" routerLink="/schedule">
+    <a
+      style="float: left; width: 24px; height: 24px"
+      [routerLink]="environment.showSchedule ? '/schedule' : '/speakers'"
+    >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
         <title>Back</title>
         <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
@@ -25,14 +28,17 @@
         </div>
       </div>
       <div class="session-details-right" style="text-align: left">
-        @if (session().track !== 'all') {
+        @if (session().track && session().track !== 'all') {
           <div style="font-weight: bold; margin-bottom: 24px">Track: {{ session().track }}</div>
         }
-        <div style="font-weight: bold; margin-bottom: 8px">{{ session().room }}</div>
-        @if (roomDirections(); as directions) {
-          <div style="margin-bottom: 8px">{{ directions }}</div>
+        <!-- Talks can be published before they have a slot; their room and time are left off until then. -->
+        @if (scheduled()) {
+          <div style="font-weight: bold; margin-bottom: 8px">{{ session().room }}</div>
+          @if (roomDirections(); as directions) {
+            <div style="margin-bottom: 8px">{{ directions }}</div>
+          }
+          <div style="margin-bottom: 24px">{{ ds.customDateFormatter(session().startTime) }}</div>
         }
-        <div style="margin-bottom: 24px">{{ ds.customDateFormatter(session().startTime) }}</div>
         @if (calendar(); as calendar) {
           <div class="add-to-calendar" role="group" aria-label="Add to calendar">
             <a [href]="calendar.google" target="_blank" rel="noopener" class="cta-unselected cta"
@@ -54,17 +60,19 @@
             style="max-width: 500px; display: inline-block"
           ></div>
         }
-        <div>
-          @if (!inAgenda()) {
-            <button (click)="agenda.add(session().$key)" class="cta" style="display: inline">
-              Add to My Agenda
-            </button>
-          } @else {
-            <button (click)="agenda.remove(session().$key)" class="cta" style="display: inline">
-              Remove from My Agenda
-            </button>
-          }
-        </div>
+        @if (scheduled()) {
+          <div>
+            @if (!inAgenda()) {
+              <button (click)="agenda.add(session().$key)" class="cta" style="display: inline">
+                Add to My Agenda
+              </button>
+            } @else {
+              <button (click)="agenda.remove(session().$key)" class="cta" style="display: inline">
+                Remove from My Agenda
+              </button>
+            }
+          </div>
+        }
         @if (auth.uid()) {
           @if (environment.showFeedback) {
             <div>
@@ -72,7 +80,8 @@
               <app-user-feedback [session]="session()"></app-user-feedback>
             </div>
           }
-        } @else {
+        } @else if (scheduled() || environment.showFeedback) {
+          <!-- Login keeps an agenda and enables feedback, so there's no reason to ask without either. -->
           <div style="margin-top: 64px">
             <h3>Login for More</h3>
             <p>
