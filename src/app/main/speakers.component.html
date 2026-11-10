@@ -203,8 +203,11 @@
                 @for (session of sessions; track session.$key) {
                   <li>
                     <a [routerLink]="['/schedule', session.$key, slugify(session.title)]">{{
-                      session.title
+                      session.title || 'Untitled session'
                     }}</a>
+                    @if (!session.published) {
+                      <span class="tile-unpublished">Unpublished</span>
+                    }
                   </li>
                 }
               </ul>

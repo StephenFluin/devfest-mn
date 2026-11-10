@@ -108,11 +108,15 @@ export class SpeakersComponent {
     });
   });
 
-  /** Each speaker's public sessions, for the talk titles on their tile. */
+  /**
+   * Each speaker's sessions, for the talk titles on their tile. Admins also see unpublished and
+   * placeholder sessions, marked on the tile, so they can spot what still needs filling in.
+   */
   talks = computed(() => {
     const talks = new Map<string, Session[]>();
-    for (const session of this.ds.publishedSchedule()) {
-      if (!session.title) continue;
+    const sessions = this.auth.isAdmin() ? this.ds.schedule() : this.ds.publishedSchedule();
+    for (const session of sessions) {
+      if (!session.title && !this.auth.isAdmin()) continue;
       for (const key of Object.values(session.speakers ?? {})) {
         talks.set(key, [...(talks.get(key) ?? []), session]);
       }
