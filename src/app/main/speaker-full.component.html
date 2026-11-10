@@ -36,17 +36,22 @@
       </div>
     </header>
 
-    @if (sessions().length) {
+    @if (talks().length) {
       <div class="profile-section">
-        <h2>{{ sessions().length > 1 ? 'Talks' : 'Talk' }}</h2>
+        <h2>{{ talks().length > 1 ? 'Talks' : 'Talk' }}</h2>
         <ul class="profile-talks">
-          @for (session of sessions(); track session.$key) {
+          @for (session of talks(); track session.$key) {
             <li>
               <a
                 class="talk-card"
                 [routerLink]="['/', 'schedule', session.$key, slugify(session.title)]"
               >
-                <h3>{{ session.title }}</h3>
+                <h3>
+                  {{ session.title || 'Untitled session' }}
+                  @if (!session.published) {
+                    <span class="tile-unpublished">Unpublished</span>
+                  }
+                </h3>
                 @if (session.description) {
                   <p>{{ summarize(session.description, 220) }}</p>
                 }
