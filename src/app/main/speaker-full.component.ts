@@ -24,6 +24,7 @@ export class SpeakerFullComponent {
   private ds = inject(DataService);
   environment = environment;
   slugify = slugify;
+  summarize = summarize;
 
   readonly speaker = input<Speaker>(undefined);
   readonly year = input(undefined);
