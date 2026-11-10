@@ -2,7 +2,7 @@ import { Component, computed, effect, inject, RESPONSE_INIT } from '@angular/cor
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
-import snarkdown from 'snarkdown';
+import { storedHtml } from '../shared/markdown';
 import { slugify, summarize } from '../shared/slug';
 
 import { DataService, Session } from '../shared/data.service';
@@ -31,7 +31,7 @@ export class SessionViewComponent {
     }
     return {
       ...item,
-      renderedDescription: snarkdown(item.description || ''),
+      renderedDescription: storedHtml(item.renderedDescription, item.description),
     };
   });
 

@@ -17,6 +17,7 @@ import { googleAccessToken } from './google-credentials';
 import { randomUUID } from 'node:crypto';
 import { INVITE_TOKEN, inviteEmail, speakerKitEmail } from './app/speaker-invite/invite-email';
 import { calendarEvent, conferenceCalendarEvent, icsFile } from './app/shared/calendar';
+import { withRenderedMarkdown } from './app/shared/markdown';
 import { cfpStateAt } from './app/shared/cfp-deadline';
 import type { Session, SpeakerInvite } from './app/shared/data.service';
 import {
@@ -832,7 +833,8 @@ const speakerSessionLimit = rateLimiter(30, 60_000, 'saves');
  * photo upload, holding the invite token is the permission, and the server writes with its own
  * service account: the database rules can't tell who presents a session (its speakers are stored
  * under push IDs), so they leave the schedule to admins. Only the title, description and
- * updatedAt are ever written, so the time, room and the rest stay with the organizers.
+ * updatedAt (plus the description rendered to HTML) are ever written, so the time, room and the
+ * rest stay with the organizers.
  */
 app.post(
   '/api/speaker-edit/:token/sessions/:session',
@@ -872,7 +874,10 @@ app.post(
       await readJson(
         db(`${base}/schedule/${sessionKey}`, {
           method: 'PATCH',
-          body: JSON.stringify({ ...result.update, updatedAt: { '.sv': 'timestamp' } }),
+          body: JSON.stringify({
+            ...(await withRenderedMarkdown(result.update)),
+            updatedAt: { '.sv': 'timestamp' },
+          }),
         }),
       );
       res.json({ saved: true });

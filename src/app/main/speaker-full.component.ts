@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import snarkdown from 'snarkdown';
+import { storedHtml } from '../shared/markdown';
 
 import { environment } from '../../environments/environment';
 import { ADirective } from '../a.directive';
@@ -29,7 +29,7 @@ export class SpeakerFullComponent {
   readonly speaker = input<Speaker>(undefined);
   readonly year = input(undefined);
 
-  renderedBio = computed(() => snarkdown(this.speaker()?.bio || ''));
+  renderedBio = computed(() => storedHtml(this.speaker()?.renderedBio, this.speaker()?.bio));
   sessions = computed(() => this.ds.sessionsFor(this.speaker()?.$key));
   links = computed(() => {
     const speaker = this.speaker();
