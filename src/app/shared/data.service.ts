@@ -16,6 +16,7 @@ import { DATABASE, listResource } from '../realtime-data/firebase';
 import { AuthService } from '../realtime-data/auth.service';
 import { createSpeakerPromoCode } from '../speaker-invite/invite-email';
 import { placeholderSessionTitle } from '../speaker-invite/speaker-session-edit';
+import { withRenderedMarkdown } from './markdown';
 
 export interface Session {
   $key?: string;
@@ -27,8 +28,11 @@ export interface Session {
   /** Speaker keys. Firebase may return this map as a sparse array. */
   speakers?: Record<string, string>;
   blocks?: number;
-  /** Markdown rendered to HTML. Left for Angular to sanitize when bound to [innerHTML]. */
-  renderedDescription?: string;
+  /**
+   * The description rendered to HTML when it was saved (see save). Left for Angular to sanitize
+   * when bound to [innerHTML].
+   */
+  renderedDescription?: string | null;
   notes?: string;
   /** Shown on the public site. Speakers' sessions start unpublished, so organizers can review them. */
   published?: boolean;
@@ -42,8 +46,11 @@ export interface Speaker {
   $key?: string;
   name?: string;
   bio?: string;
-  /** Markdown rendered to HTML. Left for Angular to sanitize when bound to [innerHTML]. */
-  renderedBio?: string;
+  /**
+   * The bio rendered to HTML when it was saved (see save). Left for Angular to sanitize when bound
+   * to [innerHTML].
+   */
+  renderedBio?: string | null;
   published?: boolean;
   company?: string;
   twitter?: string;
@@ -229,22 +236,30 @@ export class DataService {
     }
   }
 
-  /** Saves an edited item, or creates one; for a new item the result's key is its id. */
-  save(path: 'schedule' | 'speakers', item): PromiseLike<unknown> & { key?: string | null } {
+  /**
+   * Saves an edited item, or creates one; for a new item the result's key is its id, available
+   * right away. A bio or description in the item is rendered to HTML alongside it.
+   */
+  save(path: 'schedule' | 'speakers', item): Promise<unknown> & { key?: string | null } {
     console.log('Attempting to save', path, item);
     // updatedAt (server time) drives the sitemap's lastmod and busts cached share cards.
-    const { $key: key, ...data } = { ...item, updatedAt: serverTimestamp() };
-    // Firebase rejects undefined values, so send null (which also clears the field).
-    Object.keys(data).forEach((prop) => {
-      if (data[prop] === undefined) {
-        data[prop] = null;
+    const { $key: key, ...fields } = { ...item, updatedAt: serverTimestamp() };
+    // A new item's id is made locally, so callers can use it before the write finishes.
+    const id = key ?? push(ref(this.db, `devfest${environment.year}/${path}`)).key;
+    const write = withRenderedMarkdown(fields).then((data) => {
+      // Firebase rejects undefined values, so send null (which also clears the field).
+      Object.keys(data).forEach((prop) => {
+        if (data[prop] === undefined) {
+          data[prop] = null;
+        }
+      });
+      if (key) {
+        return update(ref(this.db, `devfest${environment.year}/${path}/${key}`), data);
       }
+      console.log('Pushing new item to', path, data);
+      return set(ref(this.db, `devfest${environment.year}/${path}/${id}`), data);
     });
-    if (key) {
-      return update(ref(this.db, `devfest${environment.year}/${path}/${key}`), data);
-    }
-    console.log('Pushing new item to', path, data);
-    return push(ref(this.db, `devfest${environment.year}/${path}`), data);
+    return Object.assign(write, { key: key ? undefined : id });
   }
 
   delete(path: 'schedule' | 'speakers', item) {
