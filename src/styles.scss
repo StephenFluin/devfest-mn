@@ -741,6 +741,174 @@ button.button.warn {
   height: 16px;
 }
 
+/* Speakers page: a short header and a photo tile per speaker with their talks. */
+
+.speakers-hero {
+  max-width: 720px;
+  margin: 48px auto 32px;
+  padding: 0 16px;
+}
+.speakers-hero .eyebrow {
+  margin: 0;
+  color: var(--color-heading);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+.speakers-hero h1 {
+  margin: 8px 0 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: clamp(36px, 7vw, 56px);
+  line-height: 1.1;
+  color: var(--color-text);
+}
+.speakers-hero .lede {
+  margin: 0 auto 8px;
+  color: var(--color-text-muted);
+  font-size: 18px;
+}
+.speaker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px 20px;
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  padding: 0 16px;
+  list-style: none;
+  text-align: left;
+}
+.speaker-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 12px;
+  background: var(--color-surface);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.speaker-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+.speaker-tile.unpublished {
+  border-style: dashed;
+}
+.tile-photo {
+  position: relative;
+  display: block;
+  flex: none;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--color-surface-strong);
+}
+.tile-photo img {
+  /* Positioned so a tall photo can't stretch the square. */
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Headshots are usually framed from the shoulders up, so keep the top of a tall photo. */
+  object-position: center 20%;
+}
+.tile-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-muted);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 48px;
+}
+.tile-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px 18px;
+}
+.tile-body h2 {
+  margin: 0;
+  text-transform: none;
+  letter-spacing: normal;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 18px;
+  line-height: 1.25;
+}
+/* Specific enough to beat the underline on links in section lists; the tile is the context. */
+.speaker-grid .speaker-tile .tile-body a {
+  text-decoration: none;
+}
+.speaker-grid .speaker-tile .tile-body a:hover {
+  text-decoration: underline;
+}
+.tile-body h2 a {
+  color: var(--color-text);
+}
+.tile-body .tile-company {
+  width: auto;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+.tile-talks {
+  margin: 8px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--color-border-soft);
+  list-style: none;
+  font-size: 14px;
+  line-height: 1.35;
+}
+.tile-talks li + li {
+  margin-top: 6px;
+}
+.tile-talks a {
+  color: var(--color-heading);
+}
+.tile-edit {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  padding: 6px;
+  border-radius: 6px;
+  background: var(--color-bg);
+  opacity: 0.85;
+}
+.tile-edit:hover {
+  opacity: 1;
+}
+.tile-edit img {
+  width: 16px;
+  height: 16px;
+}
+@media (max-width: 600px) {
+  .speakers-hero {
+    margin-top: 24px;
+  }
+  .speaker-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 12px;
+  }
+  .tile-body {
+    padding: 10px 12px 14px;
+  }
+  .tile-body h2 {
+    font-size: 16px;
+  }
+  .tile-talks {
+    font-size: 13px;
+  }
+}
+.speakers-more {
+  margin: 0 auto 48px;
+  color: var(--color-text-muted);
+}
+
 /* Schedule */
 
 .schedule-timeslot-container {

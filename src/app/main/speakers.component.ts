@@ -2,9 +2,8 @@ import { Component, computed, effect, inject, resource, signal } from '@angular/
 import { DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { get } from 'firebase/database';
-import { DataService, SpeakerInvite } from '../shared/data.service';
+import { DataService, Session, SpeakerInvite } from '../shared/data.service';
 import { AuthService } from '../realtime-data/auth.service';
-import { SpeakerContainerComponent } from './speaker-container.component';
 import { OurMeta } from '../our-meta.service';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
@@ -20,7 +19,6 @@ type SpeakerSort = 'name' | 'sessions' | 'published' | 'updatedAt';
 
   imports: [
     FormsModule,
-    SpeakerContainerComponent,
     SpeakerManagementComponent,
     SpeakerEditLinkComponent,
     RouterLink,
@@ -35,6 +33,7 @@ export class SpeakersComponent {
   speakers = this.ds.speakers;
   publishedCount = computed(() => this.speakers().filter((speaker) => speaker.published).length);
   slugify = slugify;
+  environment = environment;
   inviteLink = inviteLink;
   view = signal<'tiles' | 'table'>('tiles');
   publication = signal<'all' | 'published' | 'unpublished'>('all');
@@ -108,6 +107,27 @@ export class SpeakersComponent {
       return comparison * direction || (a.speaker.name ?? '').localeCompare(b.speaker.name ?? '');
     });
   });
+
+  /** Each speaker's public sessions, for the talk titles on their tile. */
+  talks = computed(() => {
+    const talks = new Map<string, Session[]>();
+    for (const session of this.ds.publishedSchedule()) {
+      if (!session.title) continue;
+      for (const key of Object.values(session.speakers ?? {})) {
+        talks.set(key, [...(talks.get(key) ?? []), session]);
+      }
+    }
+    return talks;
+  });
+
+  initials = (name = '') =>
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((part) => part[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
 
   sortBy(column: SpeakerSort) {
     if (this.sortColumn() === column) {
