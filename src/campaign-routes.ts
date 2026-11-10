@@ -210,6 +210,73 @@ export function addCampaignRoutes(app: Express) {
   );
 
   /**
+   * Changes the percent off and uses available of a campaign's existing promo code in Eventbrite,
+   * then records them on the campaign. The code itself stays fixed: links and past sales use it.
+   */
+  app.put(
+    '/api/admin/campaigns/:slug/discount',
+    express.json({ limit: '4kb' }),
+    async (req, res) => {
+      try {
+        if (!discountLimit(res)) return;
+        const admin = await requireAdmin(req, res, 'change promo codes');
+        if (!admin) return;
+        const slug = req.params.slug;
+        const percentOff = Number(req.body?.percentOff);
+        const quantity = req.body?.quantity == null ? undefined : Number(req.body.quantity);
+        if (!CAMPAIGN_SLUG.test(slug)) {
+          res.status(400).json({ error: 'Not a campaign slug' });
+          return;
+        }
+        if (!(percentOff > 0 && percentOff <= 100)) {
+          res.status(400).json({ error: 'Percent off must be between 1 and 100' });
+          return;
+        }
+        if (quantity !== undefined && !(Number.isInteger(quantity) && quantity > 0)) {
+          res.status(400).json({ error: 'Quantity must be a whole number' });
+          return;
+        }
+        const campaignPath = `marketing/${environment.year}/campaigns/${slug}`;
+        const campaign = await readJson<{ discountId?: string } | null>(
+          await admin.db(campaignPath),
+        );
+        if (!campaign?.discountId) {
+          res
+            .status(404)
+            .json({ error: "This campaign doesn't have a promo code in Eventbrite yet" });
+          return;
+        }
+        const token = eventbriteToken();
+        if (!token) {
+          res.status(500).json({ error: 'EVENTBRITE_TOKEN is not configured' });
+          return;
+        }
+        await eventbrite(token, `/discounts/${campaign.discountId}/`, {
+          method: 'POST',
+          body: JSON.stringify({
+            discount: {
+              percent_off: percentOff.toFixed(2),
+              // Eventbrite treats 0 as no limit.
+              quantity_available: quantity ?? 0,
+            },
+          }),
+        });
+        await readJson(
+          await admin.db(campaignPath, {
+            method: 'PATCH',
+            body: JSON.stringify({ percentOff, promoQuantity: quantity ?? null }),
+          }),
+        );
+        res.json({ discountId: campaign.discountId });
+      } catch (error) {
+        console.error('Error updating promo code:', error);
+        const detail = String(error?.message ?? '').match(/"error_description":\s*"([^"]+)"/)?.[1];
+        res.status(502).json({ error: detail ?? 'Unable to update the promo code in Eventbrite' });
+      }
+    },
+  );
+
+  /**
    * Gives a speaker their promo code when they're created: unlimited uses, on every ticket type.
    * Safe to repeat. If an earlier try created the code but didn't save it, this picks it up.
    */

@@ -237,6 +237,10 @@ const BUILT_IN = [
         <p class="muted">
           Created in Eventbrite as a coded discount and applied automatically when someone follows
           the link, so the partner's audience gets the deal and you see how many used it.
+          @if (editing()?.discountId) {
+            The code is fixed now that it's in Eventbrite; saving updates its percent off and uses
+            there.
+          }
         </p>
         <div class="field-grid promo">
           <mat-form-field>
@@ -261,7 +265,6 @@ const BUILT_IN = [
               max="100"
               [ngModel]="form().percentOff"
               (ngModelChange)="set('percentOff', $event)"
-              [disabled]="!!editing()?.discountId"
             />
           </mat-form-field>
           <mat-form-field>
@@ -273,7 +276,6 @@ const BUILT_IN = [
               min="1"
               [ngModel]="form().promoQuantity"
               (ngModelChange)="set('promoQuantity', $event)"
-              [disabled]="!!editing()?.discountId"
               placeholder="unlimited"
             />
           </mat-form-field>
@@ -747,8 +749,17 @@ export class CampaignsComponent {
         preset: form.preset || null,
         notes: form.notes.trim() || null,
         spend: form.spend ?? null,
-        percentOff: form.promo ? form.percentOff : null,
-        promoQuantity: form.promo ? (form.promoQuantity ?? null) : null,
+        // Once the code is in Eventbrite, the server records these after Eventbrite accepts them.
+        percentOff: existing?.discountId
+          ? (existing.percentOff ?? null)
+          : form.promo
+            ? form.percentOff
+            : null,
+        promoQuantity: existing?.discountId
+          ? (existing.promoQuantity ?? null)
+          : form.promo
+            ? (form.promoQuantity ?? null)
+            : null,
         discountId: existing?.discountId ?? null,
         createdAt: existing?.createdAt ?? serverTimestamp(),
         createdBy: existing?.createdBy ?? me?.email ?? null,
@@ -761,6 +772,13 @@ export class CampaignsComponent {
       if (link.promo && !existing?.discountId) {
         this.message.set('Saved. Creating the promo code in Eventbrite…');
         await this.requestDiscount(slug, link.promo, form.percentOff, form.promoQuantity);
+      } else if (
+        existing?.discountId &&
+        (form.percentOff !== existing.percentOff ||
+          (form.promoQuantity ?? null) !== (existing.promoQuantity ?? null))
+      ) {
+        this.message.set(`Saved. Updating ${link.promo} in Eventbrite…`);
+        await this.requestDiscount(slug, link.promo, form.percentOff, form.promoQuantity, 'PUT');
       } else {
         this.message.set(existing ? 'Saved.' : `Created ${campaignUrl(slug)}`);
       }
@@ -799,11 +817,12 @@ export class CampaignsComponent {
     code: string,
     percentOff: number,
     quantity: number | null,
+    method: 'POST' | 'PUT' = 'POST',
   ) {
     try {
       const idToken = await this.auth.auth?.currentUser?.getIdToken();
       const response = await fetch(`/api/admin/campaigns/${slug}/discount`, {
-        method: 'POST',
+        method,
         headers: { Authorization: `Bearer ${idToken}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, percentOff, quantity: quantity ?? undefined }),
       });
@@ -811,10 +830,16 @@ export class CampaignsComponent {
       if (!response.ok)
         throw new Error(result.error ?? `Eventbrite request failed (${response.status})`);
       this.failed.set(false);
-      this.message.set(`Saved, and ${code} is live in Eventbrite.`);
+      this.message.set(
+        method === 'PUT'
+          ? `Saved, and ${code} is now ${percentOff}% off in Eventbrite.`
+          : `Saved, and ${code} is live in Eventbrite.`,
+      );
     } catch (error) {
       this.fail(
-        `Saved the campaign, but the promo code wasn't created: ${error.message ?? error}. Use "Create" in the table to retry.`,
+        method === 'PUT'
+          ? `Saved the campaign, but ${code} wasn't updated in Eventbrite: ${error.message ?? error}. Edit and save again to retry.`
+          : `Saved the campaign, but the promo code wasn't created: ${error.message ?? error}. Use "Create" in the table to retry.`,
       );
     }
   }
