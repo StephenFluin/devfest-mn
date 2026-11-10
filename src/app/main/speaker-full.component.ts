@@ -31,6 +31,10 @@ export class SpeakerFullComponent {
 
   renderedBio = computed(() => snarkdown(this.speaker()?.bio || ''));
   sessions = computed(() => this.ds.sessionsFor(this.speaker()?.$key));
+  /** The talks listed on the page: admins also see unpublished ones. Meta tags use `sessions`. */
+  talks = computed(() =>
+    this.ds.sessionsFor(this.speaker()?.$key, { unpublished: this.auth.isAdmin() }),
+  );
   links = computed(() => {
     const speaker = this.speaker();
     return [
