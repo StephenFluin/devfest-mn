@@ -1,15 +1,14 @@
 <section>
-  <div>
-    <picture>
-      <source srcset="/a/images/devfestmn-dark.svg" media="(prefers-color-scheme: dark)" />
-      <img
-        src="/a/images/devfestmn.svg"
-        style="width: 40%; max-width: 400px; min-width: 250px"
-        alt="DevFestMN"
-      />
-    </picture>
-  </div>
-  <div class="callout">Speakers</div>
+  <header class="speakers-hero">
+    <p class="eyebrow">DevFestMN {{ environment.year }}</p>
+    <h1>Speakers</h1>
+    <p class="lede">
+      {{ environment.eventDateDisplay }} at {{ environment.venueName }}, Minneapolis.
+    </p>
+    @if (environment.showRegister) {
+      <a class="button" routerLink="/tickets">Get tickets</a>
+    }
+  </header>
 
   @if (auth.isAdmin()) {
     <app-speaker-management
@@ -178,18 +177,57 @@
       </table>
     </div>
   } @else {
-    <div class="speaker-list-container">
+    <ul class="speaker-grid">
       @for (speaker of visibleSpeakers(); track speaker.$key) {
-        <app-speaker-container
-          [speaker]="speaker"
-          [showEdit]="auth.isAdmin()"
-        ></app-speaker-container>
+        @let link = ['/speakers', speaker.$key, slugify(speaker.name)];
+        <li class="speaker-tile" [class.unpublished]="!speaker.published">
+          <a class="tile-photo" [routerLink]="link" tabindex="-1" aria-hidden="true">
+            @if (speaker.imageUrl) {
+              <img [src]="speaker.imageUrl" alt="" loading="lazy" />
+            } @else {
+              <span class="tile-initials">{{ initials(speaker.name) }}</span>
+            }
+          </a>
+          <div class="tile-body">
+            @if (!speaker.published) {
+              <span class="speaker-badge">Not published</span>
+            }
+            <h2>
+              <a [routerLink]="link">{{ speaker.name || 'Unnamed speaker' }}</a>
+            </h2>
+            @if (speaker.company) {
+              <p class="tile-company">{{ speaker.company }}</p>
+            }
+            @if (talks().get(speaker.$key); as sessions) {
+              <ul class="tile-talks">
+                @for (session of sessions; track session.$key) {
+                  <li>
+                    <a [routerLink]="['/schedule', session.$key, slugify(session.title)]">{{
+                      session.title
+                    }}</a>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+          @if (auth.isAdmin()) {
+            <a
+              class="tile-edit"
+              [routerLink]="['/admin/speakers', speaker.$key, 'edit']"
+              [attr.aria-label]="'Edit ' + (speaker.name || 'speaker')"
+              ><img src="/a/edit.svg" alt=""
+            /></a>
+          }
+        </li>
       } @empty {
         @if (auth.isAdmin()) {
-          <p>No speakers match this filter.</p>
+          <li class="muted">No speakers match this filter.</li>
         }
       }
-    </div>
+    </ul>
+    @if (!environment.showSchedule && !auth.isAdmin()) {
+      <p class="speakers-more">More talks and the full schedule are coming soon.</p>
+    }
   }
   @if (auth.isAdmin()) {
     <div class="admin-actions">
