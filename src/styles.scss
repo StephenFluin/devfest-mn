@@ -909,6 +909,154 @@ button.button.warn {
   color: var(--color-text-muted);
 }
 
+/* A speaker's own page: photo beside their name, then their talks and bio. */
+
+.speaker-profile {
+  max-width: 880px;
+  margin: 32px auto 48px;
+  padding: 0 16px;
+  text-align: left;
+}
+.speaker-profile .profile-back {
+  display: inline-block;
+  margin-bottom: 24px;
+  color: var(--color-heading);
+  font-size: 14px;
+}
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+.profile-photo {
+  flex: none;
+  width: 240px;
+  height: 240px;
+  border-radius: 16px;
+  object-fit: cover;
+  object-position: center 20%;
+  background: var(--color-surface-strong);
+}
+.profile-intro .eyebrow {
+  margin: 0;
+  color: var(--color-heading);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.profile-intro h1 {
+  margin: 8px 0 4px;
+  font-size: clamp(32px, 6vw, 48px);
+  line-height: 1.1;
+  letter-spacing: normal;
+  color: var(--color-text);
+}
+.profile-edit img {
+  width: 20px;
+  height: 20px;
+}
+.profile-intro .profile-company {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 18px;
+}
+.speaker-profile .profile-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.speaker-profile .profile-links a.profile-link {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-text);
+  font-size: 14px;
+  text-decoration: none;
+}
+.speaker-profile .profile-links a.profile-link:hover {
+  border-color: var(--color-heading);
+  color: var(--color-heading);
+}
+.speaker-profile .profile-section {
+  margin-top: 40px;
+}
+.speaker-profile .profile-section h2 {
+  margin: 0 0 16px;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
+.speaker-profile .profile-talks {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.speaker-profile .profile-talks a.talk-card {
+  display: block;
+  padding: 20px 24px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: border-color 0.15s ease;
+}
+.speaker-profile .profile-talks a.talk-card:hover {
+  border-color: var(--color-heading);
+}
+.profile-talks h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  line-height: 1.3;
+  letter-spacing: normal;
+  color: var(--color-heading);
+}
+.speaker-profile .profile-talks p {
+  margin: 0 0 12px;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+.profile-more {
+  color: var(--color-heading);
+  font-size: 14px;
+  font-weight: bold;
+}
+.profile-bio {
+  line-height: 1.6;
+}
+.speaker-profile .profile-when {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border-soft);
+  color: var(--color-text-muted);
+}
+.speaker-profile .profile-when .button {
+  margin: 0 0 0 12px;
+}
+@media (max-width: 600px) {
+  .profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .profile-photo {
+    width: 160px;
+    height: 160px;
+  }
+  .speaker-profile .profile-when .button {
+    display: table;
+    margin: 12px 0 0;
+  }
+}
+
 /* Schedule */
 
 .schedule-timeslot-container {

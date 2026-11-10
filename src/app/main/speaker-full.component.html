@@ -1,49 +1,75 @@
 @if (speaker(); as speaker) {
-  <div style="text-align: left">
-    <h1 class="callout" style="font-weight: normal; letter-spacing: normal">
-      {{ speaker.name }}
-      @if (auth.isAdmin()) {
-        <a [routerLink]="['/', 'admin', 'speakers', speaker.$key, 'edit']">
-          <img src="/a/edit.svg" alt="Edit speaker" />
-        </a>
-      }
-    </h1>
-    @if (speaker.imageUrl) {
-      <div style="display: flex; align-items: center; justify-content: center">
+  <article class="speaker-profile">
+    <a class="profile-back" routerLink="/speakers">← All speakers</a>
+    <header class="profile-header">
+      @if (speaker.imageUrl) {
         <img
+          class="profile-photo"
           [src]="speaker.imageUrl"
           [alt]="'Photo of ' + speaker.name"
-          width="125"
-          height="125"
-          style="object-fit: cover; border-radius: 50%"
+          width="240"
+          height="240"
         />
+      }
+      <div class="profile-intro">
+        <p class="eyebrow">Speaking at DevFestMN {{ environment.year }}</p>
+        <h1>
+          {{ speaker.name }}
+          @if (auth.isAdmin()) {
+            <a class="profile-edit" [routerLink]="['/', 'admin', 'speakers', speaker.$key, 'edit']">
+              <img src="/a/edit.svg" alt="Edit speaker" />
+            </a>
+          }
+        </h1>
+        @if (speaker.company) {
+          <p class="profile-company">{{ speaker.company }}</p>
+        }
+        @if (links().length) {
+          <ul class="profile-links">
+            @for (link of links(); track link.url) {
+              <li>
+                <a class="profile-link" [href]="link.url" rel="me">{{ link.label }}</a>
+              </li>
+            }
+          </ul>
+        }
       </div>
-    }
-    <div>{{ speaker.company }}</div>
+    </header>
+
     @if (sessions().length) {
-      <div style="margin-top: 16px">
-        Speaking on
-        @for (session of sessions(); track session.$key; let last = $last) {
-          <a [routerLink]="['/', 'schedule', session.$key, slugify(session.title)]">{{
-            session.title
-          }}</a>
-          {{ last ? '' : ' and ' }}
-        }
+      <div class="profile-section">
+        <h2>{{ sessions().length > 1 ? 'Talks' : 'Talk' }}</h2>
+        <ul class="profile-talks">
+          @for (session of sessions(); track session.$key) {
+            <li>
+              <a
+                class="talk-card"
+                [routerLink]="['/', 'schedule', session.$key, slugify(session.title)]"
+              >
+                <h3>{{ session.title }}</h3>
+                @if (session.description) {
+                  <p>{{ summarize(session.description, 220) }}</p>
+                }
+                <span class="profile-more">Session details →</span>
+              </a>
+            </li>
+          }
+        </ul>
       </div>
     }
-    @if (links().length) {
-      <div style="margin-top: 8px">
-        @for (link of links(); track link.url; let last = $last) {
-          <a [href]="link.url" rel="me">{{ link.label }}</a
-          >{{ last ? '' : ' · ' }}
-        }
-      </div>
-    }
+
     @if (speaker.bio) {
-      <div
-        style="border: 1px solid var(--color-border-soft); margin: 32px; padding: 32px"
-        [innerHTML]="renderedBio()"
-      ></div>
+      <div class="profile-section">
+        <h2>About</h2>
+        <div class="profile-bio" [innerHTML]="renderedBio()"></div>
+      </div>
     }
-  </div>
+
+    <p class="profile-when">
+      {{ environment.eventDateDisplay }} at {{ environment.venueName }}, Minneapolis.
+      @if (environment.showRegister) {
+        <a class="button" routerLink="/tickets">Get tickets</a>
+      }
+    </p>
+  </article>
 }
