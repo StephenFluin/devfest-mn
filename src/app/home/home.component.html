@@ -36,7 +36,7 @@
     </div>
 
     <!-- Call to Action Buttons -->
-    @if (cfp() === 'open' || environment.showRegister) {
+    @if (cfp() === 'open' || environment.showRegister || speakers().length) {
       <div class="cta-block hero-cta">
         @if (cfp() === 'open') {
           <a routerLink="/speaker-cfp" class="cta all-caps">Submit a Session</a>
@@ -44,7 +44,21 @@
         @if (environment.showRegister) {
           <a href="#tickets" class="cta all-caps">Get Tickets</a>
         }
+        @if (speakers().length) {
+          <a routerLink="/speakers" class="cta cta-outline all-caps">See the Speakers</a>
+        }
       </div>
+    }
+    @if (talks().length) {
+      <ul class="hero-stats">
+        <li>
+          <strong>{{ talks().length }}</strong> talks &amp; workshops
+        </li>
+        <li>
+          <strong>{{ speakers().length }}</strong> speakers
+        </li>
+        <li><strong>1</strong> day, 2 tracks</li>
+      </ul>
     }
     @if (cfp() === 'open') {
       <p class="hero-deadline">
@@ -86,11 +100,28 @@
     <div>
       <h2>What to Expect</h2>
       <p>
-        DevFestMN is one of the best developer conferences in the Midwest. This year the event
-        features a single day of content and connections. This year's 2026 DevFestMN event will
-        cover the latest and greatest insights about AI and software engineering, with a smattering
-        of Google's platforms covering Gemini, Cloud, Android, and web development.
+        DevFestMN is a one-day conference for the Twin Cities developer community: two tracks of
+        talks and hands-on workshops from local practitioners and industry experts, lunch, and a
+        room full of people who build software for a living.
       </p>
+      <ul class="highlights">
+        <li>
+          <strong>AI &amp; agents</strong>
+          <span>MCP servers, agent-to-agent protocols, and building with Google's ADK.</span>
+        </li>
+        <li>
+          <strong>Architecture &amp; DevOps</strong>
+          <span>Guardrails, API integration patterns, and secure deployment pipelines.</span>
+        </li>
+        <li>
+          <strong>Design &amp; product</strong>
+          <span>Design systems, building for new regulations, and staying human with AI.</span>
+        </li>
+        <li>
+          <strong>Careers &amp; craft</strong>
+          <span>How developers work, bill, and thrive, plus a hands-on workshop.</span>
+        </li>
+      </ul>
       <div class="split-column">
         <img
           src="/a/images/background.webp"
@@ -101,33 +132,18 @@
         />
         <div>
           <p>
-            DevFestMN has been running since 2013. Over the years we've been thankful for the
-            amazing community that has grown around the event. We've been able to invite speakers
-            and attendees from around the world. DevFest has a diverse group of participants that
-            spans from students to industry professionals. We've featured over 50 speakers.
+            DevFestMN has run since 2013 and is organized by volunteers from
+            <a href="https://gdgtc.com">GDG Twin Cities</a>. Attendees range from students to
+            seasoned professionals, and the day is built for learning from each other as much as
+            from the stage.
+          </p>
+          <p>
+            <strong>GDG DevFests</strong> are community-run developer conferences held by Google
+            Developer Groups around the world. Each one is planned by its local group, with its own
+            speakers and topics.
           </p>
         </div>
       </div>
-    </div>
-  </section>
-
-  <section>
-    <div>
-      <h2>About Us</h2>
-
-      <div class="callout">
-        1 Day, 2 Tracks. <br />
-        World renowned speakers.
-        <!-- <br/>600 Attendees -->
-      </div>
-
-      <p>
-        <strong>Google Developer Group DevFests</strong> are the largest Google related events in
-        the world! Each DevFest is carefully crafted for you by your local GDG community to bring in
-        awesome speakers, great topics, and lots of fun! While no two events will be exactly alike,
-        each GDG DevFest will, at its core, be powered by a shared belief that when developers come
-        together to exchange ideas, amazing things can happen!
-      </p>
     </div>
   </section>
 
@@ -165,7 +181,7 @@
                     loading="lazy"
                   />
                 } @else {
-                  <span class="no-photo"></span>
+                  <span class="no-photo" aria-hidden="true">{{ initials(speaker.name) }}</span>
                 }
                 <strong>{{ speaker.name }}</strong>
                 @if (speaker.company) {
@@ -175,10 +191,31 @@
             }
           </div>
         }
-        <p>
-          Check out all the speakers we've announced so far on the
-          <a routerLink="/speakers">Speakers</a> page.
-        </p>
+        <div class="cta-block">
+          <a routerLink="/speakers" class="cta all-caps">Meet the Speakers</a>
+        </div>
+      </div>
+    </section>
+  }
+  @if (talks().length) {
+    <section id="talks">
+      <div>
+        <h2>Talks &amp; Workshops</h2>
+        <ul class="home-talks">
+          @for (talk of talks(); track talk.$key) {
+            <li>
+              <a [routerLink]="['/', 'schedule', talk.$key, slugify(talk.title)]">
+                <strong>{{ talk.title }}</strong>
+                <span>{{ talk.speakerNames }}</span>
+              </a>
+            </li>
+          }
+        </ul>
+        @if (environment.showRegister) {
+          <div class="cta-block">
+            <a href="#tickets" class="cta all-caps">Get Your Ticket</a>
+          </div>
+        }
       </div>
     </section>
   }
@@ -234,6 +271,9 @@
         @if (environment.showRegister) {
           <a routerLink="/tickets" class="cta all-caps">Register</a>
         }
+        @if (environment.showVolunteer) {
+          <a [href]="environment.showVolunteer" class="cta all-caps">Volunteer</a>
+        }
       </div>
     </div>
   </section>
@@ -254,97 +294,74 @@
   <section id="faq">
     <div>
       <h2>Frequently Asked Questions</h2>
-      <div class="split-column faq-table">
-        <ul>
-          <li>
-            <button
-              type="button"
-              (click)="setFaqSelection(1)"
-              [attr.aria-expanded]="faqSelection() === 1"
-              aria-controls="faq-answer"
-            >
-              How can I speak at DevFestMN?
-            </button>
-          </li>
-          <li>
-            <button
-              type="button"
-              (click)="setFaqSelection(2)"
-              [attr.aria-expanded]="faqSelection() === 2"
-              aria-controls="faq-answer"
-            >
-              How do I become a DevFestMN sponsor?
-            </button>
-          </li>
-          <li>
-            <button
-              type="button"
-              (click)="setFaqSelection(3)"
-              [attr.aria-expanded]="faqSelection() === 3"
-              aria-controls="faq-answer"
-            >
-              How can I volunteer at DevFestMN events?
-            </button>
-          </li>
-          <li>
-            <button
-              type="button"
-              (click)="setFaqSelection(4)"
-              [attr.aria-expanded]="faqSelection() === 4"
-              aria-controls="faq-answer"
-            >
-              What do I wear?
-            </button>
-          </li>
-        </ul>
-
-        @if (faqSelection() === 1) {
-          <div id="faq-answer" aria-live="polite">
-            <p>
-              @if (cfp() === 'open') {
-                The CFP is open until {{ environment.cfpCloses | date: 'MMMM d' }}!
-                <a routerLink="/speaker-cfp">Submit a session</a>.
-              } @else if (cfp() === 'closed') {
-                The call for speakers is now closed. Please try again next year.
-              } @else {
-                We haven't announced the CFP yet, stay tuned in the coming weeks!
-              }
-            </p>
-          </div>
-        }
-        @if (faqSelection() === 2) {
-          <div id="faq-answer" aria-live="polite">
-            <p>
-              We offer a variety of sponsorship levels and love to work with companies to find the
-              right arrangement.
-            </p>
-            <p>
-              If you're interested in sponsoring check out our
-              <a routerLink="/sponsors">sponsor guide</a>.
-            </p>
-          </div>
-        }
-        @if (faqSelection() === 3) {
-          <div id="faq-answer" aria-live="polite">
-            <p>
-              @if (environment.showVolunteer) {
-                Sign up to volunteer through <a href="{{ environment.showVolunteer }}">Sign Up</a>.
-                We're accepting volunteers to help with Registration, Setup, Cleanup, and it's
-                always great to have welcoming faces. Volunteers get a free ticket!
-              } @else {
-                We'll be announcing how to sign up as a volunteer soon.
-              }
-            </p>
-          </div>
-        }
-        @if (faqSelection() === 4) {
-          <div id="faq-answer" aria-live="polite">
-            <p>
-              We like to keep things casual at DevFestMN but wear whatever makes you feel
-              comfortable! Most people wear jeans and a t-shirt.
-            </p>
-          </div>
-        }
+      <div class="faq-list">
+        <details name="faq" open>
+          <summary>Who is DevFestMN for?</summary>
+          <p>
+            Anyone who builds software, or wants to: developers, designers, data and ML folks,
+            engineering leaders, and students. Sessions range from introductions to deep dives, so
+            you'll find something at every experience level.
+          </p>
+        </details>
+        <details name="faq">
+          <summary>Is lunch included?</summary>
+          <p>Yes. Your ticket includes a catered lunch, along with every talk and workshop.</p>
+        </details>
+        <details name="faq">
+          <summary>Can I get a refund?</summary>
+          <p>
+            Refunds are available through Eventbrite up to 14 days before the event, minus
+            Eventbrite's fees. See the <a routerLink="/refunds">refund policy</a>.
+          </p>
+        </details>
+        <details name="faq">
+          <summary>How can I volunteer?</summary>
+          <p>
+            @if (environment.showVolunteer) {
+              Sign up through <a [href]="environment.showVolunteer">SignUp</a>. We need help with
+              registration, setup, and cleanup, and it's always great to have welcoming faces.
+              Volunteers get a free ticket!
+            } @else {
+              We'll be announcing how to sign up as a volunteer soon.
+            }
+          </p>
+        </details>
+        <details name="faq">
+          <summary>How do I become a sponsor?</summary>
+          <p>
+            We offer a variety of sponsorship levels and love to work with companies to find the
+            right arrangement. Check out our <a routerLink="/sponsors">sponsor guide</a>.
+          </p>
+        </details>
+        <details name="faq">
+          <summary>How can I speak at DevFestMN?</summary>
+          <p>
+            @if (cfp() === 'open') {
+              The CFP is open until {{ environment.cfpCloses | date: 'MMMM d' }}!
+              <a routerLink="/speaker-cfp">Submit a session</a>.
+            } @else if (cfp() === 'closed') {
+              The call for speakers for {{ environment.year }} is closed. Watch this site for next
+              year's.
+            } @else {
+              We haven't announced the CFP yet, stay tuned in the coming weeks!
+            }
+          </p>
+        </details>
+        <details name="faq">
+          <summary>What do I wear?</summary>
+          <p>
+            We like to keep things casual at DevFestMN, so wear whatever makes you comfortable. Most
+            people wear jeans and a t-shirt.
+          </p>
+        </details>
+        <details name="faq">
+          <summary>Is there a code of conduct?</summary>
+          <p>
+            Yes. Everyone at DevFestMN agrees to the
+            <a routerLink="/conduct">GDG Code of Conduct</a>, and organizers are there all day if
+            you need help.
+          </p>
+        </details>
       </div>
     </div>
   </section>

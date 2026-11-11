@@ -1,4 +1,4 @@
-import { Component, DOCUMENT, effect, inject, PLATFORM_ID, signal } from '@angular/core';
+import { Component, computed, DOCUMENT, effect, inject, PLATFORM_ID } from '@angular/core';
 import { DatePipe, isPlatformServer } from '@angular/common';
 
 import { environment } from '../../environments/environment';
@@ -59,7 +59,13 @@ import { conferenceEvent, personRef } from '../shared/event-data';
       margin-bottom: 8px;
     }
     .featured-speakers .no-photo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       background: var(--color-surface-strong);
+      color: var(--color-text-muted);
+      font-family: Montserrat, sans-serif;
+      font-size: 28px;
     }
     .hero-deadline {
       margin-top: 8px;
@@ -70,7 +76,6 @@ import { conferenceEvent, personRef } from '../shared/event-data';
 })
 export class HomeComponent {
   environment = environment;
-  faqSelection = signal(1);
   private meta = inject(OurMeta);
   cfpCountdown = cfpCountdown();
   cfp = cfpState();
@@ -106,9 +111,31 @@ export class HomeComponent {
     });
   });
 
-  setFaqSelection(question) {
-    this.faqSelection.set(question);
-  }
+  /**
+   * Published talks with their speakers' names, for the talks section and the hero's counts.
+   * Sessions on the "all" track (registration, the welcome, closing remarks) aren't talks.
+   */
+  talks = computed(() =>
+    this.ds
+      .publishedSchedule()
+      .filter((session) => session.track !== 'all')
+      .map((session) => ({
+        ...session,
+        speakerNames: Object.values(session.speakers ?? {})
+          .map((key) => this.ds.speaker(key)?.name)
+          .filter(Boolean)
+          .join(' & '),
+      })),
+  );
+
+  initials = (name = '') =>
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((part) => part[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
 }
 
 export default HomeComponent;
