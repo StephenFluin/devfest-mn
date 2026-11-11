@@ -23,8 +23,9 @@ interface Photo {
             <h2 class="year-header">{{ yearGroup.year }}</h2>
             <div class="photo-grid">
               @for (photo of yearGroup.photos; track photo.url) {
-                <button type="button" class="photo-item" (click)="selectedPhoto.set(photo)">
+                <button type="button" class="photo-item" (click)="open(photo, thumb)">
                   <img
+                    #thumb
                     [src]="photo.thumbnail"
                     loading="lazy"
                     alt="Gallery photo from {{ yearGroup.year }}"
@@ -256,6 +257,38 @@ export class GalleryComponent {
   });
 
   selectedPhoto = signal<Photo | null>(null);
+
+  /**
+   * Shows the photo full screen, unless it would come out smaller there than it already is in the
+   * grid. On phones the popup's margins leave the whole photo narrower than its cropped thumbnail.
+   */
+  open(photo: Photo, thumb: HTMLImageElement): void {
+    if (this.popupScale(thumb) > this.thumbnailScale(thumb)) {
+      this.selectedPhoto.set(photo);
+    }
+  }
+
+  /** How much the thumbnail image is scaled to cover its tile (object-fit: cover). */
+  private thumbnailScale(thumb: HTMLImageElement): number {
+    return Math.max(
+      thumb.clientWidth / thumb.naturalWidth,
+      thumb.clientHeight / thumb.naturalHeight,
+    );
+  }
+
+  /**
+   * How much the same image would be scaled to fit the popup, from the popup's styles: the overlay's
+   * 2rem padding, the content's 90vw limit (and 1rem padding at 768px and below), and the image's
+   * 80vh height limit. The full-size photo has the thumbnail's proportions.
+   */
+  private popupScale(thumb: HTMLImageElement): number {
+    if (!thumb.naturalWidth || !thumb.naturalHeight) return Infinity;
+    const { innerWidth, innerHeight } = window;
+    const contentPadding = innerWidth <= 768 ? 32 : 0;
+    const maxWidth = Math.min(innerWidth * 0.9, innerWidth - 64) - contentPadding;
+    const maxHeight = innerHeight * 0.8;
+    return Math.min(maxWidth / thumb.naturalWidth, maxHeight / thumb.naturalHeight);
+  }
 
   closeFullscreen(): void {
     this.selectedPhoto.set(null);
