@@ -113,6 +113,18 @@ export function personRef(speaker: Speaker) {
 }
 
 /**
+ * A session's abstract, or, for one without (breaks, lunch, a talk still awaiting its abstract), a
+ * sentence built from what we do know, since search engines flag events that have no description.
+ */
+function sessionDescription(session: Session, performers: { name: string }[]) {
+  const summary = session.description ? summarize(session.description, 500) : '';
+  if (summary) return summary;
+  const by = performers.length ? ` by ${performers.map((p) => p.name).join(', ')}` : '';
+  const room = session.room ? ` in ${session.room}` : '';
+  return `${session.title}${by}${room}, part of DevFestMN ${environment.year} at ${environment.venueName} in Minneapolis.`;
+}
+
+/**
  * One session, or null when it has no start time yet or the schedule isn't public (search engines
  * require a start time). `schedule` is
  * every public session, which decides when this one ends. `speakers` looks up a speaker by key; only
@@ -136,7 +148,7 @@ export function sessionEvent(
     '@id': `${sessionUrl(session)}#event`,
     name: session.title,
     url: sessionUrl(session),
-    ...(session.description && { description: summarize(session.description, 500) }),
+    description: sessionDescription(session, performers),
     image: [`${environment.siteUrl}${environment.socialImage}`],
     startDate: withOffset(session.startTime),
     ...(end && { endDate: inEventZone(end) }),
