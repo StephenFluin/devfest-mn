@@ -176,6 +176,10 @@ export class EditLogEntriesComponent {
       .sort((a, b) => (b.at ?? 0) - (a.at ?? 0))
       .map((entry) => {
         const speakers = entry.path === 'speakers';
+        // What the item is called now, for an entry logged before it had a name.
+        const current = speakers
+          ? this.ds.speaker(entry.key)?.name
+          : this.ds.schedule().find((session) => session.$key === entry.key)?.title;
         const exists = speakers
           ? !!this.ds.speaker(entry.key)
           : this.ds.schedule().some((session) => session.$key === entry.key);
@@ -186,7 +190,7 @@ export class EditLogEntriesComponent {
           link: exists
             ? ['/admin', speakers ? 'speakers' : 'sessions', entry.key, 'edit']
             : undefined,
-          label: entry.label || (speakers ? 'Unnamed speaker' : 'Untitled session'),
+          label: entry.label || current || (speakers ? 'Unnamed speaker' : 'Untitled session'),
           changes: Object.entries(entry.changes ?? {})
             .sort(([a], [b]) => fieldOrder(a) - fieldOrder(b))
             .map(([field, change]) => {
