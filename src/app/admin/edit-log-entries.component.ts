@@ -13,6 +13,8 @@ interface ChangeRow {
   to: string;
   /** Too much text for one line, so it's shown folded away. */
   long: boolean;
+  /** Part of a delete: `from` is what the item had, and there is no after. */
+  removed: boolean;
 }
 
 interface Row {
@@ -28,6 +30,11 @@ interface Row {
 }
 
 const ACTIONS = { create: 'Created', update: 'Edited', delete: 'Deleted' };
+
+/** Fields in the order the editors show them (the database returns them alphabetically). */
+const FIELD_ORDER = Object.keys(EDIT_LOG_FIELDS);
+const fieldOrder = (field: string) =>
+  FIELD_ORDER.includes(field) ? FIELD_ORDER.indexOf(field) : FIELD_ORDER.length;
 
 const timeFormat = new Intl.DateTimeFormat('en-US', {
   timeZone: 'America/Chicago',
@@ -62,7 +69,7 @@ const timeFormat = new Intl.DateTimeFormat('en-US', {
                   row.entry.at | date: 'MMM d, h:mm a'
                 }}</time>
               </td>
-              <td class="text">
+              <td class="text who">
                 <div>{{ row.who }}</div>
                 <div class="muted">{{ row.whoNote }}</div>
               </td>
@@ -88,11 +95,18 @@ const timeFormat = new Intl.DateTimeFormat('en-US', {
                         <div class="muted">Before</div>
                         <p class="value">{{ change.from }}</p>
                       }
-                      <div class="muted">{{ change.to ? 'After' : 'After: empty' }}</div>
+                      @if (!change.removed) {
+                        <div class="muted">{{ change.to ? 'After' : 'After: empty' }}</div>
+                      }
                       @if (change.to) {
                         <p class="value">{{ change.to }}</p>
                       }
                     </details>
+                  } @else if (change.removed) {
+                    <div>
+                      <span class="field">{{ change.label }}:</span>
+                      <span>{{ change.from }}</span>
+                    </div>
                   } @else {
                     <div>
                       <span class="field">{{ change.label }}:</span>
@@ -120,8 +134,12 @@ const timeFormat = new Intl.DateTimeFormat('en-US', {
     td {
       vertical-align: top;
     }
-    .when {
+    /* More specific than the admin's wrapping text cells. */
+    table.data td.when {
       white-space: nowrap;
+    }
+    .who {
+      min-width: 200px;
     }
     .changes {
       min-width: 280px;
@@ -129,6 +147,7 @@ const timeFormat = new Intl.DateTimeFormat('en-US', {
     }
     .field {
       font-weight: 600;
+      margin-right: 0.35em;
     }
     .from {
       color: var(--mat-sys-on-surface-variant);
@@ -168,13 +187,15 @@ export class EditLogEntriesComponent {
             ? ['/admin', speakers ? 'speakers' : 'sessions', entry.key, 'edit']
             : undefined,
           label: entry.label || (speakers ? 'Unnamed speaker' : 'Untitled session'),
-          changes: Object.entries(entry.changes ?? {}).map(([field, change]) => {
-            const from = this.display(field, change.from, change.to);
-            const to = this.display(field, change.to, change.from);
-            const label = EDIT_LOG_FIELDS[field] ?? field;
-            const long = [from, to].some((text) => text.length > 80 || text.includes('\n'));
-            return { label, from, to, long };
-          }),
+          changes: Object.entries(entry.changes ?? {})
+            .sort(([a], [b]) => fieldOrder(a) - fieldOrder(b))
+            .map(([field, change]) => {
+              const from = this.display(field, change.from, change.to);
+              const to = this.display(field, change.to, change.from);
+              const label = EDIT_LOG_FIELDS[field] ?? field;
+              const long = [from, to].some((text) => text.length > 80 || text.includes('\n'));
+              return { label, from, to, long, removed: entry.action === 'delete' };
+            }),
         };
       }),
   );
