@@ -110,9 +110,6 @@ function todosFor(session: Session, speakers: SpeakerRow[]): string[] {
           </button>
         }
       </div>
-      <mat-checkbox [checked]="needsWork()" (change)="needsWork.set($event.checked)">
-        Needs work only
-      </mat-checkbox>
       <label class="search">
         <span class="visually-hidden">Search sessions</span>
         <input
@@ -122,6 +119,9 @@ function todosFor(session: Session, speakers: SpeakerRow[]): string[] {
           (input)="search.set($any($event.target).value)"
         />
       </label>
+      <mat-checkbox [checked]="needsWork()" (change)="needsWork.set($event.checked)">
+        Needs work only
+      </mat-checkbox>
     </div>
 
     @if (visible().length) {
