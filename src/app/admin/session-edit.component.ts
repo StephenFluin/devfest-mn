@@ -15,11 +15,12 @@ import { MatSelectModule } from '@angular/material/select';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { KeyValuePipe } from '@angular/common';
+import { KeyValuePipe, Location } from '@angular/common';
 import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
 import { environment } from '../../environments/environment';
 import { eventUtcOffset } from '../shared/event-data';
 import { formChanged, UnsavedChangesForm, warnOnPageUnload } from '../shared/unsaved-changes';
+import { SESSION_PLANNING_PATH } from './session-planning.component';
 
 @Component({
   templateUrl: './session-edit.component.html',
@@ -59,6 +60,13 @@ export class SessionEditComponent implements UnsavedChangesForm {
   router = inject(Router);
 
   private params = toSignal(this.route.paramMap, { requireSync: true });
+
+  /** Where Back, Cancel, save and delete go: session planning if opened from there, else the schedule. */
+  readonly back =
+    (inject(Location).getState() as { returnTo?: string } | null)?.returnTo ===
+    SESSION_PLANNING_PATH
+      ? { path: SESSION_PLANNING_PATH, label: 'Back to session planning' }
+      : { path: '/schedule', label: 'Back to schedule' };
 
   /** Kept at adminNotes/<session> rather than on the public session, so only admins can read it. */
   private adminNotes = objectResource<string>(
@@ -165,7 +173,7 @@ export class SessionEditComponent implements UnsavedChangesForm {
     const saved = this.ds.save('schedule', { ...publicSession, adminNotes: null });
     const key = session.$key ?? saved.key;
     set(this.ds.ref(`adminNotes/${key}`), adminNotes || null);
-    this.router.navigate(['/', 'schedule']);
+    this.router.navigateByUrl(this.back.path);
   }
 
   delete(session) {
@@ -173,7 +181,7 @@ export class SessionEditComponent implements UnsavedChangesForm {
     this.finished = true;
     this.ds.delete('schedule', session);
     set(this.ds.ref(`adminNotes/${session.$key}`), null);
-    this.router.navigate(['/', 'schedule']);
+    this.router.navigateByUrl(this.back.path);
   }
 
   deleteSpeakerFromSession(session: Session, speakerKey: string) {

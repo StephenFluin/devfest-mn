@@ -16,6 +16,10 @@ const NAV = [
     ],
   },
   {
+    label: 'Program',
+    links: [{ path: '/admin/sessions', label: 'Session planning' }],
+  },
+  {
     label: 'Manage',
     links: [
       { path: '/admin/overview', label: 'Overview' },

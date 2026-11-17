@@ -27,10 +27,11 @@ import { environment } from '../../environments/environment';
           <span class="value">{{ ticketsSold() | number }}</span>
           <span class="note">{{ daysLeft() }} days to go</span>
         </a>
-        <div class="tile">
+        <a class="tile link" routerLink="/admin/sessions">
           <span class="label">Sessions</span>
           <span class="value">{{ ds.schedule().length }}</span>
-        </div>
+          <span class="note">{{ unpublishedSessions() }} unpublished</span>
+        </a>
         <div class="tile">
           <span class="label">Published speakers</span>
           <span class="value">{{ published() }}</span>
@@ -127,6 +128,10 @@ export class AdminHomeComponent {
 
   published = () => this.ds.speakers().filter((speaker) => speaker.published).length;
 
+  unpublishedSessions = computed(
+    () => this.ds.schedule().filter((session) => !session.published).length,
+  );
+
   readonly links = [
     {
       path: '/admin/burndown',
@@ -142,6 +147,11 @@ export class AdminHomeComponent {
       path: '/admin/utm-funnel',
       title: 'UTM funnel',
       description: 'Where visitors come from and what they do.',
+    },
+    {
+      path: '/admin/sessions',
+      title: 'Session planning',
+      description: 'Sessions in progress, their speakers, and what each still needs.',
     },
     { path: '/admin/rooms', title: 'Rooms', description: 'Names, directions and schedule order.' },
     {

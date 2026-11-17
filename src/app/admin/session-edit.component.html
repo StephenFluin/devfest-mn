@@ -5,7 +5,7 @@
         <h2>{{ session.$key ? 'Edit session' : 'New session' }}</h2>
         <p class="muted">{{ session.title || 'Untitled' }}</p>
       </div>
-      <a mat-button routerLink="/schedule">Back to schedule</a>
+      <a mat-button [routerLink]="back.path">{{ back.label }}</a>
     </div>
 
     <section class="card" aria-labelledby="details-heading">
@@ -170,7 +170,7 @@
       <button mat-flat-button type="submit">
         {{ session.$key ? 'Save session' : 'Create session' }}
       </button>
-      <a mat-button routerLink="/schedule">Cancel</a>
+      <a mat-button [routerLink]="back.path">Cancel</a>
       <span class="spacer"></span>
       @if (session.$key) {
         <button mat-stroked-button class="danger" type="button" (click)="delete(session)">

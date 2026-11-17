@@ -42,6 +42,11 @@ export const AdminRoutes: Routes = [
             canMatch: [isAdmin],
             children: [
               {
+                path: 'sessions',
+                loadComponent: () =>
+                  import('./session-planning.component').then((m) => m.SessionPlanningComponent),
+              },
+              {
                 path: 'speakers/:id/edit',
                 canDeactivate: [confirmLeavingUnsaved],
                 loadComponent: () =>
