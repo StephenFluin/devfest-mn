@@ -34,9 +34,20 @@
     (pointerenter)="auth.preload()"
     (focus)="auth.preload()"
     (touchstart)="auth.preload()"
+    [disabled]="auth.signInStep() === 'loading'"
     mat-raised-button
     color="primary"
   >
-    Login to provide feedback
+    @switch (auth.signInStep()) {
+      @case ('loading') {
+        Loading…
+      }
+      @case ('confirm') {
+        Continue with Google
+      }
+      @default {
+        Login to provide feedback
+      }
+    }
   </button>
 }
