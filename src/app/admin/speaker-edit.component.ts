@@ -180,7 +180,7 @@ export class SpeakerEditComponent implements UnsavedChangesForm {
   ) {
     this.inviteStatus.set('Sending...');
     try {
-      await send()(await this.auth.auth?.currentUser?.getIdToken(), token);
+      await send()(await this.auth.idToken(), token);
       this.inviteStatus.set('Sent.');
       this.invites.reload();
     } catch (err) {

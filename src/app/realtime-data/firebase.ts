@@ -11,9 +11,8 @@ import {
   TransferState,
   WritableSignal,
 } from '@angular/core';
-import { isPlatformBrowser, isPlatformServer } from '@angular/common';
+import { isPlatformServer } from '@angular/common';
 import { FirebaseApp, getApp, getApps, initializeApp } from 'firebase/app';
-import { Auth, getAuth } from 'firebase/auth';
 import { Database, DataSnapshot, getDatabase, onValue, Query } from 'firebase/database';
 import { environment } from '../../environments/environment';
 
@@ -25,12 +24,6 @@ export const FIREBASE_APP = new InjectionToken<FirebaseApp>('FirebaseApp', {
 export const DATABASE = new InjectionToken<Database>('Database', {
   providedIn: 'root',
   factory: () => getDatabase(inject(FIREBASE_APP)),
-});
-
-/** Auth only exists in the browser; there is never a signed-in user during SSR. */
-export const AUTH = new InjectionToken<Auth | null>('Auth', {
-  providedIn: 'root',
-  factory: () => (isPlatformBrowser(inject(PLATFORM_ID)) ? getAuth(inject(FIREBASE_APP)) : null),
 });
 
 export interface RtdbOptions<T> {

@@ -228,13 +228,12 @@ export class EmailInvitesComponent {
     event.preventDefault();
     if (!this.validEmail()) return;
     const email = this.email().trim().toLowerCase();
-    const me = this.auth.auth?.currentUser;
     await this.write(
       {
         [`${this.invitesPath()}/${inviteKey(email)}`]: {
           email,
           name: this.name().trim() || null,
-          addedBy: me?.email ?? me?.displayName ?? null,
+          addedBy: this.auth.email() ?? this.auth.name() ?? null,
           addedAt: serverTimestamp(),
         },
       },

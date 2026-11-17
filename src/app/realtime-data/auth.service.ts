@@ -1,18 +1,40 @@
-import { Injectable, inject, signal, computed, Signal, DestroyRef } from '@angular/core';
-import { User, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from 'firebase/auth';
+import {
+  Injectable,
+  inject,
+  signal,
+  computed,
+  Signal,
+  DestroyRef,
+  PLATFORM_ID,
+} from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+// Types only: firebase/auth itself is loaded on demand (see loadAuth), so most visitors never download it.
+import type { Auth, User } from 'firebase/auth';
 import { get, ref, serverTimestamp, set } from 'firebase/database';
 
-import { AUTH, DATABASE, objectResource } from './firebase';
+import { DATABASE, FIREBASE_APP, objectResource } from './firebase';
 import { environment } from '../../environments/environment';
+
+/** Set in localStorage while someone is signed in with Google, so the next visit loads auth. */
+const SIGNED_IN_HINT = 'authentication';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  auth = inject(AUTH);
-  provider = new GoogleAuthProvider();
+  private app = inject(FIREBASE_APP);
   db = inject(DATABASE);
+  private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private destroyRef = inject(DestroyRef);
 
-  /** `undefined` until Firebase reports the initial auth state; always `null` during SSR. */
-  private user = signal<User | null | undefined>(this.auth ? undefined : null);
+  /** firebase/auth and this app's Auth instance, once something has asked for them. */
+  private authModule?: Promise<{ auth: Auth; sdk: typeof import('firebase/auth') }>;
+  /** The loaded Auth instance, so a click can open the sign-in popup without awaiting a download. */
+  private loaded: { auth: Auth; sdk: typeof import('firebase/auth') } | null = null;
+
+  /**
+   * `undefined` while finding out who is signed in; `null` when no one is, during SSR, and for
+   * visitors who haven't signed in on this browser (auth isn't loaded for them at all).
+   */
+  private user = signal<User | null | undefined>(this.isBrowser && readHint() ? undefined : null);
 
   uid: Signal<string | null> = computed(() => this.user()?.uid);
   email: Signal<string | null> = computed(() => this.user()?.email ?? null);
@@ -30,13 +52,52 @@ export class AuthService {
   /** The signed-in user's admin invite claim, so the route guard can wait for it. */
   private claim: Promise<void> = Promise.resolve();
 
+  constructor() {
+    if (this.isBrowser && readHint()) {
+      void this.loadAuth();
+    }
+  }
+
+  /**
+   * Loads firebase/auth (once) and starts following who is signed in. Resolves to `null` during
+   * SSR, where there is never a signed-in user. Call it before anything that needs auth.
+   */
+  async loadAuth(): Promise<Auth | null> {
+    if (!this.isBrowser) {
+      return null;
+    }
+    this.authModule ??= import('firebase/auth').then((sdk) => {
+      const auth = sdk.getAuth(this.app);
+      const unsubscribe = sdk.onAuthStateChanged(auth, (user) => {
+        this.claim = user ? this.claimInvites(user) : Promise.resolve();
+        writeHint(!!user && !user.isAnonymous);
+        this.user.set(user);
+      });
+      this.destroyRef.onDestroy(unsubscribe);
+      this.loaded = { auth, sdk };
+      return this.loaded;
+    });
+    return (await this.authModule).auth;
+  }
+
+  /** Starts downloading auth ahead of a likely sign-in click, so the popup isn't blocked. */
+  preload() {
+    void this.loadAuth();
+  }
+
+  /** The signed-in user's Firebase ID token, for calling the app's own server endpoints. */
+  async idToken(): Promise<string | undefined> {
+    return (await this.loadAuth())?.currentUser?.getIdToken();
+  }
+
   /** Waits for the initial auth state, then checks /admin once. Used by the admin route guard. */
   async checkAdmin(): Promise<boolean> {
-    if (!this.auth) {
+    const auth = await this.loadAuth();
+    if (!auth) {
       return false;
     }
-    await this.auth.authStateReady();
-    const uid = this.auth.currentUser?.uid;
+    await auth.authStateReady();
+    const uid = auth.currentUser?.uid;
     if (!uid) {
       return false;
     }
@@ -45,16 +106,6 @@ export class AuthService {
       return (await get(ref(this.db, `/admin/${uid}`))).exists();
     } catch {
       return false;
-    }
-  }
-
-  constructor() {
-    if (this.auth) {
-      const unsubscribe = onAuthStateChanged(this.auth, (user) => {
-        this.claim = user ? this.claimInvites(user) : Promise.resolve();
-        this.user.set(user);
-      });
-      inject(DestroyRef).onDestroy(unsubscribe);
     }
   }
 
@@ -82,27 +133,49 @@ export class AuthService {
     );
   }
 
-  login() {
-    if (!this.auth) {
+  async login() {
+    if (!this.isBrowser) {
       console.warn('Login attempted in SSR context');
-      return Promise.resolve(null);
+      return null;
     }
-
-    return signInWithPopup(this.auth, this.provider).then((result) => {
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      if (window && window.localStorage) {
-        window.localStorage['authentication'] = 'active';
-      }
-      return credential;
-    });
+    // Browsers only allow the popup straight from a click. If auth is already loaded (preload()),
+    // open it without awaiting anything; otherwise this waits for the download first.
+    if (!this.loaded) {
+      await this.loadAuth();
+    }
+    const { auth, sdk } = this.loaded;
+    const result = await sdk.signInWithPopup(auth, new sdk.GoogleAuthProvider());
+    writeHint(true);
+    return sdk.GoogleAuthProvider.credentialFromResult(result);
   }
-  logout() {
-    if (!this.auth) {
+
+  async logout() {
+    if (!this.isBrowser) {
       console.warn('Logout attempted in SSR context');
       return;
     }
+    writeHint(false);
+    await (await this.loadAuth())?.signOut();
+  }
+}
 
-    this.auth.signOut();
+function readHint(): boolean {
+  try {
+    return !!window.localStorage.getItem(SIGNED_IN_HINT);
+  } catch {
+    return false;
+  }
+}
+
+function writeHint(signedIn: boolean) {
+  try {
+    if (signedIn) {
+      window.localStorage.setItem(SIGNED_IN_HINT, 'active');
+    } else {
+      window.localStorage.removeItem(SIGNED_IN_HINT);
+    }
+  } catch {
+    // Storage blocked: auth will just load on demand each visit.
   }
 }
 

@@ -231,7 +231,7 @@ export class SpeakersComponent {
       this.inviteEmail.set('');
       this.showInvite.set(false);
       try {
-        await sendInviteEmail(await this.auth.auth?.currentUser?.getIdToken(), token);
+        await sendInviteEmail(await this.auth.idToken(), token);
         this.sent.set({ name, link: inviteLink(token) });
       } catch (err) {
         this.sent.set({ name, link: inviteLink(token), error: err.message });

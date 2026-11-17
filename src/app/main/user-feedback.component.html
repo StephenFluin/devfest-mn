@@ -29,7 +29,14 @@
     />
   </div>
 } @else if (environment.showFeedback) {
-  <button (click)="auth.login()" mat-raised-button color="primary">
+  <button
+    (click)="auth.login()"
+    (pointerenter)="auth.preload()"
+    (focus)="auth.preload()"
+    (touchstart)="auth.preload()"
+    mat-raised-button
+    color="primary"
+  >
     Login to provide feedback
   </button>
 }

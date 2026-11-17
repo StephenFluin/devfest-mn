@@ -298,7 +298,7 @@ export class DataService {
   /** Gives a speaker their promo code. A failure doesn't lose the speaker; saving them again retries. */
   async ensureSpeakerPromoCode(speakerKey: string) {
     try {
-      await createSpeakerPromoCode(await this.auth.auth?.currentUser?.getIdToken(), speakerKey);
+      await createSpeakerPromoCode(await this.auth.idToken(), speakerKey);
     } catch (err) {
       console.error('Unable to create promo code', err);
       alert(`The speaker's promo code wasn't created: ${err.message}. Saving them again retries.`);
