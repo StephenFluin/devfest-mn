@@ -16,7 +16,7 @@ import { DATABASE, listResource } from '../realtime-data/firebase';
 import { AuthService } from '../realtime-data/auth.service';
 import { createSpeakerPromoCode } from '../speaker-invite/invite-email';
 import { placeholderSessionTitle } from '../speaker-invite/speaker-session-edit';
-import { editChanges, EditLogEntry, EditLogPath } from './edit-log';
+import type { EditLogEntry, EditLogPath } from './edit-log';
 import { withRenderedMarkdown } from './markdown';
 
 export interface Session {
@@ -334,33 +334,19 @@ export class DataService {
     speaker?: string,
   ) {
     try {
+      // Loaded on demand, so only someone who edits downloads it.
+      const { editChanges, editLogEntry } = await import('./edit-log');
       const changes = editChanges(before, after);
       if (action === 'update' && !changes) return;
       const user = await this.auth.currentUser();
       if (!user) return;
       const admin = await this.auth.checkAdmin();
-      // Anyone else can only have made the change with a speaker's edit link.
-      const linkOf = admin ? undefined : (speaker ?? (path === 'speakers' ? key : undefined));
-      if (!admin && !linkOf) return;
       const item: Speaker & Session = { ...before, ...after };
-      const entry: Omit<EditLogEntry, 'at'> & { at: object } = {
-        at: serverTimestamp(),
-        path,
-        key,
-        label: (path === 'speakers' ? item.name : item.title)?.trim().slice(0, 200),
-        action,
-        via: admin ? 'admin' : 'invite',
-        uid: user.uid,
-        email: user.email,
-        name: (user.displayName || user.providerData[0]?.displayName)?.slice(0, 100),
-        speaker: linkOf,
-        changes,
-      };
-      // Firebase rejects undefined, and an empty value says nothing.
-      for (const [field, value] of Object.entries(entry)) {
-        if (value === undefined || value === null || value === '') delete entry[field];
+      const label = path === 'speakers' ? item.name : item.title;
+      const entry = editLogEntry({ path, key, label, action, changes }, user, admin, speaker);
+      if (entry) {
+        await push(this.ref('editLog'), { ...entry, at: serverTimestamp() });
       }
-      await push(this.ref('editLog'), entry);
     } catch (error) {
       console.warn('Could not add this change to the edit log', error);
     }

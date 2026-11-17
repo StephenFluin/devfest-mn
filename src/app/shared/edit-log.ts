@@ -72,6 +72,41 @@ export function editChanges(
   return Object.keys(changes).length ? changes : undefined;
 }
 
+/**
+ * The entry for a change, apart from its time, which the server sets as it's saved. Undefined when
+ * the change can't be attributed: someone who isn't an admin, with no speaker's edit link.
+ *
+ * @param user Whoever is signed in, anonymously or not.
+ * @param speaker For a change to a session from a speaker's edit link: the speaker whose link it
+ *   is. A change to their own profile needs no hint.
+ */
+export function editLogEntry(
+  change: Pick<EditLogEntry, 'path' | 'key' | 'label' | 'action' | 'changes'>,
+  user: { uid: string; email?: string | null; displayName?: string | null },
+  admin: boolean,
+  speaker?: string,
+): Omit<EditLogEntry, 'at'> | undefined {
+  // Anyone but an admin can only have made the change with a speaker's edit link.
+  const linkOf = admin
+    ? undefined
+    : (speaker ?? (change.path === 'speakers' ? change.key : undefined));
+  if (!admin && !linkOf) return undefined;
+  const entry: Omit<EditLogEntry, 'at'> = {
+    ...change,
+    label: change.label?.trim().slice(0, 200),
+    via: admin ? 'admin' : 'invite',
+    uid: user.uid,
+    email: user.email,
+    name: user.displayName?.slice(0, 100),
+    speaker: linkOf,
+  };
+  // Firebase rejects undefined, and an empty value says nothing.
+  for (const [field, value] of Object.entries(entry)) {
+    if (value === undefined || value === null || value === '') delete entry[field];
+  }
+  return entry;
+}
+
 /** A field's value as the log keeps it; undefined for an empty field. */
 function logged(value: unknown): EditLogValue | undefined {
   if (value === null || value === undefined || value === '') return undefined;
