@@ -586,6 +586,14 @@ app.post('/api/admin/burndown/update', async (req, res) => {
 /** Invites are sent one at a time by admins, so a small shared limit stops runaway sends. */
 const inviteLimit = { windowMs: 60_000, max: 10, recent: [] as number[] };
 
+/** Organizers copied on every email to a speaker, so they see what speakers were sent. */
+const SPEAKER_EMAIL_CC = ['cledwyn@gmail.com', 'stephen.fluin@gmail.com'];
+
+/** The CC list for an email to `to`, leaving out the speaker if they're an organizer too. */
+function speakerEmailCc(to: string) {
+  return SPEAKER_EMAIL_CC.filter((cc) => cc.toLowerCase() !== to.trim().toLowerCase());
+}
+
 /**
  * Emails a speaker the edit link for an invite the admin already created at
  * speakerInvites/<token>. Like the burndown update, the caller's ID token is passed through to
@@ -632,6 +640,7 @@ app.post('/api/admin/speaker-invites/:token/email', async (req, res) => {
 
     await createMailer().send({
       to: invite.email,
+      cc: speakerEmailCc(invite.email),
       replyTo: environment.contactEmail,
       ...inviteEmail(invite.name, token),
     });
@@ -703,6 +712,7 @@ app.post('/api/admin/speaker-invites/:token/kit', async (req, res) => {
       .filter(Boolean);
     await createMailer().send({
       to: invite.email,
+      cc: speakerEmailCc(invite.email),
       replyTo: environment.contactEmail,
       ...speakerKitEmail(speaker.name, titles, speaker.promoCode),
     });
