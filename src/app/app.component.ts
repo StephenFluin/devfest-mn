@@ -24,6 +24,7 @@ import {
 import { trackPageView } from './visit-tracker';
 import { cfpState } from './shared/cfp-deadline';
 import { DataService } from './shared/data.service';
+import { AuthService } from './realtime-data/auth.service';
 import { PurchaseShareComponent } from './tickets/purchase-share.component';
 
 @Component({
@@ -36,6 +37,8 @@ export class AppComponent {
   cfp = cfpState();
   /** For the Speakers nav link, which appears once any speakers are published. */
   ds = inject(DataService);
+  /** For the Admin nav link, shown only to signed-in admins. */
+  auth = inject(AuthService);
   /** Set when an Eventbrite order completes; shows the share prompt. */
   order = completedOrder;
   private platformId = inject(PLATFORM_ID);
