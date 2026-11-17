@@ -46,6 +46,11 @@
       <a [routerLink]="['/gallery']" routerLinkActive="active" ariaCurrentWhenActive="page"
         >Gallery</a
       >
+      @if (auth.isAdmin()) {
+        <a [routerLink]="['/admin']" routerLinkActive="active" ariaCurrentWhenActive="page"
+          >Admin</a
+        >
+      }
     </div>
   </div>
   <div class="routeContainer" role="main">
