@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { objectResource } from '../realtime-data/firebase';
 import { DataService, Session, Speaker } from '../shared/data.service';
@@ -11,7 +12,7 @@ import { placeholderSessionTitle } from '../speaker-invite/speaker-session-edit'
 /** Where this page lives; editors opened from it come back here. */
 export const SESSION_PLANNING_PATH = '/admin/sessions';
 
-type Filter = 'planning' | 'unpublished' | 'published' | 'all';
+type Filter = 'all' | 'unpublished' | 'published';
 
 interface SpeakerRow {
   key: string;
@@ -82,17 +83,17 @@ function todosFor(session: Session, speakers: SpeakerRow[]): string[] {
         <span class="value">{{ rows().length }}</span>
       </div>
       <div class="tile">
-        <span class="label">In planning</span>
-        <span class="value">{{ counts().planning }}</span>
+        <span class="label">Needs work</span>
+        <span class="value">{{ needingWork() }}</span>
         <span class="note">with something to do</span>
       </div>
       <div class="tile">
         <span class="label">Unpublished</span>
-        <span class="value">{{ counts().unpublished }}</span>
+        <span class="value">{{ unpublished() }}</span>
       </div>
       <div class="tile">
         <span class="label">Published</span>
-        <span class="value">{{ counts().published }}</span>
+        <span class="value">{{ rows().length - unpublished() }}</span>
       </div>
     </div>
 
@@ -109,6 +110,9 @@ function todosFor(session: Session, speakers: SpeakerRow[]): string[] {
           </button>
         }
       </div>
+      <mat-checkbox [checked]="needsWork()" (change)="needsWork.set($event.checked)">
+        Needs work only
+      </mat-checkbox>
       <label class="search">
         <span class="visually-hidden">Search sessions</span>
         <input
@@ -213,7 +217,13 @@ function todosFor(session: Session, speakers: SpeakerRow[]): string[] {
       </div>
     } @else {
       <p class="muted" role="status">
-        {{ search().trim() ? 'No sessions match your search.' : 'No sessions here.' }}
+        {{
+          search().trim()
+            ? 'No sessions match your search.'
+            : needsWork()
+              ? 'Nothing left to do here.'
+              : 'No sessions here.'
+        }}
       </p>
     }
   `,
@@ -223,7 +233,6 @@ function todosFor(session: Session, speakers: SpeakerRow[]): string[] {
       flex-wrap: wrap;
       gap: 12px 16px;
       align-items: center;
-      justify-content: space-between;
       margin-bottom: 16px;
     }
     .segmented {
@@ -268,6 +277,7 @@ function todosFor(session: Session, speakers: SpeakerRow[]): string[] {
     }
     .search {
       flex: 1 1 240px;
+      margin-left: auto;
       display: flex;
       justify-content: flex-end;
     }
@@ -315,7 +325,7 @@ function todosFor(session: Session, speakers: SpeakerRow[]): string[] {
       font-weight: 600;
     }
   `,
-  imports: [DatePipe, RouterLink, MatButtonModule],
+  imports: [DatePipe, RouterLink, MatButtonModule, MatCheckboxModule],
 })
 export class SessionPlanningComponent {
   private ds = inject(DataService);
@@ -328,13 +338,15 @@ export class SessionPlanningComponent {
   readonly returnTo = { returnTo: SESSION_PLANNING_PATH };
 
   readonly filters: { value: Filter; label: string }[] = [
-    { value: 'planning', label: 'In planning' },
+    { value: 'all', label: 'All' },
     { value: 'unpublished', label: 'Unpublished' },
     { value: 'published', label: 'Published' },
-    { value: 'all', label: 'All' },
   ];
 
-  filter = signal<Filter>('planning');
+  /** Which sessions, by whether they're on the public site. */
+  filter = signal<Filter>('all');
+  /** Only sessions with something on their to-do list; applies on top of the status filter. */
+  needsWork = signal(true);
   search = signal('');
 
   /** Older sessions saved their length as text ("2"). */
@@ -381,25 +393,28 @@ export class SessionPlanningComponent {
       );
   });
 
+  /** For the tiles, which count every session whatever the filters. */
+  needingWork = computed(() => this.rows().filter((row) => row.todos.length).length);
+  unpublished = computed(() => this.rows().filter((row) => !row.session.published).length);
+
+  /** Sessions the "Needs work only" box lets through; the status pills split these. */
+  private candidates = computed(() =>
+    this.needsWork() ? this.rows().filter((row) => row.todos.length) : this.rows(),
+  );
+
+  /** Pill counts, which follow the "Needs work only" box, so Unpublished + Published = All. */
   counts = computed<Record<Filter, number>>(() => {
-    const rows = this.rows();
-    return {
-      planning: rows.filter((row) => row.todos.length).length,
-      unpublished: rows.filter((row) => !row.session.published).length,
-      published: rows.filter((row) => row.session.published).length,
-      all: rows.length,
-    };
+    const rows = this.candidates();
+    const unpublished = rows.filter((row) => !row.session.published).length;
+    return { all: rows.length, unpublished, published: rows.length - unpublished };
   });
 
   visible = computed(() => {
     const filter = this.filter();
     const terms = this.search().trim().toLowerCase().split(/\s+/).filter(Boolean);
-    return this.rows().filter(
+    return this.candidates().filter(
       (row) =>
-        (filter === 'all' ||
-          (filter === 'planning' && row.todos.length > 0) ||
-          (filter === 'unpublished' && !row.session.published) ||
-          (filter === 'published' && !!row.session.published)) &&
+        (filter === 'all' || (filter === 'published') === !!row.session.published) &&
         terms.every((term) => row.haystack.includes(term)),
     );
   });
