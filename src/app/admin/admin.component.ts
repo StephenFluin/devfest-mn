@@ -49,7 +49,14 @@ const NAV = [
           <p class="eyebrow">DevFestMN {{ year }}</p>
           <h1 id="gate-heading">Sign in to the admin</h1>
           <p class="muted">For DevFestMN organizers and volunteers. Use your Google account.</p>
-          <button mat-flat-button type="button" (click)="signIn()">Sign in with Google</button>
+          <button
+            mat-flat-button
+            type="button"
+            (click)="signIn()"
+            [disabled]="auth.signInStep() === 'loading'"
+          >
+            {{ auth.signInStep() === 'loading' ? 'Loading…' : 'Sign in with Google' }}
+          </button>
           @if (signInError()) {
             <p role="alert">{{ signInError() }}</p>
           }
@@ -254,8 +261,9 @@ export class AdminComponent {
   async signIn() {
     this.signInError.set('');
     try {
-      await this.auth.login();
-      this.router.navigateByUrl('/admin');
+      if (await this.auth.login()) {
+        this.router.navigateByUrl('/admin');
+      }
     } catch (error) {
       const code = error.code;
       if (code === 'auth/unauthorized-domain') {

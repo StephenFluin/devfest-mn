@@ -133,20 +133,49 @@ export class AuthService {
     );
   }
 
-  async login() {
+  /**
+   * Where a Login tap stands when auth wasn't downloaded yet: `loading` while it downloads, then
+   * `confirm` if the download took long enough that the browser blocked the sign-in popup (it only
+   * allows one right after a tap). Login buttons show this, so the next tap opens the popup at once.
+   */
+  signInStep = signal<'idle' | 'loading' | 'confirm'>('idle');
+
+  /**
+   * Signs in with Google in a popup. Resolves to true once signed in, or false when the popup has to
+   * wait for another tap (see signInStep).
+   */
+  async login(): Promise<boolean> {
     if (!this.isBrowser) {
       console.warn('Login attempted in SSR context');
-      return null;
+      return false;
     }
-    // Browsers only allow the popup straight from a click. If auth is already loaded (preload()),
-    // open it without awaiting anything; otherwise this waits for the download first.
-    if (!this.loaded) {
-      await this.loadAuth();
+    // Browsers only allow the popup straight from a tap. If auth is already loaded (preload(), or a
+    // previous tap), open it without awaiting anything; otherwise capture this tap, download auth,
+    // and try anyway, since most browsers still allow a popup for a few seconds after the tap.
+    const firstTap = !this.loaded;
+    if (firstTap) {
+      this.signInStep.set('loading');
+      try {
+        await this.loadAuth();
+      } catch (error) {
+        this.signInStep.set('idle');
+        throw error;
+      }
     }
     const { auth, sdk } = this.loaded;
-    const result = await sdk.signInWithPopup(auth, new sdk.GoogleAuthProvider());
+    try {
+      await sdk.signInWithPopup(auth, new sdk.GoogleAuthProvider());
+    } catch (error) {
+      if (firstTap && error?.code === 'auth/popup-blocked') {
+        this.signInStep.set('confirm');
+        return false;
+      }
+      this.signInStep.set('idle');
+      throw error;
+    }
+    this.signInStep.set('idle');
     writeHint(true);
-    return sdk.GoogleAuthProvider.credentialFromResult(result);
+    return true;
   }
 
   async logout() {

@@ -93,10 +93,21 @@
               (pointerenter)="auth.preload()"
               (focus)="auth.preload()"
               (touchstart)="auth.preload()"
+              [disabled]="auth.signInStep() === 'loading'"
               class="cta"
               style="display: inline"
             >
-              Login
+              @switch (auth.signInStep()) {
+                @case ('loading') {
+                  Loading…
+                }
+                @case ('confirm') {
+                  Continue with Google
+                }
+                @default {
+                  Login
+                }
+              }
             </button>
           </div>
         }
