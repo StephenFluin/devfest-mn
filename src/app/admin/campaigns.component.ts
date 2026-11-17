@@ -736,7 +736,6 @@ export class CampaignsComponent {
     this.saving.set(true);
     this.message.set('');
     try {
-      const me = this.auth.auth?.currentUser;
       const link: CampaignLink = {
         source: form.source.trim(),
         medium: form.medium.trim(),
@@ -762,7 +761,7 @@ export class CampaignsComponent {
             : null,
         discountId: existing?.discountId ?? null,
         createdAt: existing?.createdAt ?? serverTimestamp(),
-        createdBy: existing?.createdBy ?? me?.email ?? null,
+        createdBy: existing?.createdBy ?? this.auth.email() ?? null,
       };
       await update(ref(this.db), {
         [`${this.base}/links/${slug}`]: link,
@@ -820,7 +819,7 @@ export class CampaignsComponent {
     method: 'POST' | 'PUT' = 'POST',
   ) {
     try {
-      const idToken = await this.auth.auth?.currentUser?.getIdToken();
+      const idToken = await this.auth.idToken();
       const response = await fetch(`/api/admin/campaigns/${slug}/discount`, {
         method,
         headers: { Authorization: `Bearer ${idToken}`, 'Content-Type': 'application/json' },

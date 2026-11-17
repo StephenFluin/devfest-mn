@@ -15,7 +15,6 @@ import { signInAnonymously } from 'firebase/auth';
 import { get, set } from 'firebase/database';
 
 import { DataService, Speaker, SpeakerInvite } from '../shared/data.service';
-import { AUTH } from '../realtime-data/firebase';
 import { AuthService } from '../realtime-data/auth.service';
 import { SpeakerKitComponent } from './speaker-kit.component';
 import { SpeakerSessionsComponent } from './speaker-sessions.component';
@@ -163,7 +162,6 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
 export class SpeakerInviteEditComponent implements UnsavedChangesForm {
   ds = inject(DataService);
   private authService = inject(AuthService);
-  private auth = inject(AUTH);
   private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private params = toSignal(inject(ActivatedRoute).paramMap, { requireSync: true });
 
@@ -186,11 +184,12 @@ export class SpeakerInviteEditComponent implements UnsavedChangesForm {
       if (!invite?.speaker) {
         throw new Error('No such invite');
       }
-      await this.auth.authStateReady();
-      if (!this.auth.currentUser) {
-        await signInAnonymously(this.auth);
+      const auth = await this.authService.loadAuth();
+      await auth.authStateReady();
+      if (!auth.currentUser) {
+        await signInAnonymously(auth);
       }
-      const uid = this.auth.currentUser.uid;
+      const uid = auth.currentUser.uid;
       if (!(await this.authService.checkAdmin())) {
         await set(this.ds.ref(`speakerGrants/${uid}`), { token, speaker: invite.speaker });
       }

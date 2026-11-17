@@ -88,7 +88,16 @@
               Your agenda is saved in this browser. Login to keep it on all your devices, or to
               provide feedback after the session ends.
             </p>
-            <button (click)="auth.login()" class="cta" style="display: inline">Login</button>
+            <button
+              (click)="auth.login()"
+              (pointerenter)="auth.preload()"
+              (focus)="auth.preload()"
+              (touchstart)="auth.preload()"
+              class="cta"
+              style="display: inline"
+            >
+              Login
+            </button>
           </div>
         }
       </div>

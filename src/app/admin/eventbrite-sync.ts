@@ -6,7 +6,7 @@ import { AuthService } from '../realtime-data/auth.service';
  * page. Resolves to a short message for the admin.
  */
 export async function syncEventbrite(auth: AuthService): Promise<string> {
-  const idToken = await auth.auth?.currentUser?.getIdToken();
+  const idToken = await auth.idToken();
   const response = await fetch('/api/admin/burndown/update', {
     method: 'POST',
     headers: { Authorization: `Bearer ${idToken}` },
