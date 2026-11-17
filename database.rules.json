@@ -100,6 +100,43 @@
           ".validate": "newData.hasChildren(['token', 'speaker']) && newData.child('token').isString() && newData.child('token').val().matches(/^[A-Za-z0-9_-]{20,}$/) && root.child($year+'/speakerInvites/'+newData.child('token').val()+'/speaker').val() === newData.child('speaker').val()"
         }
       },
+      "editLog": {
+        ".read": "root.child('admin/'+auth.uid).exists()",
+        ".indexOn": "key",
+        "$entry": {
+          ".write": "$year.matches(/^devfest[0-9]{4}$/) && auth != null && !data.exists() && newData.exists()",
+          ".validate": "newData.hasChildren(['at', 'path', 'key', 'action', 'via', 'uid']) && newData.child('uid').val() === auth.uid && ((newData.child('via').val() === 'admin' && root.child('admin/'+auth.uid).exists() && newData.child('email').val() === auth.token.email && !newData.child('speaker').exists()) || (newData.child('via').val() === 'invite' && newData.child('action').val() === 'update' && newData.child('speaker').isString() && root.child($year+'/speakerGrants/'+auth.uid+'/speaker').val() === newData.child('speaker').val() && (newData.child('path').val() === 'schedule' || newData.child('key').val() === newData.child('speaker').val())))",
+          "at": { ".validate": "newData.val() === now" },
+          "path": { ".validate": "newData.val() === 'speakers' || newData.val() === 'schedule'" },
+          "key": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 64"
+          },
+          "label": { ".validate": "newData.isString() && newData.val().length <= 200" },
+          "action": {
+            ".validate": "newData.val() === 'create' || newData.val() === 'update' || newData.val() === 'delete'"
+          },
+          "via": { ".validate": "newData.val() === 'admin' || newData.val() === 'invite'" },
+          "uid": { ".validate": "newData.isString()" },
+          "email": { ".validate": "newData.isString() && newData.val() === auth.token.email" },
+          "name": { ".validate": "newData.isString() && newData.val().length <= 100" },
+          "speaker": { ".validate": "newData.isString() && newData.val().length <= 64" },
+          "changes": {
+            "$field": {
+              ".validate": "$field.length <= 40",
+              "from": {
+                ".validate": "newData.isBoolean() || newData.isNumber() || newData.hasChildren() || (newData.isString() && newData.val().length <= 6100)",
+                "$item": { ".validate": "newData.isString() && newData.val().length <= 64" }
+              },
+              "to": {
+                ".validate": "newData.isBoolean() || newData.isNumber() || newData.hasChildren() || (newData.isString() && newData.val().length <= 6100)",
+                "$item": { ".validate": "newData.isString() && newData.val().length <= 64" }
+              },
+              "$other": { ".validate": false }
+            }
+          },
+          "$other": { ".validate": false }
+        }
+      },
       "rooms": {
         ".read": true,
         ".indexOn": "order",

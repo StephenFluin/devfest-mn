@@ -16,6 +16,7 @@ import { DATABASE, listResource } from '../realtime-data/firebase';
 import { AuthService } from '../realtime-data/auth.service';
 import { createSpeakerPromoCode } from '../speaker-invite/invite-email';
 import { placeholderSessionTitle } from '../speaker-invite/speaker-session-edit';
+import { editChanges, EditLogEntry, EditLogPath } from './edit-log';
 import { withRenderedMarkdown } from './markdown';
 
 export interface Session {
@@ -238,7 +239,8 @@ export class DataService {
 
   /**
    * Saves an edited item, or creates one; for a new item the result's key is its id, available
-   * right away. A bio or description in the item is rendered to HTML alongside it.
+   * right away. A bio or description in the item is rendered to HTML alongside it. What changed
+   * goes in the edit log.
    */
   save(path: 'schedule' | 'speakers', item): Promise<unknown> & { key?: string | null } {
     console.log('Attempting to save', path, item);
@@ -246,6 +248,8 @@ export class DataService {
     const { $key: key, ...fields } = { ...item, updatedAt: serverTimestamp() };
     // A new item's id is made locally, so callers can use it before the write finishes.
     const id = key ?? push(ref(this.db, `devfest${environment.year}/${path}`)).key;
+    // Looked up now, before the live data catches up with this save.
+    const before = key ? this.stored(path, key) : undefined;
     const write = withRenderedMarkdown(fields).then((data) => {
       // Firebase rejects undefined values, so send null (which also clears the field).
       Object.keys(data).forEach((prop) => {
@@ -259,27 +263,107 @@ export class DataService {
       console.log('Pushing new item to', path, data);
       return set(ref(this.db, `devfest${environment.year}/${path}/${id}`), data);
     });
+    // Only once the save has worked. A failed save is the caller's to handle, through `write`.
+    write.then(
+      () => this.recordEdit(path, id, key ? 'update' : 'create', before, fields),
+      () => {},
+    );
     return Object.assign(write, { key: key ? undefined : id });
   }
 
   delete(path: 'schedule' | 'speakers', item) {
     console.log('Attempting to delete', item, 'of type', path);
     const itemRef = ref(this.db, `devfest${environment.year}/${path}/${item.$key}`);
-    remove(itemRef);
+    const before = this.stored(path, item.$key) ?? item;
+    remove(itemRef).then(
+      () => this.recordEdit(path, item.$key, 'delete', before),
+      (err) => console.error('Error deleting', path, item.$key, err),
+    );
   }
 
-  deleteSpeakerFromSession(session: Session, speakerKey: string) {
+  /** Adds a speaker to a session's presenters. */
+  async addSpeakerToSession(sessionKey: string, speakerKey: string) {
+    const before = this.stored('schedule', sessionKey);
+    const added = push(this.ref(`schedule/${sessionKey}/speakers`), speakerKey);
+    await added;
+    await this.recordEdit('schedule', sessionKey, 'update', before, {
+      speakers: { ...before?.speakers, [added.key]: speakerKey },
+    });
+  }
+
+  /** Takes a presenter off a session. `entryKey` is their id in the session's speakers map. */
+  deleteSpeakerFromSession(session: Session, entryKey: string) {
     const speakerRef = ref(
       this.db,
-      `devfest${environment.year}/schedule/${session.$key}/speakers/${speakerKey}`,
+      `devfest${environment.year}/schedule/${session.$key}/speakers/${entryKey}`,
     );
+    const before = this.stored('schedule', session.$key) ?? session;
+    const { [entryKey]: _removed, ...speakers } = { ...before.speakers };
     remove(speakerRef)
       .then(() => {
-        console.log(`Speaker (${speakerKey} deleted from session (${session.$key}) .`);
+        console.log(`Speaker (${entryKey} deleted from session (${session.$key}) .`);
+        return this.recordEdit('schedule', session.$key, 'update', before, { speakers });
       })
       .catch((err) => {
         console.error('Error deleting speaker from session', err);
       });
+  }
+
+  /** The speaker or session as the live data has it, without waiting for anything to load. */
+  private stored(path: EditLogPath, key: string): (Speaker & Session) | undefined {
+    return path === 'speakers'
+      ? this.speaker(key)
+      : this.schedule().find((session) => session.$key === key);
+  }
+
+  /**
+   * Adds a change to a speaker or session to the edit log (see shared/edit-log.ts): what changed
+   * between `before` and the fields written in `after` (none for a delete), and who is signed in.
+   * Call it once the change itself is saved. Best effort: it never throws, so a log that can't be
+   * written doesn't get in the way of the edit.
+   *
+   * @param speaker For someone using a speaker's edit link to change one of that speaker's
+   *   sessions: the speaker whose link it is. Their own profile needs no hint.
+   */
+  async recordEdit(
+    path: EditLogPath,
+    key: string,
+    action: EditLogEntry['action'],
+    before: Speaker | Session | undefined,
+    after?: Partial<Speaker & Session>,
+    speaker?: string,
+  ) {
+    try {
+      const changes = editChanges(before, after);
+      if (action === 'update' && !changes) return;
+      const user = await this.auth.currentUser();
+      if (!user) return;
+      const admin = await this.auth.checkAdmin();
+      // Anyone else can only have made the change with a speaker's edit link.
+      const linkOf = admin ? undefined : (speaker ?? (path === 'speakers' ? key : undefined));
+      if (!admin && !linkOf) return;
+      const item: Speaker & Session = { ...before, ...after };
+      const entry: Omit<EditLogEntry, 'at'> & { at: object } = {
+        at: serverTimestamp(),
+        path,
+        key,
+        label: (path === 'speakers' ? item.name : item.title)?.trim().slice(0, 200),
+        action,
+        via: admin ? 'admin' : 'invite',
+        uid: user.uid,
+        email: user.email,
+        name: (user.displayName || user.providerData[0]?.displayName)?.slice(0, 100),
+        speaker: linkOf,
+        changes,
+      };
+      // Firebase rejects undefined, and an empty value says nothing.
+      for (const [field, value] of Object.entries(entry)) {
+        if (value === undefined || value === null || value === '') delete entry[field];
+      }
+      await push(this.ref('editLog'), entry);
+    } catch (error) {
+      console.warn('Could not add this change to the edit log', error);
+    }
   }
 
   /**
@@ -298,7 +382,10 @@ export class DataService {
   /** Gives a speaker their promo code. A failure doesn't lose the speaker; saving them again retries. */
   async ensureSpeakerPromoCode(speakerKey: string) {
     try {
-      await createSpeakerPromoCode(await this.auth.idToken(), speakerKey);
+      const before = this.stored('speakers', speakerKey);
+      const promoCode = await createSpeakerPromoCode(await this.auth.idToken(), speakerKey);
+      // The server saves the code on the speaker; this only notes that it did.
+      await this.recordEdit('speakers', speakerKey, 'update', before, { promoCode });
     } catch (err) {
       console.error('Unable to create promo code', err);
       alert(`The speaker's promo code wasn't created: ${err.message}. Saving them again retries.`);

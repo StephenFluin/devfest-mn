@@ -1,12 +1,9 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
-import { ref, push } from 'firebase/database';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
 import { DataService, Session } from '../shared/data.service';
-import { DATABASE } from '../realtime-data/firebase';
-import { environment } from '../../environments/environment';
 
 /** Search the speakers and add them to a saved session. */
 @Component({
@@ -89,7 +86,6 @@ import { environment } from '../../environments/environment';
   imports: [MatButtonModule, MatFormFieldModule, MatInputModule],
 })
 export class SpeakerSelectorComponent {
-  private db = inject(DATABASE);
   private ds = inject(DataService);
 
   readonly session = input<Session>(undefined);
@@ -111,9 +107,8 @@ export class SpeakerSelectorComponent {
   });
 
   add(speakerKey: string) {
-    const path = `devfest${environment.year}/schedule/${this.session().$key}/speakers`;
-    push(ref(this.db, path), speakerKey).catch((err) =>
-      console.error('Error adding speaker to session', err),
-    );
+    this.ds
+      .addSpeakerToSession(this.session().$key, speakerKey)
+      .catch((err) => console.error('Error adding speaker to session', err));
   }
 }

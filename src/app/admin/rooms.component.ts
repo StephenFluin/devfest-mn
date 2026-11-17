@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { push, ref, serverTimestamp, update } from 'firebase/database';
 
 import { environment } from '../../environments/environment';
-import { DataService } from '../shared/data.service';
+import { DataService, Session } from '../shared/data.service';
 
 interface RoomDraft {
   key?: string;
@@ -271,6 +271,8 @@ export class RoomsComponent {
     if (this.problem()) return;
     const updates: Record<string, unknown> = {};
     const kept = new Set<string>();
+    /** Sessions moved by a rename, as they were, with the room they're going to. */
+    const moved: { session: Session; room: string }[] = [];
     this.draft().forEach((room, order) => {
       const key = room.key ?? push(this.ds.ref('rooms')).key;
       kept.add(key);
@@ -281,6 +283,7 @@ export class RoomsComponent {
           if (session.room === room.originalName) {
             updates[`schedule/${session.$key}/room`] = name;
             updates[`schedule/${session.$key}/updatedAt`] = serverTimestamp();
+            moved.push({ session, room: name });
           }
         }
       }
@@ -294,6 +297,9 @@ export class RoomsComponent {
     try {
       await update(ref(this.ds.db, `devfest${environment.year}`), updates);
       this.status.set('Saved.');
+      for (const { session, room } of moved) {
+        void this.ds.recordEdit('schedule', session.$key, 'update', session, { room });
+      }
     } catch (error) {
       console.error('Error saving rooms', error);
       this.failed.set(true);

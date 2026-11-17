@@ -316,3 +316,34 @@ those two fields with its service account. Locally, set `FIREBASE_DATABASE_EMULA
 
 To revoke a link, delete its entry under `devfest<year>/speakerInvites` in the Realtime Database console. Anyone
 who already opened it keeps access until you also delete their entry under `devfest<year>/speakerGrants`.
+
+### Edit log: who changed a speaker or session
+
+Every change to a speaker or session is noted in the edit log: when, who, and each changed field's value before
+and after. See all of it at `/admin/edit-log`, or one item's in the **History** card of its editor. It answers
+"did the speaker fill in their profile, or did one of us?" and keeps the old text of a bio or description that
+was overwritten, and everything a deleted speaker or session had.
+
+"Who" is one of two things:
+
+- **An admin**, by name and Google account, for a change made while signed in as one. That includes an admin
+  who opens a speaker's edit link while signed in.
+- **A speaker's edit link**, for a change made by someone holding that speaker's link and not signed in as an
+  admin. That is normally the speaker, but anyone they (or we) gave the link to looks the same. The entry
+  shows the start of the browser's anonymous user ID, so edits from the same browser can be told apart from
+  another's, and the Google account if the person happened to be signed in with one.
+
+How it works (`src/app/shared/edit-log.ts`, and `DataService.recordEdit`): right after a change is saved, the
+browser that made it adds an entry under `devfest<year>/editLog`. The database rules (`editLog` in
+`database.rules.json`) only accept an entry carrying the writer's own user ID, the server's time and, for an
+admin, their own email; a speaker's link can only log changes as that speaker; and entries can't be edited or
+deleted. Only admins can read the log. What isn't logged:
+
+- Anything from before the edit log existed.
+- Changes made outside the site: the scripts in `scripts/`, the Firebase console, the Firebase CLI.
+- A save that changes nothing, and fields nobody edits (`updatedAt`, the rendered HTML, internal notes).
+- A change whose log entry failed to save. Logging never blocks the edit itself, so until the rules are deployed
+  edits work as before and simply aren't logged.
+
+The log needs the database rules deployed (see
+[How the site is built and deployed](#how-the-site-is-built-and-deployed)), once per year's project.

@@ -90,6 +90,16 @@ export class AuthService {
     return (await this.loadAuth())?.currentUser?.getIdToken();
   }
 
+  /**
+   * Whoever is signed in once the initial auth state is known, including a speaker's anonymous
+   * sign-in from their edit link. Null when no one is.
+   */
+  async currentUser(): Promise<User | null> {
+    const auth = await this.loadAuth();
+    await auth?.authStateReady();
+    return auth?.currentUser ?? null;
+  }
+
   /** Waits for the initial auth state, then checks /admin once. Used by the admin route guard. */
   async checkAdmin(): Promise<boolean> {
     const auth = await this.loadAuth();

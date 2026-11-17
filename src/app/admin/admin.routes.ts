@@ -47,6 +47,10 @@ export const AdminRoutes: Routes = [
                   import('./session-planning.component').then((m) => m.SessionPlanningComponent),
               },
               {
+                path: 'edit-log',
+                loadComponent: () => import('./edit-log.component').then((m) => m.EditLogComponent),
+              },
+              {
                 path: 'speakers/:id/edit',
                 canDeactivate: [confirmLeavingUnsaved],
                 loadComponent: () =>
