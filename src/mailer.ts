@@ -2,6 +2,7 @@ import { environment } from './environments/environment';
 
 export interface Email {
   to: string;
+  cc?: string[];
   subject: string;
   text: string;
   replyTo?: string;
@@ -22,14 +23,21 @@ class ResendMailer implements Mailer {
     private from: string,
   ) {}
 
-  async send({ to, subject, text, replyTo }: Email) {
+  async send({ to, cc, subject, text, replyTo }: Email) {
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${this.apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ from: this.from, to: [to], subject, text, reply_to: replyTo }),
+      body: JSON.stringify({
+        from: this.from,
+        to: [to],
+        ...(cc?.length && { cc }),
+        subject,
+        text,
+        reply_to: replyTo,
+      }),
     });
     if (!response.ok) {
       throw new Error(`Resend responded with ${response.status}: ${await response.text()}`);
