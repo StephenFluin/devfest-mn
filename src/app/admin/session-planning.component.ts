@@ -119,113 +119,115 @@ function todosFor(session: Session, speakers: SpeakerRow[]): string[] {
           (input)="search.set($any($event.target).value)"
         />
       </label>
-      <mat-checkbox [checked]="needsWork()" (change)="needsWork.set($event.checked)">
-        Needs work only
-      </mat-checkbox>
     </div>
 
-    @if (visible().length) {
-      <div class="table-wrap">
-        <table class="data">
-          <thead>
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th scope="col" class="text">Session</th>
+            <th scope="col" class="text">Speakers</th>
+            <th scope="col" class="text">When and where</th>
+            <th scope="col" class="text">Status</th>
+            <th scope="col" class="text todo-head">
+              To do
+              <mat-checkbox [checked]="needsWork()" (change)="needsWork.set($event.checked)">
+                Needs work only
+              </mat-checkbox>
+            </th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of visible(); track row.session.$key) {
             <tr>
-              <th scope="col" class="text">Session</th>
-              <th scope="col" class="text">Speakers</th>
-              <th scope="col" class="text">When and where</th>
-              <th scope="col" class="text">Status</th>
-              <th scope="col" class="text">To do</th>
-              <th scope="col"><span class="visually-hidden">Actions</span></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of visible(); track row.session.$key) {
-              <tr>
-                <td class="text session">
-                  <a
-                    class="title"
-                    [routerLink]="['/admin/sessions', row.session.$key, 'edit']"
-                    [state]="returnTo"
-                    >{{ row.session.title || 'Untitled' }}</a
-                  >
-                  <div class="muted">
-                    {{ row.session.track || 'No track' }} · {{ blocks(row.session) }}
-                    {{ blocks(row.session) === 1 ? 'block' : 'blocks' }}
-                    @if (row.session.updatedAt) {
-                      · edited {{ row.session.updatedAt | date: 'MMM d' }}
+              <td class="text session">
+                <a
+                  class="title"
+                  [routerLink]="['/admin/sessions', row.session.$key, 'edit']"
+                  [state]="returnTo"
+                  >{{ row.session.title || 'Untitled' }}</a
+                >
+                <div class="muted">
+                  {{ row.session.track || 'No track' }} · {{ blocks(row.session) }}
+                  {{ blocks(row.session) === 1 ? 'block' : 'blocks' }}
+                  @if (row.session.updatedAt) {
+                    · edited {{ row.session.updatedAt | date: 'MMM d' }}
+                  }
+                </div>
+                @if (row.note) {
+                  <div class="note">{{ row.note }}</div>
+                }
+              </td>
+              <td class="text">
+                @for (speaker of row.speakers; track speaker.key) {
+                  <div class="speaker">
+                    @if (speaker.speaker; as profile) {
+                      <a
+                        [routerLink]="['/admin/speakers', speaker.key, 'edit']"
+                        [state]="returnTo"
+                        >{{ profile.name || 'Unnamed speaker' }}</a
+                      >
+                      <span class="badge" [class.ok]="profile.published">{{
+                        profile.published ? 'Published' : 'Unpublished'
+                      }}</span>
+                      @if (profile.company) {
+                        <div class="muted">{{ profile.company }}</div>
+                      }
+                    } @else {
+                      <span class="error">Missing speaker</span>
                     }
                   </div>
-                  @if (row.note) {
-                    <div class="note">{{ row.note }}</div>
-                  }
-                </td>
-                <td class="text">
-                  @for (speaker of row.speakers; track speaker.key) {
-                    <div class="speaker">
-                      @if (speaker.speaker; as profile) {
-                        <a
-                          [routerLink]="['/admin/speakers', speaker.key, 'edit']"
-                          [state]="returnTo"
-                          >{{ profile.name || 'Unnamed speaker' }}</a
-                        >
-                        <span class="badge" [class.ok]="profile.published">{{
-                          profile.published ? 'Published' : 'Unpublished'
-                        }}</span>
-                        @if (profile.company) {
-                          <div class="muted">{{ profile.company }}</div>
-                        }
-                      } @else {
-                        <span class="error">Missing speaker</span>
-                      }
-                    </div>
-                  } @empty {
-                    <span class="muted">None</span>
-                  }
-                </td>
-                <td class="text">
-                  <div [class.muted]="!row.time">{{ row.time ?? 'No time' }}</div>
-                  <div class="muted">{{ row.where }}</div>
-                </td>
-                <td class="text">
-                  <span class="badge" [class.ok]="row.session.published">{{
-                    row.session.published ? 'Published' : 'Draft'
-                  }}</span>
-                </td>
-                <td class="text">
-                  @if (row.todos.length) {
-                    <ul class="todos">
-                      @for (todo of row.todos; track todo) {
-                        <li>{{ todo }}</li>
-                      }
-                    </ul>
-                  } @else {
-                    <span class="ready">Ready</span>
-                  }
-                </td>
-                <td>
-                  <a
-                    mat-button
-                    [routerLink]="['/admin/sessions', row.session.$key, 'edit']"
-                    [state]="returnTo"
-                    [attr.aria-label]="'Edit ' + (row.session.title || 'untitled session')"
-                    >Edit</a
-                  >
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    } @else {
-      <p class="muted" role="status">
-        {{
-          search().trim()
-            ? 'No sessions match your search.'
-            : needsWork()
-              ? 'Nothing left to do here.'
-              : 'No sessions here.'
-        }}
-      </p>
-    }
+                } @empty {
+                  <span class="muted">None</span>
+                }
+              </td>
+              <td class="text">
+                <div [class.muted]="!row.time">{{ row.time ?? 'No time' }}</div>
+                <div class="muted">{{ row.where }}</div>
+              </td>
+              <td class="text">
+                <span class="badge" [class.ok]="row.session.published">{{
+                  row.session.published ? 'Published' : 'Draft'
+                }}</span>
+              </td>
+              <td class="text">
+                @if (row.todos.length) {
+                  <ul class="todos">
+                    @for (todo of row.todos; track todo) {
+                      <li>{{ todo }}</li>
+                    }
+                  </ul>
+                } @else {
+                  <span class="ready">Ready</span>
+                }
+              </td>
+              <td>
+                <a
+                  mat-button
+                  [routerLink]="['/admin/sessions', row.session.$key, 'edit']"
+                  [state]="returnTo"
+                  [attr.aria-label]="'Edit ' + (row.session.title || 'untitled session')"
+                  >Edit</a
+                >
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td class="text muted" colspan="6" role="status">
+                {{
+                  search().trim()
+                    ? 'No sessions match your search.'
+                    : needsWork()
+                      ? 'Nothing left to do here.'
+                      : 'No sessions here.'
+                }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   `,
   styles: `
     .toolbar {
@@ -315,6 +317,14 @@ function todosFor(session: Session, speakers: SpeakerRow[]): string[] {
     .badge.ok {
       background: color-mix(in srgb, var(--admin-success) 18%, transparent);
       color: var(--admin-success);
+    }
+    .todo-head {
+      white-space: nowrap;
+    }
+    .todo-head mat-checkbox {
+      display: block;
+      margin-left: -8px;
+      font: var(--mat-sys-body-small);
     }
     .todos {
       margin: 0;
