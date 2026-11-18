@@ -1226,7 +1226,7 @@ button.button.warn {
   color: white;
   padding: 5px;
   /* For a session with no track yet; each track's color below replaces it. */
-  background-color: darkgray;
+  background-color: #707070;
 }
 .schedule thead tr td:first-child,
 .schedule thead tr:first-child td,
@@ -1238,39 +1238,29 @@ button.button.warn {
   vertical-align: top;
 }
 
-/* Colors choesn by GhapGPT. || https://chat.openai.com/share/17b6363e-9a11-4aaa-9b2c-fbf1e8c20e59
-.... bard.google.com was aweful || https://g.co/bard/share/4419a089dd04
+/*
+ * A session's track is its topic, and colors its cell: the class is the track's name, so a name
+ * needs to be one word to get a color here. These are this year's (the session editor suggests the
+ * same list); any other track gets the fallback above. Each has at least 4.5:1 contrast with the
+ * white text.
  */
-.schedule .Android {
-  /* background-color: rgba(123, 192, 67, 1); */
-  background-color: #a4c639;
+.schedule .Agents {
+  background-color: #6d4ad1;
 }
-.schedule .Web {
-  /* background-color: #ffbf00; */
-  background-color: #3498db;
+.schedule .Engineering {
+  background-color: #1967d2;
 }
-.schedule .Design {
-  background-color: #e74c3c;
+.schedule .People {
+  background-color: #188038;
 }
-.schedule .Cloud {
-  /* background-color: #ee4035; */
-  background-color: #3498db;
+.schedule .Business {
+  background-color: #b06000;
 }
-.schedule .AI {
-  /* background-color: #ee35ee; */
-  background-color: #ff7675;
-}
-.schedule .IoT {
-  background-color: #6380ea;
-}
-.schedule .General {
-  background-color: darkgray;
-}
+/* Sessions for everyone: registration, the welcome, breaks, the closing. */
 .schedule .all {
   background-color: #656f78;
 }
 .schedule .Keynote {
-  /* background-color: #0066cc; */
   background-color: #f39c12;
 }
 

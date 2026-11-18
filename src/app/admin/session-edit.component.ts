@@ -112,7 +112,11 @@ export class SessionEditComponent implements UnsavedChangesForm {
   /** Older sessions saved their length as text ("2"). */
   sameNumber = (a: unknown, b: unknown) => Number(a || 1) === Number(b || 1);
 
-  readonly tracks = ['all', 'Keynote', 'AI', 'Web', 'Android', 'Cloud', 'Design', 'IoT', 'General'];
+  /**
+   * Suggestions for a session's track, its topic: this year's four, plus the two that span every
+   * room. Each has a color on the schedule (styles.scss); another name works but shows in gray.
+   */
+  readonly tracks = ['Agents', 'Engineering', 'People', 'Business', 'all', 'Keynote'];
 
   /**
    * Rooms are picked from the list at /admin/rooms, never typed, so names always match. A session
