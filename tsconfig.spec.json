@@ -1,0 +1,9 @@
+/* The unit tests (`npm test`): every *.spec.ts under src, run by Vitest through `ng test`. */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/spec",
+    "types": ["vitest/globals"]
+  },
+  "include": ["src/**/*.d.ts", "src/**/*.spec.ts"]
+}

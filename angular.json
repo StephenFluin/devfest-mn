@@ -98,6 +98,9 @@
           "options": {
             "buildTarget": "devfestmn:build"
           }
+        },
+        "test": {
+          "builder": "@angular/build:unit-test"
         }
       }
     }
