@@ -59,7 +59,7 @@ We keep the same codebase every year but move to a new Firebase project.
 1. Create the new Firebase project and an App Hosting backend connected to this repo.
 2. Point `.firebaserc` at the new project, and update the `backendId` in `firebase.json`.
 3. Update `src/environments/environment.ts` with the new Firebase config, event date, CFP dates, venue, and
-   feature flags (`showSchedule`, `showRegister`, and so on). The call for speakers shows while `cfpCloses` is set and hasn't passed; set it to `null` for a new year until the CFP is announced.
+   feature flags (`showRegister`, `showSponsor`, and so on). The call for speakers shows while `cfpCloses` is set and hasn't passed; set it to `null` for a new year until the CFP is announced. The schedule isn't a flag here: it starts hidden in a new year's project, and an admin announces it from the admin (see [Announcing the schedule](#announcing-the-schedule)).
 4. Find and replace the old year and date throughout the code.
 5. Update the date in `scripts/og-image.sh` and run it to regenerate the social share image.
 6. Carry the ticket history forward (see [Ticket burndown](#ticket-burndown)).
@@ -240,6 +240,23 @@ schedule, session pages, speaker pages, share cards, calendar files and the site
 session an admin creates from an empty slot on the schedule starts published; an invited speaker's session starts
 unpublished. The flag only hides sessions on the site: like unpublished speakers, they can still be read from the
 database, so don't put anything secret in them.
+
+### Announcing the schedule
+
+The schedule is announced with the **Show the schedule** switch on the admin Overview (`/admin/overview`), with
+no deploy. It takes effect for everyone right away, and can be switched back off. The card also says how many
+published sessions still have no time or room.
+
+Until it's on, the site has no Schedule link, and session pages, speakers' edit pages, calendar files, the
+sitemap and the data for search engines leave out times and rooms. The switch doesn't hide the `/schedule` page
+itself: anyone who knows the address sees every published session that has a time, which is what lets
+organizers check the layout first. To keep a session's slot private until the announcement, leave the session
+unpublished.
+
+The switch is stored at `devfest<year>/settings/showSchedule` (anyone can read it, only admins can write it), so
+it needs the database rules deployed (see
+[How the site is built and deployed](#how-the-site-is-built-and-deployed)), once per year's project. Until they
+are, or while the setting is unset, the schedule stays hidden.
 
 ### Inviting speakers to edit their own profile
 

@@ -67,6 +67,12 @@
       }
     },
     "$year": {
+      "settings": {
+        ".read": true,
+        ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()",
+        "showSchedule": { ".validate": "newData.isBoolean()" },
+        "$other": { ".validate": false }
+      },
       "schedule": {
         ".read": true,
         ".indexOn": "title",

@@ -1,7 +1,8 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { ref } from 'firebase/database';
 import { RouterLink } from '@angular/router';
+import { MatSlideToggleChange, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { AuthService } from '../realtime-data/auth.service';
 import { DataService } from '../shared/data.service';
 import { DATABASE, objectResource } from '../realtime-data/firebase';
@@ -43,6 +44,41 @@ import { environment } from '../../environments/environment';
         </div>
       </div>
 
+      <section class="card announce" aria-labelledby="schedule-heading">
+        <div>
+          <h3 id="schedule-heading">Schedule</h3>
+          @if (ds.showSchedule()) {
+            <p>
+              <strong>Announced.</strong> The site links to the schedule, and session pages,
+              calendar files and search engines get each session's time and room.
+            </p>
+          } @else {
+            <p>
+              <strong>Not announced yet.</strong> The site has no Schedule link, and session pages
+              leave out times and rooms. Anyone who knows the address can still open
+              <a routerLink="/schedule">/schedule</a>, which shows every published session that has
+              a time.
+            </p>
+          }
+          <p class="muted">
+            @if (unplaced(); as count) {
+              {{ count }} of {{ ds.publishedSchedule().length }} published sessions
+              {{ count === 1 ? 'has' : 'have' }} no time or room yet, so
+              {{ count === 1 ? "it isn't" : "they aren't" }} on the schedule.
+              <a routerLink="/admin/sessions">Session planning</a> lists what each needs.
+            } @else {
+              All {{ ds.publishedSchedule().length }} published sessions have a time and room.
+            }
+          </p>
+          @if (scheduleError(); as error) {
+            <p class="error" role="alert">{{ error }}</p>
+          }
+        </div>
+        <mat-slide-toggle [checked]="ds.showSchedule()" (change)="setShowSchedule($event)">
+          Show the schedule
+        </mat-slide-toggle>
+      </section>
+
       <div class="links">
         @for (link of links; track link.path) {
           <a class="link-card" [routerLink]="link.path">
@@ -69,6 +105,19 @@ import { environment } from '../../environments/environment';
     }
     .tile.link:hover {
       border-color: var(--mat-sys-primary);
+    }
+    .announce {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px 32px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .announce > div {
+      flex: 1 1 420px;
+    }
+    .announce p:last-child {
+      margin-bottom: 0;
     }
     .links {
       display: grid;
@@ -103,7 +152,7 @@ import { environment } from '../../environments/environment';
       }
     }
   `,
-  imports: [RouterLink, DecimalPipe],
+  imports: [RouterLink, DecimalPipe, MatSlideToggleModule],
 })
 export class AdminHomeComponent {
   auth = inject(AuthService);
@@ -131,6 +180,32 @@ export class AdminHomeComponent {
   unpublishedSessions = computed(
     () => this.ds.schedule().filter((session) => !session.published).length,
   );
+
+  /** Published sessions the schedule can't place yet: no start time, or no room unless it's for everyone. */
+  unplaced = computed(
+    () =>
+      this.ds
+        .publishedSchedule()
+        .filter((session) => !session.startTime || (!session.room && session.track !== 'all'))
+        .length,
+  );
+
+  scheduleError = signal('');
+
+  /** Announces the schedule, or takes that back, for everyone right away. */
+  async setShowSchedule(change: MatSlideToggleChange) {
+    this.scheduleError.set('');
+    try {
+      await this.ds.setShowSchedule(change.checked);
+    } catch (error) {
+      console.error('Error saving the schedule setting', error);
+      // Back to what's saved, since the switch has already moved.
+      change.source.checked = this.ds.showSchedule();
+      this.scheduleError.set(
+        `Couldn't save: ${error.message ?? error}. If this switch is new, deploy the database rules (see the README).`,
+      );
+    }
+  }
 
   readonly links = [
     {
