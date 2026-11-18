@@ -171,8 +171,15 @@ export function scheduledSessionEvents(
   speakers: (key: string) => Speaker | undefined,
   showSchedule: boolean,
 ) {
-  return [...sessions]
-    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
-    .map((session) => sessionEvent(session, sessions, speakers, { showSchedule }))
-    .filter(Boolean);
+  // With its zone, so an older zoneless time sorts the same on the server (UTC) as in a browser.
+  const start = (session: Session) => new Date(withOffset(session.startTime)).getTime();
+  return (
+    sessions
+      // Dropped before sorting: a missing time compares as equal to every other, which would
+      // leave the sessions either side of it unsorted.
+      .filter((session) => session.startTime)
+      .sort((a, b) => start(a) - start(b))
+      .map((session) => sessionEvent(session, sessions, speakers, { showSchedule }))
+      .filter(Boolean)
+  );
 }
