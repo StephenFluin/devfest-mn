@@ -35,8 +35,11 @@ export interface RtdbOptions<T> {
   localStorageKey?: string;
 }
 
-/** A live value plus whether the database has answered yet (false while loading or after an error). */
-export type RtdbSignal<T> = Signal<T> & { loaded: Signal<boolean> };
+/**
+ * A live value plus whether the database has answered yet (false while loading or after an error),
+ * and whether the read failed (e.g. permission denied).
+ */
+export type RtdbSignal<T> = Signal<T> & { loaded: Signal<boolean>; failed: Signal<boolean> };
 
 /**
  * A live signal of the data at `query()`. Listens while the owning injector is alive, re-listens
@@ -87,6 +90,7 @@ export function rtdbResource<T>(
 
   const value = computed(() => (res.error() ? initialValue : res.value())) as RtdbSignal<T>;
   value.loaded = computed(() => res.status() === 'resolved');
+  value.failed = computed(() => !!res.error());
   return value;
 }
 

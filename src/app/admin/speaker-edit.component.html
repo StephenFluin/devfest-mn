@@ -228,6 +228,17 @@
       }
     </section>
 
+    @if (speaker.$key) {
+      <section class="card" aria-labelledby="history-heading">
+        <h3 id="history-heading">History</h3>
+        <p class="muted">
+          Changes to this profile, by admins and from the speaker's edit link. Their sessions keep
+          their own history.
+        </p>
+        <app-edit-history path="speakers" [key]="speaker.$key" />
+      </section>
+    }
+
     <div class="actions sticky">
       <button mat-flat-button type="submit">
         {{ speaker.$key ? 'Save speaker' : 'Create speaker' }}

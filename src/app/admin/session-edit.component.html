@@ -166,6 +166,14 @@
       </div>
     </section>
 
+    @if (session.$key) {
+      <section class="card" aria-labelledby="history-heading">
+        <h3 id="history-heading">History</h3>
+        <p class="muted">Changes to this session, by admins and from its speakers' edit links.</p>
+        <app-edit-history path="schedule" [key]="session.$key" />
+      </section>
+    }
+
     <div class="actions sticky">
       <button mat-flat-button type="submit">
         {{ session.$key ? 'Save session' : 'Create session' }}

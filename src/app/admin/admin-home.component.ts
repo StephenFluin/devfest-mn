@@ -228,6 +228,11 @@ export class AdminHomeComponent {
       title: 'Session planning',
       description: 'Sessions in progress, their speakers, and what each still needs.',
     },
+    {
+      path: '/admin/edit-log',
+      title: 'Edit log',
+      description: 'Who changed which speaker or session, and when.',
+    },
     { path: '/admin/rooms', title: 'Rooms', description: 'Names, directions and schedule order.' },
     {
       path: '/admin/volunteers',
