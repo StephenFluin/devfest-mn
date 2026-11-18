@@ -175,15 +175,20 @@ describe('scheduledSessionEvents', () => {
     expect(names([first, unscheduled])).toEqual(['First']);
   });
 
-  // Known bug: the sort compares start times before the untimed sessions are dropped, and a missing
-  // time compares as "equal" to everything, so the sessions either side of one are never compared
-  // with each other. Remove `.fails` once scheduledSessionEvents drops them before sorting.
-  it.fails(
-    'keeps schedule order when a session with no time is listed between two with one',
-    () => {
-      expect(names([second, unscheduled, first])).toEqual(['First', 'Second']);
-    },
-  );
+  it('keeps schedule order when a session with no time is listed between two with one', () => {
+    expect(names([second, unscheduled, first])).toEqual(['First', 'Second']);
+  });
+
+  it('orders an older session saved without a time zone by its Minneapolis time', () => {
+    // 16:00 with no zone is later than 15:00 Central, wherever this runs (the server is on UTC).
+    const zoned: Session = { $key: 'z', title: 'Zoned', startTime: at('15:00') };
+    const zoneless: Session = {
+      $key: 'o',
+      title: 'Zoneless',
+      startTime: `${environment.eventDate}T16:00`,
+    };
+    expect(names([zoneless, zoned])).toEqual(['Zoned', 'Zoneless']);
+  });
 
   it('is empty until the schedule is announced', () => {
     expect(names([first, second], false)).toEqual([]);
