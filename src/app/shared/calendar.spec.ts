@@ -1,4 +1,7 @@
-import { CalendarEvent, googleCalendarUrl, icsFile } from './calendar';
+import { environment } from '../../environments/environment';
+import { calendarEvent, CalendarEvent, googleCalendarUrl, icsFile } from './calendar';
+import { Session } from './data.service';
+import { eventUtcOffset } from './event-data';
 
 const event: CalendarEvent = {
   uid: 'abc123@devfest.mn',
@@ -63,6 +66,49 @@ describe('googleCalendarUrl', () => {
       details: event.description,
       location: event.location,
       ctz: 'America/Chicago',
+    });
+  });
+});
+
+describe('calendarEvent', () => {
+  const at = (time: string) => `${environment.eventDate}T${time}${eventUtcOffset}`;
+  const talk: Session = {
+    $key: 'abc123',
+    title: 'Agents and You',
+    startTime: at('13:40'),
+    room: 'Schulze 127',
+    description: 'All about **agents**.',
+  };
+  const next: Session = {
+    $key: 'next',
+    title: 'Next',
+    startTime: at('14:20'),
+    room: 'Schulze 127',
+  };
+
+  it('is null until the schedule is announced', () => {
+    expect(calendarEvent(talk, [talk, next], false)).toBeNull();
+  });
+
+  it('is null for a session with no title or no time yet', () => {
+    expect(calendarEvent({ ...talk, startTime: undefined }, [talk], true)).toBeNull();
+    expect(calendarEvent({ ...talk, title: '' }, [talk], true)).toBeNull();
+  });
+
+  it('runs from the session start to the next session in its room', () => {
+    const event = calendarEvent(talk, [talk, next], true);
+    expect(event.start.toISOString()).toBe(new Date(at('13:40')).toISOString());
+    expect(event.end.toISOString()).toBe(new Date(at('14:20')).toISOString());
+  });
+
+  it('names the room and venue, and links back to the session page', () => {
+    const url = `${environment.siteUrl}/schedule/abc123/agents-and-you`;
+    expect(calendarEvent(talk, [talk], true)).toMatchObject({
+      uid: 'abc123@devfest.mn',
+      title: `Agents and You · DevFestMN ${environment.year}`,
+      location: `Schulze 127, ${environment.venueName}, ${environment.venueAddress}`,
+      description: `All about agents.\n\n${url}`,
+      url,
     });
   });
 });
