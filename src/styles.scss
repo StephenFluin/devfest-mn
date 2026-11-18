@@ -1225,6 +1225,8 @@ button.button.warn {
 .schedule .session {
   color: white;
   padding: 5px;
+  /* For a session with no track yet; each track's color below replaces it. */
+  background-color: darkgray;
 }
 .schedule thead tr td:first-child,
 .schedule thead tr:first-child td,
