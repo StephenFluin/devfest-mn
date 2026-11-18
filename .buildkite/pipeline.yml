@@ -1,0 +1,33 @@
+# Pipeline "devfest-mn": lint, test and build in parallel on every push and PR.
+# Pipeline settings: steps = `buildkite-agent pipeline upload` (the default).
+# Builds run on arya (queue `build`, StephenFluin/build-agent), which has Node but no Java or
+# Chrome, so nothing here starts the Firebase emulators or a browser.
+# There's no deploy step: Firebase App Hosting deploys main itself (see the README).
+steps:
+  - label: ':eslint: Lint'
+    key: lint
+    agents:
+      queue: build
+    timeout_in_minutes: 20
+    commands:
+      - npm ci
+      - npm run lint
+      - npm run format:check
+
+  - label: ':test_tube: Test'
+    key: test
+    agents:
+      queue: build
+    timeout_in_minutes: 20
+    commands:
+      - npm ci
+      - npm test -- --watch=false
+
+  - label: ':hammer: Build'
+    key: build
+    agents:
+      queue: build
+    timeout_in_minutes: 20
+    commands:
+      - npm ci
+      - npm run build

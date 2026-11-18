@@ -28,8 +28,29 @@ Then open http://localhost:4200/. The app reloads automatically when you change 
 
 1. Create a branch and make your changes.
 2. Check them locally with `npm start` (and `npm run build` for a production build).
-3. Open a pull request against `main`.
-4. Once it's approved and merged, the site deploys automatically.
+3. Run `npm test`, `npm run lint` and `npm run format:check`, which CI runs too (see
+   [Tests and CI](#tests-and-ci)).
+4. Open a pull request against `main`.
+5. Once it's approved and merged, the site deploys automatically.
+
+### Tests and CI
+
+Unit tests are the `*.spec.ts` files next to the code they test, run by [Vitest](https://vitest.dev) through
+the Angular CLI:
+
+```bash
+npm test
+```
+
+That watches for changes; add `-- --watch=false` to run once. The tests cover logic that doesn't need a
+browser or the database, such as session end times, calendar files, campaign links and the UTM funnel. Add
+a spec beside any new logic of that kind.
+
+Every push and pull request is built by the [`devfest-mn` Buildkite
+pipeline](https://buildkite.com/stephen-fluin/devfest-mn), which runs three steps in parallel: lint and
+formatting, the unit tests, and a production build. The steps are in `.buildkite/pipeline.yml`. The pipeline
+doesn't deploy anything, and its agents have no Java or Chrome, so it can't run the Firebase emulators or
+browser tests.
 
 ## How the site is built and deployed
 
