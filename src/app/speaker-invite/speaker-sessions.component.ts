@@ -41,7 +41,7 @@ import { SESSION_LIMITS } from './speaker-session-edit';
           }
           <dt>When and where</dt>
           <dd>
-            @if (showSchedule && session.startTime) {
+            @if (ds.showSchedule() && session.startTime) {
               {{ ds.customDateFormatter(session.startTime) }}, {{ eventDate
               }}{{ session.room ? ' in ' + session.room : '' }}
             } @else {
@@ -109,7 +109,6 @@ export class SpeakerSessionsComponent {
   readonly token = input.required<string>();
 
   readonly limits = SESSION_LIMITS;
-  readonly showSchedule = environment.showSchedule;
   readonly eventDate = environment.eventDateDisplay;
 
   saving = signal<string | undefined>(undefined);

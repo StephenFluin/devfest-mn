@@ -19,7 +19,7 @@ import { INVITE_TOKEN, inviteEmail, speakerKitEmail } from './app/speaker-invite
 import { calendarEvent, conferenceCalendarEvent, icsFile } from './app/shared/calendar';
 import { withRenderedMarkdown } from './app/shared/markdown';
 import { cfpStateAt } from './app/shared/cfp-deadline';
-import type { Session, SpeakerInvite } from './app/shared/data.service';
+import type { Session, Settings, SpeakerInvite } from './app/shared/data.service';
 import {
   presents,
   SESSION_KEY,
@@ -75,6 +75,22 @@ interface SitemapEntry {
   updated?: number;
 }
 
+/**
+ * Whether an admin has announced the schedule (settings/showSchedule, set on the admin Overview).
+ * Not announced if the setting can't be read.
+ */
+async function scheduleAnnounced(): Promise<boolean> {
+  try {
+    const settings = await readJson<Settings | null>(
+      publicDatabase(`devfest${environment.year}/settings`),
+    );
+    return settings?.showSchedule === true;
+  } catch (error) {
+    console.error('Error reading settings:', error);
+    return false;
+  }
+}
+
 async function sitemapEntries(): Promise<SitemapEntry[]> {
   const entries: SitemapEntry[] = ['', 'gallery', 'past', 'conduct', 'refunds'].map((path) => ({
     path,
@@ -95,9 +111,10 @@ async function sitemapEntries(): Promise<SitemapEntry[]> {
   const latest = (items: SitemapEntry[]) =>
     Math.max(0, ...items.map((item) => item.updated ?? 0)) || undefined;
 
-  const [allSessions, speakers] = await Promise.all([
+  const [allSessions, speakers, showSchedule] = await Promise.all([
     fetchPublic('schedule'),
     fetchPublic('speakers'),
+    scheduleAnnounced(),
   ]);
   const schedule = allSessions.filter(([, session]) => session.published);
   // Speaker pages show their sessions and session pages show their speakers, so each page changes
@@ -119,7 +136,7 @@ async function sitemapEntries(): Promise<SitemapEntry[]> {
           ),
         ) || undefined,
     }));
-  if (environment.showSchedule) {
+  if (showSchedule) {
     entries.push({ path: 'schedule', updated: latest(sessions) });
   }
   entries.push(...sessions);
@@ -275,7 +292,7 @@ app.get('/calendar/:file', async (req, res) => {
       .map(([$key, session]) => ({ ...session, $key }))
       .filter((session) => session.published);
     const session = schedule.find((item) => item.$key === key);
-    const event = session && calendarEvent(session, schedule);
+    const event = session && calendarEvent(session, schedule, await scheduleAnnounced());
     if (!event) {
       res.status(404).end();
       return;

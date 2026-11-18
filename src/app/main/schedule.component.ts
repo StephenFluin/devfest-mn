@@ -99,8 +99,10 @@ export class ScheduleComponent {
   constructor() {
     // The conference with its scheduled sessions as sub-events.
     effect(() => {
-      const events = scheduledSessionEvents(this.ds.publishedSchedule(), (key) =>
-        this.ds.speaker(key),
+      const events = scheduledSessionEvents(
+        this.ds.publishedSchedule(),
+        (key) => this.ds.speaker(key),
+        this.ds.showSchedule(),
       );
       this.meta.setStructuredData({
         '@context': 'https://schema.org',

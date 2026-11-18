@@ -125,8 +125,8 @@ function sessionDescription(session: Session, performers: { name: string }[]) {
 }
 
 /**
- * One session, or null when it has no start time yet or the schedule isn't public (search engines
- * require a start time). `schedule` is
+ * One session, or null when it has no start time yet or the schedule isn't announced (`showSchedule`,
+ * the admins' setting; search engines require a start time). `schedule` is
  * every public session, which decides when this one ends. `speakers` looks up a speaker by key; only
  * published speakers are public. On its own page a session names the conference as its superEvent;
  * in the schedule it's already nested in the conference's subEvent list.
@@ -135,9 +135,9 @@ export function sessionEvent(
   session: Session,
   schedule: Session[],
   speakers: (key: string) => Speaker | undefined,
-  { standalone = false } = {},
+  { showSchedule, standalone = false }: { showSchedule: boolean; standalone?: boolean },
 ) {
-  if (!environment.showSchedule || !session.title || !session.startTime) return null;
+  if (!showSchedule || !session.title || !session.startTime) return null;
   const end = sessionEnd(session, schedule);
   const performers = Object.values<string>(session.speakers ?? {})
     .map(speakers)
@@ -165,13 +165,14 @@ export function sessionEvent(
   };
 }
 
-/** Sessions with a start time, in schedule order. */
+/** Sessions with a start time, in schedule order; none until the schedule is announced. */
 export function scheduledSessionEvents(
   sessions: Session[],
   speakers: (key: string) => Speaker | undefined,
+  showSchedule: boolean,
 ) {
   return [...sessions]
     .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
-    .map((session) => sessionEvent(session, sessions, speakers))
+    .map((session) => sessionEvent(session, sessions, speakers, { showSchedule }))
     .filter(Boolean);
 }

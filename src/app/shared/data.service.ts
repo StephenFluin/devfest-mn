@@ -12,7 +12,7 @@ import {
   serverTimestamp,
 } from 'firebase/database';
 import { environment } from '../../environments/environment';
-import { DATABASE, listResource } from '../realtime-data/firebase';
+import { DATABASE, listResource, objectResource } from '../realtime-data/firebase';
 import { AuthService } from '../realtime-data/auth.service';
 import { createSpeakerPromoCode } from '../speaker-invite/invite-email';
 import { placeholderSessionTitle } from '../speaker-invite/speaker-session-edit';
@@ -99,6 +99,15 @@ export interface Feedback {
   comment: string;
 }
 
+/**
+ * Site-wide switches, stored at settings so changing one needs no deploy. Admins set them on the
+ * admin Overview; anyone can read them.
+ */
+export interface Settings {
+  /** Whether the schedule has been announced (see DataService.showSchedule). */
+  showSchedule?: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class DataService {
   db = inject(DATABASE);
@@ -136,6 +145,25 @@ export class DataService {
 
   /** Whether rooms come from the database rather than the environment defaults. */
   roomsSaved = computed(() => this.savedRooms().length > 0);
+
+  private settings = objectResource<Settings>(() => this.ref('settings'), {
+    initialValue: {},
+    transferKey: `settings-${this.year}`,
+    localStorageKey: `settingsCache${this.year}`,
+  });
+
+  /**
+   * Whether the schedule has been announced, which admins switch on from the admin Overview. Until
+   * then the site has no Schedule link, and session pages, speakers' edit pages, calendar files,
+   * the sitemap and the data for search engines leave out times and rooms. Off while it's unset or
+   * can't be read.
+   */
+  showSchedule = computed(() => this.settings().showSchedule === true);
+
+  /** Announces the schedule or takes that back. Admins only; the database rules check. */
+  setShowSchedule(show: boolean) {
+    return set(this.ref('settings/showSchedule'), show);
+  }
 
   /**
    * Adds a room at the end of the schedule, or returns the existing one with that name (ignoring
