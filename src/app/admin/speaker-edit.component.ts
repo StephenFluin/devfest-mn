@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TextFieldModule } from '@angular/cdk/text-field';
 
 import { DataService, Speaker } from '../shared/data.service';
+import { EditHistoryComponent } from './edit-history.component';
 import { UploaderComponent } from './sffb/uploader.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -12,7 +13,6 @@ import { DatePipe } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { push } from 'firebase/database';
 import { environment } from '../../environments/environment';
 import { slugify } from '../shared/slug';
 import { inviteLink, sendInviteEmail, sendSpeakerKit } from '../speaker-invite/invite-email';
@@ -70,6 +70,7 @@ import { formChanged, UnsavedChangesForm, warnOnPageUnload } from '../shared/uns
     DatePipe,
     SpeakerKitComponent,
     MatSelectModule,
+    EditHistoryComponent,
   ],
 })
 export class SpeakerEditComponent implements UnsavedChangesForm {
@@ -96,7 +97,7 @@ export class SpeakerEditComponent implements UnsavedChangesForm {
     if (!sessionKey) return;
     const session = this.ds.schedule().find((item) => item.$key === sessionKey);
     try {
-      await push(this.ds.ref(`schedule/${sessionKey}/speakers`), speaker.$key);
+      await this.ds.addSpeakerToSession(sessionKey, speaker.$key);
       this.sessionStatus.set(`Added to "${session?.title || 'Untitled'}".`);
     } catch (error) {
       console.error('Error adding speaker to session', error);

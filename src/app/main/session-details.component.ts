@@ -45,7 +45,7 @@ export class SessionDetailsComponent {
   readonly session = input<Session>(undefined);
 
   /** Whether the session has a slot on the public schedule. Without one, it's shown without a room or time. */
-  scheduled = computed(() => environment.showSchedule && !!this.session()?.startTime);
+  scheduled = computed(() => this.ds.showSchedule() && !!this.session()?.startTime);
 
   /** How to find this session's room, if it's one of the event's rooms. */
   roomDirections = computed(
@@ -55,7 +55,8 @@ export class SessionDetailsComponent {
   /** Links to add this session to a calendar, once it has a time. */
   calendar = computed(() => {
     const session = this.session();
-    const event = session && calendarEvent(session, this.ds.publishedSchedule());
+    const event =
+      session && calendarEvent(session, this.ds.publishedSchedule(), this.ds.showSchedule());
     return event && { google: googleCalendarUrl(event), ics: icsPath(session) };
   });
 

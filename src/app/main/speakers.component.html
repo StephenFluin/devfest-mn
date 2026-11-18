@@ -228,7 +228,7 @@
         }
       }
     </ul>
-    @if (!environment.showSchedule && !auth.isAdmin()) {
+    @if (!ds.showSchedule() && !auth.isAdmin()) {
       <p class="speakers-more">More talks and the full schedule are coming soon.</p>
     }
   }

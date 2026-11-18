@@ -69,9 +69,16 @@ export function speakerKitEmail(name: string, sessions: string[], promoCode?: st
 /** The speaker's short link, which redirects to their page tagged for the UTM funnel. */
 export const speakerPageUrl = (nameSlug: string) => `${environment.siteUrl}/s/${nameSlug}`;
 
-/** Asks the server to create a speaker's promo code, if they don't have one. Admins only. */
-export async function createSpeakerPromoCode(idToken: string | undefined, speakerKey: string) {
-  await postAsAdmin(`/api/admin/speakers/${speakerKey}/promo-code`, idToken);
+/**
+ * Asks the server to create a speaker's promo code, if they don't have one, and returns the code
+ * they now have. Admins only.
+ */
+export async function createSpeakerPromoCode(
+  idToken: string | undefined,
+  speakerKey: string,
+): Promise<string | undefined> {
+  const result = await postAsAdmin(`/api/admin/speakers/${speakerKey}/promo-code`, idToken);
+  return result.promoCode;
 }
 
 /** Asks the server to email an invite. Admins only; uses the signed-in admin's ID token. */
@@ -89,8 +96,9 @@ async function postAsAdmin(url: string, idToken: string | undefined) {
     method: 'POST',
     headers: { Authorization: `Bearer ${idToken}` },
   });
+  const result = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const result = await response.json().catch(() => ({}));
     throw new Error(result.error ?? `Sending failed (${response.status})`);
   }
+  return result;
 }

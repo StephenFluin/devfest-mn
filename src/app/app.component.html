@@ -23,7 +23,7 @@
           >Tickets</a
         >
       }
-      @if (environment.showSchedule) {
+      @if (ds.showSchedule()) {
         <a [routerLink]="['/schedule']" routerLinkActive="active" ariaCurrentWhenActive="page"
           >Schedule</a
         >

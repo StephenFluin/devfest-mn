@@ -25,7 +25,6 @@ export const environment = {
     appId: '1:126057052732:web:dce9551e4bb4ae60c1e139',
   },
   showRegister: true,
-  showSchedule: false,
   showSponsor: true,
   showFeedback: false,
   /** Volunteer sign-up link, shown on the home page FAQ and the CFP page; false until sign-ups open. */

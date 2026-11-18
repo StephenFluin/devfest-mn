@@ -41,7 +41,7 @@ import { SESSION_LIMITS } from './speaker-session-edit';
           }
           <dt>When and where</dt>
           <dd>
-            @if (showSchedule && session.startTime) {
+            @if (ds.showSchedule() && session.startTime) {
               {{ ds.customDateFormatter(session.startTime) }}, {{ eventDate
               }}{{ session.room ? ' in ' + session.room : '' }}
             } @else {
@@ -109,7 +109,6 @@ export class SpeakerSessionsComponent {
   readonly token = input.required<string>();
 
   readonly limits = SESSION_LIMITS;
-  readonly showSchedule = environment.showSchedule;
   readonly eventDate = environment.eventDateDisplay;
 
   saving = signal<string | undefined>(undefined);
@@ -137,6 +136,7 @@ export class SpeakerSessionsComponent {
   async save(session: Session) {
     this.saving.set(session.$key);
     this.setStatus(session, '');
+    const before = this.originals().find((original) => original.$key === session.$key);
     try {
       const response = await fetch(
         `/api/speaker-edit/${this.token()}/sessions/${encodeURIComponent(session.$key)}`,
@@ -151,6 +151,16 @@ export class SpeakerSessionsComponent {
         throw new Error(result.error ?? `Saving failed (${response.status})`);
       }
       this.setStatus(session, 'Saved. Thanks!');
+      // The server made the change; the edit log entry comes from here, where it's known who's
+      // signed in. Trimmed like the server trims them, so stray spaces aren't logged as a change.
+      void this.ds.recordEdit(
+        'schedule',
+        session.$key,
+        'update',
+        before,
+        { title: session.title?.trim(), description: session.description?.trim() },
+        this.speakerKey(),
+      );
     } catch (err) {
       console.error('Unable to save session', err);
       this.setStatus(session, `Sorry, saving failed: ${err.message}`);

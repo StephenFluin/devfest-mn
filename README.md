@@ -80,7 +80,7 @@ We keep the same codebase every year but move to a new Firebase project.
 1. Create the new Firebase project and an App Hosting backend connected to this repo.
 2. Point `.firebaserc` at the new project, and update the `backendId` in `firebase.json`.
 3. Update `src/environments/environment.ts` with the new Firebase config, event date, CFP dates, venue, and
-   feature flags (`showSchedule`, `showRegister`, and so on). The call for speakers shows while `cfpCloses` is set and hasn't passed; set it to `null` for a new year until the CFP is announced.
+   feature flags (`showRegister`, `showSponsor`, and so on). The call for speakers shows while `cfpCloses` is set and hasn't passed; set it to `null` for a new year until the CFP is announced. The schedule isn't a flag here: it starts hidden in a new year's project, and an admin announces it from the admin (see [Announcing the schedule](#announcing-the-schedule)).
 4. Find and replace the old year and date throughout the code.
 5. Update the date in `scripts/og-image.sh` and run it to regenerate the social share image.
 6. Carry the ticket history forward (see [Ticket burndown](#ticket-burndown)).
@@ -262,6 +262,23 @@ session an admin creates from an empty slot on the schedule starts published; an
 unpublished. The flag only hides sessions on the site: like unpublished speakers, they can still be read from the
 database, so don't put anything secret in them.
 
+### Announcing the schedule
+
+The schedule is announced with the **Show the schedule** switch on the admin Overview (`/admin/overview`), with
+no deploy. It takes effect for everyone right away, and can be switched back off. The card also says how many
+published sessions still have no time or room.
+
+Until it's on, the site has no Schedule link, and session pages, speakers' edit pages, calendar files, the
+sitemap and the data for search engines leave out times and rooms. The switch doesn't hide the `/schedule` page
+itself: anyone who knows the address sees every published session that has a time, which is what lets
+organizers check the layout first. To keep a session's slot private until the announcement, leave the session
+unpublished.
+
+The switch is stored at `devfest<year>/settings/showSchedule` (anyone can read it, only admins can write it), so
+it needs the database rules deployed (see
+[How the site is built and deployed](#how-the-site-is-built-and-deployed)), once per year's project. Until they
+are, or while the setting is unset, the schedule stays hidden.
+
 ### Inviting speakers to edit their own profile
 
 On `/speakers`, admins can click **Invite Speaker** and enter a name and email. That creates an unpublished
@@ -337,3 +354,34 @@ those two fields with its service account. Locally, set `FIREBASE_DATABASE_EMULA
 
 To revoke a link, delete its entry under `devfest<year>/speakerInvites` in the Realtime Database console. Anyone
 who already opened it keeps access until you also delete their entry under `devfest<year>/speakerGrants`.
+
+### Edit log: who changed a speaker or session
+
+Every change to a speaker or session is noted in the edit log: when, who, and each changed field's value before
+and after. See all of it at `/admin/edit-log`, or one item's in the **History** card of its editor. It answers
+"did the speaker fill in their profile, or did one of us?" and keeps the old text of a bio or description that
+was overwritten, and everything a deleted speaker or session had.
+
+"Who" is one of two things:
+
+- **An admin**, by name and Google account, for a change made while signed in as one. That includes an admin
+  who opens a speaker's edit link while signed in.
+- **A speaker's edit link**, for a change made by someone holding that speaker's link and not signed in as an
+  admin. That is normally the speaker, but anyone they (or we) gave the link to looks the same. The entry
+  shows the start of the browser's anonymous user ID, so edits from the same browser can be told apart from
+  another's, and the Google account if the person happened to be signed in with one.
+
+How it works (`src/app/shared/edit-log.ts`, and `DataService.recordEdit`): right after a change is saved, the
+browser that made it adds an entry under `devfest<year>/editLog`. The database rules (`editLog` in
+`database.rules.json`) only accept an entry carrying the writer's own user ID, the server's time and, for an
+admin, their own email; a speaker's link can only log changes as that speaker; and entries can't be edited or
+deleted. Only admins can read the log. What isn't logged:
+
+- Anything from before the edit log existed.
+- Changes made outside the site: the scripts in `scripts/`, the Firebase console, the Firebase CLI.
+- A save that changes nothing, and fields nobody edits (`updatedAt`, the rendered HTML, internal notes).
+- A change whose log entry failed to save. Logging never blocks the edit itself, so until the rules are deployed
+  edits work as before and simply aren't logged.
+
+The log needs the database rules deployed (see
+[How the site is built and deployed](#how-the-site-is-built-and-deployed)), once per year's project.

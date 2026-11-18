@@ -61,7 +61,7 @@ export class SessionViewComponent {
           session,
           this.ds.publishedSchedule(),
           (key) => this.ds.speaker(key),
-          { standalone: true },
+          { showSchedule: this.ds.showSchedule(), standalone: true },
         );
         if (event) {
           meta.setStructuredData({ '@context': 'https://schema.org', ...event });

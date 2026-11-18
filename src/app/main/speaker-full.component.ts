@@ -73,6 +73,7 @@ export class SpeakerFullComponent {
       const events = sessions
         .map((session) =>
           sessionEvent(session, this.ds.publishedSchedule(), (key) => this.ds.speaker(key), {
+            showSchedule: this.ds.showSchedule(),
             standalone: true,
           }),
         )

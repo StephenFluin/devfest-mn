@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { set } from 'firebase/database';
 import { DataService, Session } from '../shared/data.service';
 import { objectResource } from '../realtime-data/firebase';
+import { EditHistoryComponent } from './edit-history.component';
 import { SpeakerSelectorComponent } from './speaker-selector.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatOptionModule } from '@angular/material/core';
@@ -52,6 +53,7 @@ import { SESSION_PLANNING_PATH } from './session-planning.component';
     MatSelectModule,
     TextFieldModule,
     MatCheckboxModule,
+    EditHistoryComponent,
   ],
 })
 export class SessionEditComponent implements UnsavedChangesForm {

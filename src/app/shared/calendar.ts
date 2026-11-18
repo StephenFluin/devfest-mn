@@ -18,9 +18,16 @@ export interface CalendarEvent {
   url: string;
 }
 
-/** A session with its start and end (see sessionEnd). Null if it has no start time yet or the schedule isn't public. */
-export function calendarEvent(session: Session, schedule: Session[]): CalendarEvent | null {
-  if (!environment.showSchedule || !session.title || !session.startTime) return null;
+/**
+ * A session with its start and end (see sessionEnd). Null if it has no start time yet or the
+ * schedule isn't announced (`showSchedule`, the admins' setting).
+ */
+export function calendarEvent(
+  session: Session,
+  schedule: Session[],
+  showSchedule: boolean,
+): CalendarEvent | null {
+  if (!showSchedule || !session.title || !session.startTime) return null;
   const start = new Date(withOffset(session.startTime));
   const end = sessionEnd(session, schedule);
   if (!end) return null;
