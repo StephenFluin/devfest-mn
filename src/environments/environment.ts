@@ -77,6 +77,16 @@ export const environment = {
       ],
     },
     {
+      type: 'Partner',
+      list: [
+        {
+          name: 'Best Buy',
+          logo: '/a/images/sponsors/best-buy.png',
+          url: 'https://www.bestbuy.com/',
+        },
+      ],
+    },
+    {
       type: 'Community',
       list: [
         {
