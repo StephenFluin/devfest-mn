@@ -12,6 +12,7 @@ const NAV = [
     links: [
       { path: '/admin/burndown', label: 'Ticket sales' },
       { path: '/admin/campaigns', label: 'Campaigns' },
+      { path: '/admin/sponsors', label: 'Sponsors' },
       { path: '/admin/utm-funnel', label: 'UTM funnel' },
     ],
   },

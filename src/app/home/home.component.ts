@@ -12,6 +12,9 @@ import { cfpCountdown, cfpState } from '../shared/cfp-deadline';
 import { dayOf } from '../shared/day-of';
 import { VenueComponent } from './venue.component';
 import { DataService } from '../shared/data.service';
+import { equalTo, orderByChild, query } from 'firebase/database';
+import { listResource } from '../realtime-data/firebase';
+import { Sponsor, sponsorGroups } from '../shared/sponsor';
 import { slugify } from '../shared/slug';
 import { conferenceEvent, personRef } from '../shared/event-data';
 
@@ -82,6 +85,13 @@ export class HomeComponent {
   dayOf = dayOf();
   slugify = slugify;
   private ds = inject(DataService);
+
+  private visibleSponsors = listResource<Sponsor>(
+    () => query(this.ds.ref('sponsors'), orderByChild('visible'), equalTo(true)),
+    '$key',
+    { transferKey: `sponsors-${environment.year}` },
+  );
+  sponsorGroups = computed(() => sponsorGroups(this.visibleSponsors()));
 
   /** Published speakers; the home page's speakers section appears once there are any. */
   speakers = this.ds.publishedSpeakers;

@@ -220,42 +220,31 @@
     </section>
   }
 
-  <section id="home-section-sponsors" class="section-background">
-    <div>
-      <h2>{{ environment.year }} Sponsors</h2>
-      <p>This event would not be possible without our awesome sponsors.</p>
-      @for (sponsorGroup of environment.sponsors; track sponsorGroup.type) {
-        <div>
-          <h3>{{ sponsorGroup.type }} Sponsors</h3>
-          @for (sponsor of sponsorGroup.list; track sponsor.name) {
-            <div class="sponsor-bar">
-              <a href="{{ sponsor.url }}">
-                <img src="{{ sponsor.logo }}" loading="lazy" alt="{{ sponsor.name }} Logo" />
-              </a>
-            </div>
-          }
-        </div>
-      }
-      @if (environment.showSponsor) {
-        <p>Sponsorships are still available! <a routerLink="/sponsors">Inquire Now</a></p>
-      }
-
-      <!--
-      <h3>Nougat Community Sponsors</h3>
-      <div class="sponsor-bar">
-        <img src="/a/images/sponsors/buzzfeed.png" alt="BuzzFeed Logo" />
+  @if (sponsorGroups().length || environment.showSponsor) {
+    <section id="home-section-sponsors" class="section-background">
+      <div>
+        <h2>{{ environment.year }} Sponsors</h2>
+        @if (sponsorGroups().length) {
+          <p>This event would not be possible without our awesome sponsors.</p>
+        }
+        @for (group of sponsorGroups(); track group.level) {
+          <div>
+            <h3>{{ group.level }} Sponsors</h3>
+            @for (sponsor of group.sponsors; track sponsor.$key) {
+              <div class="sponsor-bar">
+                <a [href]="sponsor.url">
+                  <img [src]="sponsor.logo" loading="lazy" [alt]="sponsor.name + ' Logo'" />
+                </a>
+              </div>
+            }
+          </div>
+        }
+        @if (environment.showSponsor) {
+          <p>Sponsorships are still available! <a routerLink="/sponsors">Inquire Now</a></p>
+        }
       </div>
-      <h3>General Sponsors</h3>
-      <div class="sponsor-bar">
-        <img src="/a/images/sponsors/google.svg" alt="Google Logo" />
-      </div>
-      <h3>Supporters</h3>
-      <div class="sponsor-bar">
-        <img src="/a/images/sponsors/jetbrains.svg" alt="Google Logo" />
-      </div>
-      -->
-    </div>
-  </section>
+    </section>
+  }
 
   <section id="join">
     <div>

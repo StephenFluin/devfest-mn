@@ -17,5 +17,14 @@ service firebase.storage {
         && request.resource.contentType.matches('image/(png|jpeg|webp)');
       allow delete: if request.auth.token.admin == true;
     }
+
+    match /{year}/sponsors/{filename} {
+      allow create: if request.auth.token.admin == true
+        && year.matches('devfest[0-9]{4}')
+        && request.resource.size > 0
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(png|jpeg|webp)');
+      allow delete: if request.auth.token.admin == true && year.matches('devfest[0-9]{4}');
+    }
   }
 }
