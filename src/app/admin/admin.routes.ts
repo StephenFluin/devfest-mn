@@ -77,6 +77,12 @@ export const AdminRoutes: Routes = [
                 loadComponent: () => import('./rooms.component').then((m) => m.RoomsComponent),
               },
               {
+                path: 'sponsors',
+                canDeactivate: [confirmLeavingUnsaved],
+                loadComponent: () =>
+                  import('./sponsors-admin.component').then((m) => m.SponsorsAdminComponent),
+              },
+              {
                 path: 'session-report',
                 loadComponent: () =>
                   import('./session-report.component').then((m) => m.SessionReportComponent),

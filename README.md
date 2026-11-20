@@ -279,6 +279,20 @@ it needs the database rules deployed (see
 [How the site is built and deployed](#how-the-site-is-built-and-deployed)), once per year's project. Until they
 are, or while the setting is unset, the schedule stays hidden.
 
+### Managing sponsors
+
+Open **Sponsors** at `/admin/sponsors` to add or edit a sponsor. Enter the sponsor name,
+sponsorship level, and the destination URL for its logo. Upload a PNG, JPEG, or WebP smaller
+than 5 MB, or enter the URL of an existing image. The home page groups visible logos by level.
+New sponsors start hidden. To show or hide a sponsor, change **Visible on home page** and save.
+
+Sponsor records live at `devfest<year>/sponsors` in the Realtime Database. The public reads only
+visible records. Logo files use Firebase Storage's public image bucket, and uploads require the
+same Firebase `admin` custom claim as admin speaker photo uploads.
+
+The first 2026 rollout needs the Firebase rules and the existing sponsor records in place before
+the app deploys. Follow the [sponsor admin installation note](docs/sponsor-admin-rollout.md).
+
 ### Inviting speakers to edit their own profile
 
 On `/speakers`, admins can click **Invite Speaker** and enter a name and email. That creates an unpublished

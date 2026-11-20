@@ -592,9 +592,16 @@ button.button.warn {
   margin-bottom: 0;
 }
 
-.sponsor-bar * {
-  margin: 18px 32px;
+.sponsor-bar a {
+  max-width: 100%;
+  padding: 18px 24px;
+  box-sizing: border-box;
+}
+
+.sponsor-bar img {
+  display: block;
   max-height: 100px;
+  object-fit: contain;
 }
 
 /* FAQ: one question open at a time (details name="faq"), all of them in the page for search. */

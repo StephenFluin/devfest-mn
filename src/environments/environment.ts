@@ -60,41 +60,4 @@ export const environment = {
       directions: 'Room 127, down the hallway from the Auditorium. Follow the DevFestMN signs.',
     },
   ],
-  sponsors: [
-    {
-      type: 'Premiere',
-      list: [
-        {
-          name: 'Google',
-          logo: '/a/images/sponsors/google.svg',
-          url: 'https://cloud.google.com/',
-        },
-        {
-          name: 'Livefront',
-          logo: '/a/images/sponsors/livefront.svg',
-          url: 'https://www.livefront.com/',
-        },
-      ],
-    },
-    {
-      type: 'Partner',
-      list: [
-        {
-          name: 'Best Buy',
-          logo: '/a/images/sponsors/best-buy.png',
-          url: 'https://www.bestbuy.com/',
-        },
-      ],
-    },
-    {
-      type: 'Community',
-      list: [
-        {
-          name: 'ImpactPharm',
-          logo: '/a/images/sponsors/impactpharm.webp',
-          url: 'http://impactpharm.app/',
-        },
-      ],
-    },
-  ],
 };

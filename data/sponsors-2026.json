@@ -1,0 +1,34 @@
+{
+  "google": {
+    "name": "Google",
+    "level": "Premiere",
+    "logo": "/a/images/sponsors/google.svg",
+    "url": "https://cloud.google.com/",
+    "visible": true,
+    "order": 0
+  },
+  "livefront": {
+    "name": "Livefront",
+    "level": "Premiere",
+    "logo": "/a/images/sponsors/livefront.svg",
+    "url": "https://www.livefront.com/",
+    "visible": true,
+    "order": 1
+  },
+  "bestbuy": {
+    "name": "Best Buy",
+    "level": "Partner",
+    "logo": "/a/images/sponsors/best-buy.png",
+    "url": "https://www.bestbuy.com/",
+    "visible": true,
+    "order": 2
+  },
+  "impactpharm": {
+    "name": "ImpactPharm",
+    "level": "Community",
+    "logo": "/a/images/sponsors/impactpharm.webp",
+    "url": "http://impactpharm.app/",
+    "visible": true,
+    "order": 3
+  }
+}
