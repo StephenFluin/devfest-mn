@@ -30,8 +30,8 @@ Stephen, please deploy the Firebase rules and import the existing sponsors into
    If the path already contains records, preserve them and reconcile any missing sponsors
    individually. The import command replaces the entire sponsor list.
 
-4. Confirm the public query returns Google and Livefront at the Premiere level and ImpactPharm at
-   the Community level. All three should have `visible: true`.
+4. Confirm the public query returns Google and Livefront at the Premiere level, Best Buy at the
+   Partner level and ImpactPharm at the Community level. All four should have `visible: true`.
 
    ```bash
    curl --fail --silent --show-error --get \
