@@ -67,6 +67,29 @@
       }
     },
     "$year": {
+      "sponsors": {
+        ".read": "$year.matches(/^devfest[0-9]{4}$/) && ((query.orderByChild === 'visible' && query.equalTo === true) || (auth != null && root.child('admin/'+auth.uid).exists()))",
+        ".indexOn": "visible",
+        "$sponsor_id": {
+          ".write": "$year.matches(/^devfest[0-9]{4}$/) && auth != null && root.child('admin/'+auth.uid).exists()",
+          ".validate": "newData.hasChildren(['name', 'level', 'logo', 'url', 'visible', 'order'])",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+          },
+          "level": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+          },
+          "logo": {
+            ".validate": "newData.isString() && newData.val().length <= 2048 && newData.val().matches(/^(https?:\\/\\/|\\/a\\/images\\/)[^ ]+$/)"
+          },
+          "url": {
+            ".validate": "newData.isString() && newData.val().length <= 2048 && newData.val().matches(/^https?:\\/\\/[^ ]+$/)"
+          },
+          "visible": { ".validate": "newData.isBoolean()" },
+          "order": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+          "$other": { ".validate": false }
+        }
+      },
       "settings": {
         ".read": true,
         ".write": "$year.matches(/^devfest[0-9]{4}$/) && root.child('admin/'+auth.uid).exists()",

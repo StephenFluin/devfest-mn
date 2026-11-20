@@ -219,6 +219,11 @@ export class AdminHomeComponent {
       description: 'Short links, QR codes and promo codes for each place the event is promoted.',
     },
     {
+      path: '/admin/sponsors',
+      title: 'Sponsors',
+      description: 'Sponsor levels, logos, links, and home page visibility.',
+    },
+    {
       path: '/admin/utm-funnel',
       title: 'UTM funnel',
       description: 'Where visitors come from and what they do.',

@@ -1,0 +1,156 @@
+<div class="page-header">
+  <div>
+    <h2>Sponsors</h2>
+    <p class="muted">Manage the sponsor logos, links, and levels on the home page.</p>
+  </div>
+  <button mat-stroked-button type="button" (click)="open()" [disabled]="!loaded() || saving()">
+    Add sponsor
+  </button>
+</div>
+
+@if (status()) {
+  <p class="status ok" role="status">{{ status() }}</p>
+}
+@if (loadFailed()) {
+  <p class="error" role="alert">Couldn’t load sponsors. Reload the page to try again.</p>
+} @else if (!loaded()) {
+  <p class="muted" role="status">Loading sponsors…</p>
+} @else {
+  <div class="sponsors">
+    <section class="card" aria-labelledby="saved-sponsors">
+      <h3 id="saved-sponsors">Saved sponsors</h3>
+      @if (sponsors().length) {
+        <ul class="sponsor-list">
+          @for (sponsor of sponsors(); track sponsor.$key) {
+            <li>
+              <img [src]="sponsor.logo" alt="" />
+              <div class="details">
+                <strong>{{ sponsor.name }}</strong>
+                <div class="muted">
+                  {{ sponsor.level }} · {{ sponsor.visible ? 'Visible' : 'Hidden' }}
+                </div>
+              </div>
+              <button
+                mat-button
+                type="button"
+                (click)="open(sponsor)"
+                [disabled]="saving()"
+                [attr.aria-label]="'Edit ' + sponsor.name"
+              >
+                Edit
+              </button>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="muted">No sponsors yet. Choose Add sponsor to get started.</p>
+      }
+    </section>
+
+    @if (draft(); as sponsor) {
+      <form class="card editor" (ngSubmit)="save()" aria-labelledby="sponsor-editor">
+        <h3 id="sponsor-editor">{{ original ? 'Edit ' + original.name : 'New sponsor' }}</h3>
+        <fieldset [disabled]="saving()">
+          <div class="field-grid">
+            <mat-form-field>
+              <mat-label>Sponsor name</mat-label>
+              <input
+                #nameInput
+                matInput
+                name="name"
+                [ngModel]="sponsor.name"
+                (ngModelChange)="edit({ name: $event })"
+                maxlength="100"
+                required
+              />
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Sponsorship level</mat-label>
+              <input
+                matInput
+                name="level"
+                list="sponsor-levels"
+                [ngModel]="sponsor.level"
+                (ngModelChange)="edit({ level: $event })"
+                maxlength="80"
+                required
+              />
+            </mat-form-field>
+          </div>
+          <datalist id="sponsor-levels">
+            @for (level of levels(); track level) {
+              <option [value]="level"></option>
+            }
+          </datalist>
+
+          <mat-form-field>
+            <mat-label>Destination URL</mat-label>
+            <input
+              matInput
+              name="url"
+              type="url"
+              [ngModel]="sponsor.url"
+              (ngModelChange)="edit({ url: $event })"
+              maxlength="2048"
+              required
+            />
+          </mat-form-field>
+
+          <mat-form-field>
+            <mat-label>Logo URL</mat-label>
+            <input
+              matInput
+              name="logo"
+              [ngModel]="sponsor.logo"
+              (ngModelChange)="edit({ logo: $event })"
+              [disabled]="!!logoFile()"
+              maxlength="2048"
+            />
+          </mat-form-field>
+
+          <div class="file">
+            <label for="logo-file">Or upload a logo</label>
+            <div class="actions">
+              <input
+                #logoInput
+                id="logo-file"
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                aria-describedby="logo-file-formats"
+                (change)="pickLogo(logoInput)"
+              />
+              @if (logoFile()) {
+                <button mat-button type="button" (click)="clearLogoFile()">Clear selection</button>
+              }
+            </div>
+            <span id="logo-file-formats" class="muted">PNG, JPEG, or WebP, under 5 MB.</span>
+            @if (logoPreview(); as preview) {
+              <img class="logo-preview" [src]="preview" alt="Logo preview" />
+            }
+          </div>
+
+          <div class="visibility">
+            <mat-slide-toggle
+              [checked]="sponsor.visible"
+              [disabled]="saving()"
+              (change)="edit({ visible: $event.checked })"
+            >
+              Visible on home page
+            </mat-slide-toggle>
+          </div>
+
+          @if (error()) {
+            <p class="error" role="alert">{{ error() }}</p>
+          }
+          <div class="actions">
+            <button mat-flat-button type="submit">
+              {{ saving() ? 'Saving…' : 'Save sponsor' }}
+            </button>
+            <button mat-button type="button" (click)="close()">Cancel</button>
+          </div>
+        </fieldset>
+      </form>
+    }
+  </div>
+}
