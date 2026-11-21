@@ -43,6 +43,13 @@ export interface Session {
   updatedAt?: number;
 }
 
+/**
+ * Whether a session runs across every column of the schedule (breaks, registration, keynotes).
+ * Its room is only where it happens, so it can be any place, listed in Rooms or not.
+ */
+export const spansSchedule = (session: Session) =>
+  session.track === 'all' || session.track === 'Keynote';
+
 export interface Speaker {
   $key?: string;
   name?: string;
@@ -191,13 +198,13 @@ export class DataService {
   }
 
   /**
-   * Schedule columns: the event's rooms, then any other room a session has been given, so a
-   * session in a room nobody has added yet still shows up.
+   * Schedule columns: the event's rooms, then any other room a session in a single column has been
+   * given, so it still shows up. Sessions that span the schedule never add a column.
    */
   private venueLayout = computed(() => {
     const rooms = this.rooms().map((room) => room.name);
     const others = this.schedule()
-      .filter((session) => session.room && session.track !== 'all' && session.track !== 'Keynote')
+      .filter((session) => session.room && !spansSchedule(session))
       .map((session) => session.room)
       .filter((room) => !rooms.includes(room));
     return { rooms: [...new Set([...rooms, ...others])], floors: {}, hasFloors: false };

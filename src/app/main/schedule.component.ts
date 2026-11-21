@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
-import { DataService, Session } from '../shared/data.service';
+import { DataService, Session, spansSchedule } from '../shared/data.service';
 
 import { AuthService } from '../realtime-data/auth.service';
 import { AgendaService } from '../shared/agenda.service';
@@ -126,7 +126,7 @@ export class ScheduleComponent {
       if (!session.blocks) {
         session.blocks = 1;
       }
-      if (session.track !== 'all' && session.track !== 'Keynote') {
+      if (!spansSchedule(session)) {
         data[time][session.room] = session;
       } else {
         data[time]['all'] = session;

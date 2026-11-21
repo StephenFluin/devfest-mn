@@ -34,57 +34,61 @@
     <section class="card" aria-labelledby="when-heading">
       <h3 id="when-heading">When and where</h3>
       <div class="field-grid">
-        @if (newRoom() === null) {
+        <div class="room">
           <mat-form-field>
             <mat-label>Room</mat-label>
-            <mat-select [ngModel]="session.room" (ngModelChange)="pickRoom(session, $event)">
-              @for (room of ds.rooms(); track room.name) {
-                <mat-option [value]="room.name">{{ room.name }}</mat-option>
-              }
-              @if (session.room && !isKnownRoom(session.room)) {
-                <mat-option [value]="session.room">{{ session.room }} (not in Rooms)</mat-option>
-              }
-              <mat-option [value]="NEW_ROOM"><em>New room…</em></mat-option>
-            </mat-select>
-            <mat-hint><a routerLink="/admin/rooms">Manage rooms</a></mat-hint>
+            <input
+              matInput
+              [(ngModel)]="session.room"
+              (blur)="matchRoom(session)"
+              [matAutocomplete]="roomAuto"
+              maxlength="80"
+            />
+            @if (!session.room?.trim() || isKnownRoom(session.room)) {
+              <mat-hint>A schedule column. <a routerLink="/admin/rooms">Manage rooms</a></mat-hint>
+            } @else if (spans(session)) {
+              <mat-hint>Just the place; this session spans every column</mat-hint>
+            } @else {
+              <mat-hint>Not in Rooms, so it gets its own column</mat-hint>
+            }
           </mat-form-field>
-        } @else {
-          <div class="new-room span-all">
-            <mat-form-field>
-              <mat-label>New room name</mat-label>
-              <input
-                matInput
-                [ngModel]="newRoom()"
-                (ngModelChange)="newRoom.set($event)"
-                (keydown.enter)="$event.preventDefault(); createRoom(session)"
-                maxlength="80"
-                cdkFocusInitial
-              />
-              <mat-hint
-                >Added to the end of the schedule. Set its directions and order in
-                <a routerLink="/admin/rooms">Rooms</a>.</mat-hint
-              >
-            </mat-form-field>
-            <div class="actions">
-              <button
-                mat-flat-button
-                type="button"
-                (click)="createRoom(session)"
-                [disabled]="!newRoom()?.trim() || creatingRoom()"
-              >
-                {{ creatingRoom() ? 'Adding…' : 'Add room' }}
-              </button>
-              <button mat-button type="button" (click)="newRoom.set(null)">Cancel</button>
-              @if (roomError(); as error) {
-                <span class="status error" role="alert">{{ error }}</span>
-              }
+          <mat-autocomplete
+            #roomAuto="matAutocomplete"
+            (optionSelected)="session.room = $event.option.value"
+          >
+            @for (room of roomSuggestions(session.room); track room) {
+              <mat-option [value]="room">{{ room }}</mat-option>
+            }
+          </mat-autocomplete>
+          @if (session.room?.trim() && !isKnownRoom(session.room) && !spans(session)) {
+            <div class="notice warn room-choice">
+              <p>
+                "{{ session.room.trim() }}" isn't one of the schedule's rooms. For something like
+                registration or lunch, have it span the schedule instead.
+              </p>
+              <div class="actions">
+                <button mat-stroked-button type="button" (click)="session.track = 'all'">
+                  Span the whole schedule
+                </button>
+                <button
+                  mat-button
+                  type="button"
+                  (click)="addToRooms(session)"
+                  [disabled]="creatingRoom()"
+                >
+                  {{ creatingRoom() ? 'Adding…' : 'Add to Rooms as a column' }}
+                </button>
+                @if (roomError(); as error) {
+                  <span class="status error" role="alert">{{ error }}</span>
+                }
+              </div>
             </div>
-          </div>
-        }
+          }
+        </div>
         <mat-form-field>
           <mat-label>Track</mat-label>
           <input matInput [(ngModel)]="session.track" [matAutocomplete]="trackAuto" />
-          <mat-hint>The session's topic. "all" spans every room</mat-hint>
+          <mat-hint>The session's topic. "all" or "Keynote" spans every column</mat-hint>
         </mat-form-field>
         <mat-autocomplete #trackAuto="matAutocomplete">
           @for (track of tracks; track track) {
