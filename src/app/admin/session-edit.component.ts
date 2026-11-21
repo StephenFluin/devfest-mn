@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { set } from 'firebase/database';
-import { DataService, Session } from '../shared/data.service';
+import { DataService, Session, spansSchedule } from '../shared/data.service';
 import { objectResource } from '../realtime-data/firebase';
 import { EditHistoryComponent } from './edit-history.component';
 import { SpeakerSelectorComponent } from './speaker-selector.component';
@@ -26,14 +26,11 @@ import { SESSION_PLANNING_PATH } from './session-planning.component';
 @Component({
   templateUrl: './session-edit.component.html',
   styles: `
-    .new-room {
-      display: grid;
-      grid-template-columns: minmax(240px, 1fr) auto;
-      gap: 8px 16px;
-      align-items: start;
+    .room-choice {
+      margin: 8px 0 0;
     }
-    .new-room .actions {
-      padding-top: 8px;
+    .room-choice p {
+      margin-bottom: 8px;
     }
     .chips {
       margin-bottom: 16px;
@@ -119,37 +116,49 @@ export class SessionEditComponent implements UnsavedChangesForm {
   readonly tracks = ['Agents', 'Engineering', 'People', 'Business', 'all', 'Keynote'];
 
   /**
-   * Rooms are picked from the list at /admin/rooms, never typed, so names always match. A session
-   * whose room isn't in that list keeps it as an extra option rather than losing it on save.
+   * A room in the list at /admin/rooms is a schedule column. A session that spans the schedule
+   * (Registration in the Foyer, say) can be in any place; others in an unlisted room get a column.
    */
   isKnownRoom(name: string) {
-    return this.ds.rooms().some((room) => room.name === name);
+    return this.ds.rooms().some((room) => room.name === name.trim());
   }
 
-  /** The dropdown's "New room…" option. */
-  readonly NEW_ROOM = '\u0000new-room';
-  /** The name being typed for a new room, or null when picking from the list. */
-  newRoom = signal<string | null>(null);
+  spans = spansSchedule;
+
+  /** The listed rooms and other places sessions use, matching what's typed. */
+  roomSuggestions(typed = '') {
+    const names = [
+      ...this.ds.rooms().map((room) => room.name),
+      ...this.ds
+        .schedule()
+        .map((session) => session.room)
+        .filter(Boolean)
+        .sort(),
+    ];
+    const query = typed.trim().toLowerCase();
+    return [...new Set(names)].filter((name) => name.toLowerCase().includes(query));
+  }
+
+  /** Tidies a typed room, and uses a listed room's exact name when it differs only in case. */
+  matchRoom(session: Session) {
+    const typed = session.room?.trim();
+    const listed = this.roomSuggestions().find(
+      (name) => name.toLowerCase() === typed?.toLowerCase(),
+    );
+    session.room = listed ?? (typed || undefined);
+  }
+
   creatingRoom = signal(false);
   roomError = signal('');
 
-  pickRoom(session: Session, value: string) {
-    if (value === this.NEW_ROOM) {
-      this.roomError.set('');
-      this.newRoom.set('');
-    } else {
-      session.room = value;
-    }
-  }
-
-  /** Adds the room to the event's rooms (or finds it, if it exists) and puts the session in it. */
-  async createRoom(session: Session) {
-    const name = this.newRoom()?.trim();
+  /** Adds the session's room to the event's rooms, making it a schedule column. */
+  async addToRooms(session: Session) {
+    const name = session.room?.trim();
     if (!name || this.creatingRoom()) return;
     this.creatingRoom.set(true);
+    this.roomError.set('');
     try {
       session.room = await this.ds.addRoom(name);
-      this.newRoom.set(null);
     } catch (error) {
       console.error('Error adding room', error);
       this.roomError.set(`Couldn't add the room: ${error.message ?? error}`);

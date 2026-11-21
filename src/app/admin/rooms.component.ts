@@ -9,7 +9,7 @@ import { RouterLink } from '@angular/router';
 import { push, ref, serverTimestamp, update } from 'firebase/database';
 
 import { environment } from '../../environments/environment';
-import { DataService, Session } from '../shared/data.service';
+import { DataService, Session, spansSchedule } from '../shared/data.service';
 
 interface RoomDraft {
   /** The room's database key; new rooms get one up front so they can be referred to. */
@@ -31,7 +31,8 @@ interface RoomDraft {
         <h2>Rooms</h2>
         <p class="muted">
           The schedule's columns, in this order. Directions show on the home page and on each
-          session in the room. Renaming a room moves its sessions too.
+          session in the room. Renaming a room moves its sessions too. Sessions that span the whole
+          schedule, like Registration or Lunch, can be in any place, listed here or not.
         </p>
       </div>
       <button mat-stroked-button type="button" (click)="add()">Add room</button>
@@ -61,12 +62,16 @@ interface RoomDraft {
                 @if (room.originalName && room.name.trim() !== room.originalName) {
                   <mat-hint
                     >Renamed from "{{ room.originalName }}"; moves
-                    {{ sessionLabel(sessionCount(room.originalName)) }}</mat-hint
+                    {{
+                      sessionLabel(
+                        sessionCount(room.originalName) + spanningCount(room.originalName)
+                      )
+                    }}</mat-hint
                   >
                 } @else {
                   <mat-hint
                     >{{ sessionLabel(sessionCount(room.name.trim()))
-                    }}{{ incomingLabel(room.key) }}</mat-hint
+                    }}{{ spanningLabel(room.name.trim()) }}{{ incomingLabel(room.key) }}</mat-hint
                   >
                 }
               </mat-form-field>
@@ -116,7 +121,7 @@ interface RoomDraft {
             @if (confirmingRemove() === room.key && room.originalName) {
               <div class="notice warn confirm" role="alert">
                 <p>
-                  <strong>{{ room.originalName }}</strong> still has
+                  <strong>{{ room.originalName }}</strong> is still the column for
                   {{ sessionLabel(sessionCount(room.originalName)) }}:
                 </p>
                 <ul>
@@ -174,13 +179,23 @@ interface RoomDraft {
 
       @if (unlisted().length) {
         <div class="notice">
-          <p>Sessions also use these rooms, which aren't listed:</p>
+          <p>
+            Sessions also use these rooms, which aren't listed, so each gets a column at the end of
+            the schedule:
+          </p>
           <div class="actions">
             @for (name of unlisted(); track name) {
               <button mat-stroked-button type="button" (click)="add(name)">Add "{{ name }}"</button>
             }
           </div>
         </div>
+      }
+
+      @if (places().length) {
+        <p class="muted">
+          Also used for sessions that span the schedule, without a column:
+          {{ places().join(', ') }}.
+        </p>
       }
 
       <div class="actions sticky">
@@ -283,26 +298,45 @@ export class RoomsComponent {
     computation: () => ({}),
   });
 
-  private sessionsPerRoom = computed(() => {
+  /** Sessions in a column of the schedule, by room. */
+  private sessionsPerRoom = computed(() => this.countByRoom(false));
+  /** Sessions that span the schedule, by the place they're in. */
+  private spanningPerRoom = computed(() => this.countByRoom(true));
+
+  private countByRoom(spanning: boolean) {
     const counts = new Map<string, number>();
     for (const session of this.ds.schedule()) {
-      if (session.room) counts.set(session.room, (counts.get(session.room) ?? 0) + 1);
+      if (session.room && spansSchedule(session) === spanning) {
+        counts.set(session.room, (counts.get(session.room) ?? 0) + 1);
+      }
     }
     return counts;
-  });
+  }
 
   sessionLabel(count: number) {
     return count === 1 ? '1 session' : `${count} sessions`;
   }
 
+  /** Sessions in this room's column. */
   sessionCount(name: string) {
     return this.sessionsPerRoom().get(name) ?? 0;
   }
 
+  spanningCount(name: string) {
+    return this.spanningPerRoom().get(name) ?? 0;
+  }
+
+  /** e.g. ", plus 1 spanning the schedule", for sessions here that don't need the column. */
+  spanningLabel(name: string) {
+    const count = this.spanningCount(name);
+    return count ? `, plus ${count} spanning the schedule` : '';
+  }
+
+  /** The sessions in this room's column, by start time. */
   sessionsIn(name: string) {
     return this.ds
       .schedule()
-      .filter((session) => session.room === name)
+      .filter((session) => session.room === name && !spansSchedule(session))
       .sort((a, b) => (a.startTime ?? '').localeCompare(b.startTime ?? ''));
   }
 
@@ -326,6 +360,14 @@ export class RoomsComponent {
       ...Object.keys(this.reassign()),
     ]);
     return [...this.sessionsPerRoom().keys()].filter((name) => !listed.has(name));
+  });
+
+  /** Places only sessions that span the schedule use, like a foyer, which need no column. */
+  places = computed(() => {
+    const listed = new Set(this.draft().map((room) => room.name.trim()));
+    return [...this.spanningPerRoom().keys()]
+      .filter((name) => !listed.has(name) && !this.sessionsPerRoom().has(name))
+      .sort();
   });
 
   /** Why the rooms can't be saved, if they can't. */
@@ -363,7 +405,8 @@ export class RoomsComponent {
   }
 
   /**
-   * Removes a room. A room with sessions in it first asks what to do with them: pass `moveTo`
+   * Removes a room. Sessions that span the schedule keep it as their place without asking. A room
+   * with sessions in its column first asks what to do with them: pass `moveTo`
    * (another room's key) to move them there on save, or null to leave them in the old room.
    */
   removeRoom(index: number, moveTo?: string | null) {
@@ -415,7 +458,7 @@ export class RoomsComponent {
         ?.name.trim();
       if (!to) continue;
       for (const session of this.ds.schedule()) {
-        if (session.room === from) {
+        if (session.room === from && !spansSchedule(session)) {
           updates[`schedule/${session.$key}/room`] = to;
           updates[`schedule/${session.$key}/updatedAt`] = serverTimestamp();
           moved.push({ session, room: to });
