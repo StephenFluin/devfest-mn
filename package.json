@@ -8,6 +8,7 @@
     "start": "ng serve",
     "serve": "ng serve",
     "publish": "firebase deploy",
+    "crashlytics:sourcemaps": "firebase crashlytics:sourcemap:upload --project devfestmn-2026 --app 1:126057052732:web:dce9551e4bb4ae60c1e139 dist/browser",
     "test": "ng test",
     "lint": "eslint .",
     "format": "prettier --write .",
