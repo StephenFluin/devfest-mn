@@ -1292,18 +1292,6 @@ button.button.warn {
   font-size: 1.2em;
 }
 
-.session-details {
-  display: flex;
-  max-width: 800px;
-  margin: 0px auto;
-}
-.session-details-right {
-  border-left: 5px solid var(--color-border);
-  margin-left: 50px;
-  padding-left: 50px;
-  margin-top: 16px;
-}
-
 /* Speaker CFP Page */
 #speaker-cfp section {
   margin: auto;
@@ -1394,16 +1382,6 @@ button.button.warn {
 
   #home section {
     padding: 18px 32px;
-  }
-
-  .session-details {
-    flex-direction: column-reverse;
-  }
-
-  .session-details-right {
-    margin: 0;
-    padding: 0;
-    border-left: 0px;
   }
 
   app-user-feedback {

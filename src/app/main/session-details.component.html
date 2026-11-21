@@ -1,117 +1,135 @@
-@if (session()) {
-  <div>
-    <a
-      style="float: left; width: 24px; height: 24px"
-      [routerLink]="ds.showSchedule() ? '/schedule' : '/speakers'"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <title>Back</title>
+@if (session(); as session) {
+  <article class="session-page">
+    <a class="back" [routerLink]="ds.showSchedule() ? '/schedule' : '/speakers'">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
       </svg>
+      {{ ds.showSchedule() ? 'Schedule' : 'Speakers' }}
     </a>
-    <h1 style="font-size: 32px; font-family: Montserrat, sans-serif; margin-bottom: 32px">
-      {{ session().title }}
-      @if (auth.isAdmin()) {
-        <a [routerLink]="['/', 'admin', 'sessions', session().$key, 'edit']">
-          <img src="/a/edit.svg" alt="Edit session" />
-        </a>
+
+    <header class="intro">
+      @if (session.track && session.track !== 'all') {
+        <span class="schedule"
+          ><span class="chip session {{ session.track }}">{{ session.track }}</span></span
+        >
       }
-    </h1>
-    <div class="session-details">
-      <div>
-        <div class="speaker-list-container" style="margin-top: 16px; width: 325px">
-          @for (speaker of session().speakers | keyvalue; track speaker) {
-            <div>
-              <app-speaker-container [speaker]="speaker.value | getSpeaker"></app-speaker-container>
-            </div>
+      <h1>
+        {{ session.title }}
+        @if (auth.isAdmin()) {
+          <a class="edit" [routerLink]="['/', 'admin', 'sessions', session.$key, 'edit']">
+            <img src="/a/edit.svg" alt="Edit session" />
+          </a>
+        }
+      </h1>
+      @if (scheduled()) {
+        <p class="when">
+          {{ timeRange() }}
+          @if (session.room) {
+            <span aria-hidden="true"> · </span>{{ session.room }}
           }
-        </div>
+        </p>
+      }
+    </header>
+
+    <div class="layout">
+      <div class="content">
+        @if (session.notes) {
+          <p class="note"><strong>Note:</strong> {{ session.notes }}</p>
+        }
+        @if (session.renderedDescription) {
+          <div class="description" [innerHTML]="session.renderedDescription"></div>
+        }
       </div>
-      <div class="session-details-right" style="text-align: left">
-        @if (session().track && session().track !== 'all') {
-          <div style="font-weight: bold; margin-bottom: 24px">Track: {{ session().track }}</div>
-        }
-        <!-- Talks can be published before they have a slot; their room and time are left off until then. -->
-        @if (scheduled()) {
-          <div style="font-weight: bold; margin-bottom: 8px">{{ session().room }}</div>
-          @if (roomDirections(); as directions) {
-            <div style="margin-bottom: 8px">{{ directions }}</div>
-          }
-          <div style="margin-bottom: 24px">{{ ds.customDateFormatter(session().startTime) }}</div>
-        }
-        @if (calendar(); as calendar) {
-          <div class="add-to-calendar" role="group" aria-label="Add to calendar">
-            <a [href]="calendar.google" target="_blank" rel="noopener" class="cta-unselected cta"
-              >Add to Google Calendar</a
-            >
-            <a [href]="calendar.ics" class="cta-unselected cta">Add to Apple or Outlook</a>
-          </div>
-        }
-        @if (session().notes) {
-          <div style="margin-bottom: 24px">
-            <strong>
-              <em>Note: {{ session().notes }}</em>
-            </strong>
-          </div>
-        }
-        @if (session().renderedDescription) {
-          <div
-            [innerHTML]="session().renderedDescription"
-            style="max-width: 500px; display: inline-block"
-          ></div>
-        }
-        @if (scheduled()) {
-          <div>
-            @if (!inAgenda()) {
-              <button (click)="agenda.add(session().$key)" class="cta" style="display: inline">
-                Add to My Agenda
-              </button>
-            } @else {
-              <button (click)="agenda.remove(session().$key)" class="cta" style="display: inline">
-                Remove from My Agenda
-              </button>
+
+      <!-- Talks can be published before they have a slot; their room and time are left off until then. -->
+      @if (scheduled()) {
+        <section class="panel logistics" aria-labelledby="where-heading">
+          <h2 id="where-heading">When and where</h2>
+          <dl>
+            <dt>Time</dt>
+            <dd>{{ timeRange() }}</dd>
+            @if (session.room) {
+              <dt>Room</dt>
+              <dd>
+                {{ session.room }}
+                @if (roomDirections(); as directions) {
+                  <span class="directions">{{ directions }}</span>
+                }
+              </dd>
             }
-          </div>
-        }
-        @if (auth.uid()) {
-          @if (environment.showFeedback) {
-            <div>
-              <h3 style="margin-top: 32px">Provide Feedback</h3>
-              <app-user-feedback [session]="session()"></app-user-feedback>
+          </dl>
+          @if (!inAgenda()) {
+            <button type="button" class="cta primary" (click)="agenda.add(session.$key)">
+              Add to My Agenda
+            </button>
+          } @else {
+            <button
+              type="button"
+              class="cta cta-unselected primary"
+              (click)="agenda.remove(session.$key)"
+            >
+              ✓ In My Agenda · Remove
+            </button>
+          }
+          @if (calendar(); as calendar) {
+            <div class="calendar" role="group" aria-label="Add to calendar">
+              <span>Add to calendar:</span>
+              <a [href]="calendar.google" target="_blank" rel="noopener">Google</a>
+              <a [href]="calendar.ics">Apple or Outlook</a>
             </div>
           }
-        } @else if (scheduled() || environment.showFeedback) {
-          <!-- Login keeps an agenda and enables feedback, so there's no reason to ask without either. -->
-          <div style="margin-top: 64px">
-            <h3>Login for More</h3>
-            <p>
-              Your agenda is saved in this browser. Login to keep it on all your devices, or to
-              provide feedback after the session ends.
-            </p>
-            <button
-              (click)="auth.login()"
-              (pointerenter)="auth.preload()"
-              (focus)="auth.preload()"
-              (touchstart)="auth.preload()"
-              [disabled]="auth.signInStep() === 'loading'"
-              class="cta"
-              style="display: inline"
-            >
-              @switch (auth.signInStep()) {
-                @case ('loading') {
-                  Loading…
-                }
-                @case ('confirm') {
-                  Continue with Google
-                }
-                @default {
-                  Login
-                }
-              }
-            </button>
-          </div>
+        </section>
+      }
+
+      @if (session.speakers | keyvalue; as speakers) {
+        @if (speakers.length) {
+          <section class="speakers" aria-labelledby="speakers-heading">
+            <h2 id="speakers-heading">{{ speakers.length === 1 ? 'Speaker' : 'Speakers' }}</h2>
+            @for (speaker of speakers; track speaker.key) {
+              <app-speaker-container [speaker]="speaker.value | getSpeaker"></app-speaker-container>
+            }
+          </section>
         }
-      </div>
+      }
+
+      @if (auth.uid()) {
+        @if (environment.showFeedback) {
+          <section class="panel feedback" aria-labelledby="feedback-heading">
+            <h2 id="feedback-heading">Rate this session</h2>
+            <app-user-feedback [session]="session"></app-user-feedback>
+          </section>
+        }
+      } @else if (scheduled() || environment.showFeedback) {
+        <!-- Login keeps an agenda and enables feedback, so there's no reason to ask without either. -->
+        <section class="panel feedback" aria-labelledby="login-heading">
+          <h2 id="login-heading">Login for more</h2>
+          <p>
+            Your agenda is saved in this browser. Login to keep it on all your devices, or to rate
+            the session after it ends.
+          </p>
+          <button
+            type="button"
+            (click)="auth.login()"
+            (pointerenter)="auth.preload()"
+            (focus)="auth.preload()"
+            (touchstart)="auth.preload()"
+            [disabled]="auth.signInStep() === 'loading'"
+            class="cta cta-unselected"
+          >
+            @switch (auth.signInStep()) {
+              @case ('loading') {
+                Loading…
+              }
+              @case ('confirm') {
+                Continue with Google
+              }
+              @default {
+                Login
+              }
+            }
+          </button>
+        </section>
+      }
     </div>
-  </div>
+  </article>
 }
