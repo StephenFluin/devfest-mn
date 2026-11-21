@@ -20,6 +20,7 @@ import { KeyValuePipe, Location } from '@angular/common';
 import { GetSpeakerPipe } from '../shared/get-speaker.pipe';
 import { environment } from '../../environments/environment';
 import { eventUtcOffset } from '../shared/event-data';
+import { TRACKS } from '../shared/tracks';
 import { formChanged, UnsavedChangesForm, warnOnPageUnload } from '../shared/unsaved-changes';
 import { SESSION_PLANNING_PATH } from './session-planning.component';
 
@@ -116,7 +117,7 @@ export class SessionEditComponent implements UnsavedChangesForm {
    * Suggestions for a session's track, its topic: this year's four, plus the two that span every
    * room. Each has a color on the schedule (styles.scss); another name works but shows in gray.
    */
-  readonly tracks = ['Agents', 'Engineering', 'People', 'Business', 'all', 'Keynote'];
+  readonly tracks = TRACKS.map((track) => track.name);
 
   /**
    * Rooms are picked from the list at /admin/rooms, never typed, so names always match. A session

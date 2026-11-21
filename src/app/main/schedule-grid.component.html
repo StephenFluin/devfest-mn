@@ -227,6 +227,16 @@
         </div>
       }
     </div>
+    @if (legend().length) {
+      <ul class="schedule legend" aria-label="What the colors mean">
+        @for (track of legend(); track track.name) {
+          <li>
+            <span class="swatch session {{ track.name }}" aria-hidden="true"></span
+            >{{ track.label }}
+          </li>
+        }
+      </ul>
+    }
     @if (auth.isAdmin()) {
       <div>
         @for (time of $any(data().gridData | keyvalue); track time) {
