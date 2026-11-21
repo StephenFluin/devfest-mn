@@ -4,13 +4,16 @@ import { TextFieldModule } from '@angular/cdk/text-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { RouterLink } from '@angular/router';
 import { push, ref, serverTimestamp, update } from 'firebase/database';
 
 import { environment } from '../../environments/environment';
 import { DataService, Session } from '../shared/data.service';
 
 interface RoomDraft {
-  key?: string;
+  /** The room's database key; new rooms get one up front so they can be referred to. */
+  key: string;
   /** The name when loaded, so a rename can follow through to the sessions in that room. */
   originalName?: string;
   name: string;
@@ -61,7 +64,10 @@ interface RoomDraft {
                     {{ sessionLabel(sessionCount(room.originalName)) }}</mat-hint
                   >
                 } @else {
-                  <mat-hint>{{ sessionLabel(sessionCount(room.name.trim())) }}</mat-hint>
+                  <mat-hint
+                    >{{ sessionLabel(sessionCount(room.name.trim()))
+                    }}{{ incomingLabel(room.key) }}</mat-hint
+                  >
                 }
               </mat-form-field>
               <mat-form-field>
@@ -107,11 +113,60 @@ interface RoomDraft {
                 Remove
               </button>
             </div>
-            @if (room.originalName && sessionCount(room.originalName) && removedWarning() === i) {
-              <p class="notice warn" role="alert">
-                {{ sessionLabel(sessionCount(room.originalName)) }} in this room keep it and show in
-                their own column until you move them. Click Remove again to remove it anyway.
-              </p>
+            @if (confirmingRemove() === room.key && room.originalName) {
+              <div class="notice warn confirm" role="alert">
+                <p>
+                  <strong>{{ room.originalName }}</strong> still has
+                  {{ sessionLabel(sessionCount(room.originalName)) }}:
+                </p>
+                <ul>
+                  @for (session of sessionsIn(room.originalName); track session.$key) {
+                    <li>
+                      <a [routerLink]="['../sessions', session.$key, 'edit']">{{
+                        session.title || 'Untitled session'
+                      }}</a>
+                      @if (session.startTime) {
+                        <span class="muted"> · {{ session.startTime }}</span>
+                      }
+                      @if (!session.published) {
+                        <span class="muted"> · unpublished</span>
+                      }
+                    </li>
+                  }
+                </ul>
+                @if (otherRooms(room.key).length) {
+                  <div class="move">
+                    <mat-form-field subscriptSizing="dynamic">
+                      <mat-label>Move them to</mat-label>
+                      <mat-select [(value)]="moveTarget">
+                        @for (other of otherRooms(room.key); track other.key) {
+                          <mat-option [value]="other.key">{{ other.name }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                    <button
+                      mat-flat-button
+                      type="button"
+                      [disabled]="!moveTarget"
+                      (click)="removeRoom(i, moveTarget)"
+                    >
+                      Move and remove room
+                    </button>
+                  </div>
+                }
+                <p class="muted">
+                  Or remove the room and leave them be: they'll keep "{{ room.originalName }}" as
+                  their room and still show in a column of their own on the schedule.
+                </p>
+                <div class="row-actions">
+                  <button mat-button class="danger" type="button" (click)="removeRoom(i, null)">
+                    Remove room, keep sessions there
+                  </button>
+                  <button mat-button type="button" (click)="confirmingRemove.set(null)">
+                    Cancel
+                  </button>
+                </div>
+              </div>
             }
           </li>
         }
@@ -132,7 +187,7 @@ interface RoomDraft {
         <button mat-flat-button type="submit" [disabled]="!!problem() || saving()">
           {{ saving() ? 'Saving…' : 'Save rooms' }}
         </button>
-        <button mat-button type="button" (click)="draft.set(loaded())">Discard changes</button>
+        <button mat-button type="button" (click)="discard()">Discard changes</button>
         <span
           class="status"
           [class.error]="problem() || failed()"
@@ -177,8 +232,27 @@ interface RoomDraft {
     .notice p {
       margin-bottom: 8px;
     }
+    .confirm ul {
+      margin: 0 0 12px;
+      padding-left: 20px;
+    }
+    .confirm .move {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
   `,
-  imports: [FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, TextFieldModule],
+  imports: [
+    FormsModule,
+    RouterLink,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    TextFieldModule,
+  ],
 })
 export class RoomsComponent {
   ds = inject(DataService);
@@ -186,7 +260,7 @@ export class RoomsComponent {
   /** The rooms as currently saved, as drafts. */
   loaded = computed<RoomDraft[]>(() =>
     this.ds.rooms().map((room) => ({
-      key: room.$key,
+      key: room.$key ?? push(this.ds.ref('rooms')).key,
       originalName: room.name,
       name: room.name,
       directions: room.directions ?? '',
@@ -199,8 +273,15 @@ export class RoomsComponent {
   saving = signal(false);
   status = signal('');
   failed = signal(false);
-  /** Index of a room in use that Remove was clicked on once. */
-  removedWarning = signal<number | null>(null);
+  /** Key of the room in use whose Remove is waiting on what to do with its sessions. */
+  confirmingRemove = signal<string | null>(null);
+  /** The room picked in that confirmation to move the sessions to. */
+  moveTarget: string | null = null;
+  /** Sessions to move when saving: the removed room's name, to the key of the room they go to. */
+  reassign = linkedSignal<RoomDraft[], Record<string, string>>({
+    source: () => this.loaded(),
+    computation: () => ({}),
+  });
 
   private sessionsPerRoom = computed(() => {
     const counts = new Map<string, number>();
@@ -218,9 +299,32 @@ export class RoomsComponent {
     return this.sessionsPerRoom().get(name) ?? 0;
   }
 
+  sessionsIn(name: string) {
+    return this.ds
+      .schedule()
+      .filter((session) => session.room === name)
+      .sort((a, b) => (a.startTime ?? '').localeCompare(b.startTime ?? ''));
+  }
+
+  /** Rooms the sessions of the room with this key could move to. */
+  otherRooms(key: string) {
+    return this.draft().filter((room) => room.key !== key && room.name.trim());
+  }
+
+  /** e.g. ", plus 2 moving from Lunch Room", for a room that removed rooms' sessions move to. */
+  incomingLabel(key: string) {
+    const from = Object.entries(this.reassign()).filter(([, to]) => to === key);
+    if (!from.length) return '';
+    const count = from.reduce((sum, [name]) => sum + this.sessionCount(name), 0);
+    return `, plus ${count} moving from ${from.map(([name]) => name).join(', ')}`;
+  }
+
   /** Rooms sessions use that aren't in the list (e.g. saved before rooms were managed here). */
   unlisted = computed(() => {
-    const listed = new Set(this.draft().flatMap((room) => [room.name.trim(), room.originalName]));
+    const listed = new Set([
+      ...this.draft().flatMap((room) => [room.name.trim(), room.originalName]),
+      ...Object.keys(this.reassign()),
+    ]);
     return [...this.sessionsPerRoom().keys()].filter((name) => !listed.has(name));
   });
 
@@ -248,20 +352,34 @@ export class RoomsComponent {
   }
 
   add(name = '') {
-    this.draft.update((rooms) => [...rooms, { name, directions: '' }]);
+    const key = push(this.ds.ref('rooms')).key;
+    this.draft.update((rooms) => [...rooms, { key, name, directions: '' }]);
   }
 
-  removeRoom(index: number) {
+  discard() {
+    this.draft.set(this.loaded());
+    this.reassign.set({});
+    this.confirmingRemove.set(null);
+  }
+
+  /**
+   * Removes a room. A room with sessions in it first asks what to do with them: pass `moveTo`
+   * (another room's key) to move them there on save, or null to leave them in the old room.
+   */
+  removeRoom(index: number, moveTo?: string | null) {
     const room = this.draft()[index];
-    if (
-      room.originalName &&
-      this.sessionCount(room.originalName) &&
-      this.removedWarning() !== index
-    ) {
-      this.removedWarning.set(index);
+    const name = room.originalName;
+    if (name && this.sessionCount(name) && moveTo === undefined) {
+      this.moveTarget = null;
+      this.confirmingRemove.set(room.key);
       return;
     }
-    this.removedWarning.set(null);
+    this.confirmingRemove.set(null);
+    if (name && moveTo) this.reassign.update((moves) => ({ ...moves, [name]: moveTo }));
+    // Sessions headed to this room now stay where they are.
+    this.reassign.update((moves) =>
+      Object.fromEntries(Object.entries(moves).filter(([, to]) => to !== room.key)),
+    );
     this.draft.update((rooms) => rooms.filter((_, i) => i !== index));
   }
 
@@ -271,10 +389,10 @@ export class RoomsComponent {
     if (this.problem()) return;
     const updates: Record<string, unknown> = {};
     const kept = new Set<string>();
-    /** Sessions moved by a rename, as they were, with the room they're going to. */
+    /** Sessions moved by a rename or a removal, as they were, with the room they're going to. */
     const moved: { session: Session; room: string }[] = [];
     this.draft().forEach((room, order) => {
-      const key = room.key ?? push(this.ds.ref('rooms')).key;
+      const key = room.key;
       kept.add(key);
       const name = room.name.trim();
       updates[`rooms/${key}`] = { name, directions: room.directions.trim() || null, order };
@@ -290,6 +408,19 @@ export class RoomsComponent {
     });
     for (const room of this.loaded()) {
       if (room.key && !kept.has(room.key)) updates[`rooms/${room.key}`] = null;
+    }
+    for (const [from, toKey] of Object.entries(this.reassign())) {
+      const to = this.draft()
+        .find((room) => room.key === toKey)
+        ?.name.trim();
+      if (!to) continue;
+      for (const session of this.ds.schedule()) {
+        if (session.room === from) {
+          updates[`schedule/${session.$key}/room`] = to;
+          updates[`schedule/${session.$key}/updatedAt`] = serverTimestamp();
+          moved.push({ session, room: to });
+        }
+      }
     }
 
     this.saving.set(true);
