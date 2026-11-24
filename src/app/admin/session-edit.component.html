@@ -52,14 +52,6 @@
               <mat-hint>Not in Rooms, so it gets its own column</mat-hint>
             }
           </mat-form-field>
-          <mat-autocomplete
-            #roomAuto="matAutocomplete"
-            (optionSelected)="session.room = $event.option.value"
-          >
-            @for (room of roomSuggestions(session.room); track room) {
-              <mat-option [value]="room">{{ room }}</mat-option>
-            }
-          </mat-autocomplete>
           @if (session.room?.trim() && !isKnownRoom(session.room) && !spans(session)) {
             <div class="notice warn room-choice">
               <p>
@@ -90,11 +82,6 @@
           <input matInput [(ngModel)]="session.track" [matAutocomplete]="trackAuto" />
           <mat-hint>The session's topic. "all" or "Keynote" spans every column</mat-hint>
         </mat-form-field>
-        <mat-autocomplete #trackAuto="matAutocomplete">
-          @for (track of tracks; track track) {
-            <mat-option [value]="track">{{ track }}</mat-option>
-          }
-        </mat-autocomplete>
         <mat-form-field>
           <mat-label>Start time</mat-label>
           <input
@@ -118,6 +105,20 @@
           <mat-hint>One block is an hour slot</mat-hint>
         </mat-form-field>
       </div>
+      <!-- Outside the grid: each <mat-autocomplete> is an empty element that would take a cell. -->
+      <mat-autocomplete
+        #roomAuto="matAutocomplete"
+        (optionSelected)="session.room = $event.option.value"
+      >
+        @for (room of roomSuggestions(session.room); track room) {
+          <mat-option [value]="room">{{ room }}</mat-option>
+        }
+      </mat-autocomplete>
+      <mat-autocomplete #trackAuto="matAutocomplete">
+        @for (track of tracks; track track) {
+          <mat-option [value]="track">{{ track }}</mat-option>
+        }
+      </mat-autocomplete>
     </section>
 
     <section class="card" aria-labelledby="speakers-heading">

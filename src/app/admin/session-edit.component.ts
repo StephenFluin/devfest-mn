@@ -80,9 +80,12 @@ export class SessionEditComponent implements UnsavedChangesForm {
   private original = computed<Session | undefined>(() => {
     const params = this.params();
     if (params.get('id') === 'new') {
-      // Made from a slot in the schedule grid, so meant to be public; invited speakers' sessions
-      // start unpublished instead (DataService.inviteSpeaker).
-      return { startTime: params.get('time'), room: params.get('room'), published: true };
+      // Every new session starts unpublished, so it can be filled in before the public sees it.
+      return {
+        startTime: params.get('time') ?? undefined,
+        room: params.get('room') ?? undefined,
+        published: false,
+      };
     }
     const item = this.ds.schedule().find((item) => item.$key === params.get('id'));
     return item && { ...item, adminNotes: this.adminNotes() };
@@ -127,7 +130,7 @@ export class SessionEditComponent implements UnsavedChangesForm {
   spans = spansSchedule;
 
   /** The listed rooms and other places sessions use, matching what's typed. */
-  roomSuggestions(typed = '') {
+  roomSuggestions(typed?: string | null) {
     const names = [
       ...this.ds.rooms().map((room) => room.name),
       ...this.ds
@@ -136,7 +139,7 @@ export class SessionEditComponent implements UnsavedChangesForm {
         .filter(Boolean)
         .sort(),
     ];
-    const query = typed.trim().toLowerCase();
+    const query = (typed ?? '').trim().toLowerCase();
     return [...new Set(names)].filter((name) => name.toLowerCase().includes(query));
   }
 
