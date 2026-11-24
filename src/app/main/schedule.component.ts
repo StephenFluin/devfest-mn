@@ -68,12 +68,19 @@ export class ScheduleComponent {
   data = computed(() => (this.showAgenda() ? this.populatedAgenda() : this.allSessions()));
 
   /**
-   * For admins: every unpublished session, including speakers' sessions that have no time or room yet
-   * and so aren't in the grid.
+   * For admins: every session the public schedule doesn't show. That's unpublished ones, and
+   * published ones the grid has nowhere to put because they have no time or no room yet.
    */
-  unpublished = computed(() =>
-    this.authService.isAdmin() ? this.ds.schedule().filter((session) => !session.published) : [],
+  offSchedule = computed(() =>
+    this.authService.isAdmin()
+      ? this.ds.schedule().filter((session) => !session.published || !this.placed(session))
+      : [],
   );
+
+  /** Whether the grid has a cell for the session: a time, and a room unless it spans every column. */
+  placed(session: Session) {
+    return !!session.startTime && (spansSchedule(session) || !!session.room);
+  }
 
   speakerNames(session: Session) {
     return Object.values(session.speakers ?? {})
