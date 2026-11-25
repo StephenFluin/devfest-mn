@@ -1,11 +1,23 @@
 @if (session(); as session) {
   <article class="session-page">
-    <a class="back" [routerLink]="ds.showSchedule() ? '/schedule' : '/speakers'">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
-      </svg>
-      {{ ds.showSchedule() ? 'Schedule' : 'Speakers' }}
-    </a>
+    <div class="top">
+      <a class="back" [routerLink]="ds.showSchedule() ? '/schedule' : '/speakers'">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
+        </svg>
+        {{ ds.showSchedule() ? 'Schedule' : 'Speakers' }}
+      </a>
+      @if (auth.isAdmin()) {
+        <a class="back edit" [routerLink]="['/', 'admin', 'sessions', session.$key, 'edit']">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"
+            />
+          </svg>
+          Edit session
+        </a>
+      }
+    </div>
 
     <header class="intro">
       @if (session.track && session.track !== 'all') {
@@ -13,14 +25,7 @@
           ><span class="chip session {{ session.track }}">{{ session.track }}</span></span
         >
       }
-      <h1>
-        {{ session.title }}
-        @if (auth.isAdmin()) {
-          <a class="edit" [routerLink]="['/', 'admin', 'sessions', session.$key, 'edit']">
-            <img src="/a/edit.svg" alt="Edit session" />
-          </a>
-        }
-      </h1>
+      <h1>{{ session.title }}</h1>
       @if (scheduled()) {
         <p class="when">
           {{ timeRange() }}
