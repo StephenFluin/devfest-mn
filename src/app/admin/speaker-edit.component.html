@@ -46,6 +46,7 @@
 
     <section class="card" aria-labelledby="links-heading">
       <h3 id="links-heading">Links</h3>
+      <p class="muted">All optional. Each shows on the speaker's page only if it's filled in.</p>
       <div class="field-grid">
         <mat-form-field>
           <mat-label>Website</mat-label>
@@ -60,6 +61,18 @@
           <span matTextPrefix>&#64;</span>
           <input matInput [(ngModel)]="speaker.twitter" />
         </mat-form-field>
+        <mat-form-field>
+          <mat-label>Bluesky</mat-label>
+          <input matInput [(ngModel)]="speaker.bluesky" />
+          <mat-hint>A handle, like you.bsky.social</mat-hint>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Mastodon</mat-label>
+          <input matInput [(ngModel)]="speaker.mastodon" />
+          <mat-hint>An address, like &#64;you&#64;mastodon.social</mat-hint>
+        </mat-form-field>
+      </div>
+      <div class="field-grid photo-url">
         <mat-form-field>
           <mat-label>Photo URL</mat-label>
           <input matInput type="url" [(ngModel)]="speaker.imageUrl" />

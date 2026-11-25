@@ -1,6 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { slugify } from '../shared/slug';
+import { speakerLinks } from '../shared/speaker-links';
 
 @Component({
   selector: 'app-speaker-container',
@@ -30,13 +31,14 @@ import { slugify } from '../shared/slug';
           @if (speaker().company) {
             <div class="speaker-company">{{ speaker().company }}</div>
           }
-          @if (speaker().twitter) {
-            <a
-              class="speaker-handle"
-              href="https://twitter.com/{{ speaker().twitter }}"
-              target="_blank"
-              >&#64;{{ speaker().twitter }}</a
-            >
+          @if (links().length) {
+            <ul class="speaker-links">
+              @for (link of links(); track link.url) {
+                <li>
+                  <a [href]="link.url" target="_blank" rel="me noopener">{{ link.label }}</a>
+                </li>
+              }
+            </ul>
           }
         </div>
         @if (showEdit()) {
@@ -64,5 +66,7 @@ export class SpeakerContainerComponent {
       .join('')
       .toUpperCase(),
   );
+  /** Only the links the speaker has supplied. */
+  readonly links = computed(() => speakerLinks(this.speaker()));
   slugify = slugify;
 }

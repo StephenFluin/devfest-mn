@@ -19,9 +19,20 @@ import { AuthService } from '../realtime-data/auth.service';
 import { SpeakerKitComponent } from './speaker-kit.component';
 import { SpeakerSessionsComponent } from './speaker-sessions.component';
 import { formChanged, UnsavedChangesForm, warnOnPageUnload } from '../shared/unsaved-changes';
+import { blueskyHandle, mastodonAddress } from '../shared/speaker-links';
 
 /** Fields a speaker may edit on their own profile. Publishing stays with the organizers. */
-const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'linkedin'] as const;
+const EDITABLE = [
+  'name',
+  'bio',
+  'company',
+  'twitter',
+  'imageUrl',
+  'website',
+  'linkedin',
+  'bluesky',
+  'mastodon',
+] as const;
 
 /**
  * The page behind a speaker's invite link. Anyone with the link can edit that one speaker: the
@@ -74,10 +85,6 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
               </label>
               <label>Company <input name="company" [(ngModel)]="speaker.company" /></label>
               <label
-                >Twitter handle
-                <input name="twitter" [(ngModel)]="speaker.twitter" placeholder="without the @"
-              /></label>
-              <label
                 >Photo (PNG, JPEG or WebP, under 5 MB)
                 <input
                   type="file"
@@ -94,13 +101,31 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
               <label
                 >Or a photo URL <input name="imageUrl" type="url" [(ngModel)]="speaker.imageUrl"
               /></label>
-              <label
-                >Website <input name="website" type="url" [(ngModel)]="speaker.website"
-              /></label>
-              <label
-                >LinkedIn profile URL
-                <input name="linkedin" type="url" [(ngModel)]="speaker.linkedin"
-              /></label>
+              <fieldset class="links">
+                <legend>Where people can find you (all optional)</legend>
+                <label
+                  >Website <input name="website" type="url" [(ngModel)]="speaker.website"
+                /></label>
+                <label
+                  >LinkedIn profile URL
+                  <input name="linkedin" type="url" [(ngModel)]="speaker.linkedin"
+                /></label>
+                <label
+                  >Twitter / X handle
+                  <input name="twitter" [(ngModel)]="speaker.twitter" placeholder="without the @"
+                /></label>
+                <label
+                  >Bluesky handle
+                  <input name="bluesky" [(ngModel)]="speaker.bluesky" placeholder="you.bsky.social"
+                /></label>
+                <label
+                  >Mastodon address
+                  <input
+                    name="mastodon"
+                    [(ngModel)]="speaker.mastodon"
+                    placeholder="@you@mastodon.social"
+                /></label>
+              </fieldset>
               <button type="submit" [disabled]="saving()">Save profile</button>
               @if (status(); as status) {
                 <span>{{ status }}</span>
@@ -138,6 +163,16 @@ const EDITABLE = ['name', 'bio', 'company', 'twitter', 'imageUrl', 'website', 'l
       box-sizing: border-box;
       font: inherit;
       padding: 6px;
+    }
+    .links {
+      margin: 24px 0;
+      padding: 0 16px;
+      border: 1px solid var(--color-border-soft);
+      border-radius: 8px;
+    }
+    .links legend {
+      padding: 0 6px;
+      font-weight: bold;
     }
     .preview {
       max-width: 160px;
@@ -264,6 +299,8 @@ export class SpeakerInviteEditComponent implements UnsavedChangesForm {
         changes[field] = speaker[field]?.trim() || undefined;
       }
       changes.twitter = changes.twitter?.replace(/^@/, '') || undefined;
+      changes.bluesky = blueskyHandle(changes.bluesky);
+      changes.mastodon = mastodonAddress(changes.mastodon);
       await this.ds.save('speakers', changes);
       this.status.set('Saved. Thanks!');
     } catch (err) {

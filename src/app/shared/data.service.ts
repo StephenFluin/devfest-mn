@@ -66,6 +66,10 @@ export interface Speaker {
   website?: string;
   /** Full LinkedIn profile URL. */
   linkedin?: string;
+  /** Bluesky handle, e.g. "you.bsky.social" (see shared/speaker-links). */
+  bluesky?: string;
+  /** Mastodon address, e.g. "@you@mastodon.social". */
+  mastodon?: string;
   /** Eventbrite promo code for the speaker's audience, pre-applied by their /s/ link. */
   promoCode?: string;
   /** Server time (ms) of the last save in the admin. */
