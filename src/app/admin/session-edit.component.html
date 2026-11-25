@@ -129,12 +129,23 @@
             @for (speaker of speakers; track speaker.key) {
               @let profile = speaker.value | getSpeaker;
               <li class="chip">
-                @if (profile?.imageUrl) {
-                  <img [src]="profile.imageUrl" alt="" />
+                @if (profile) {
+                  <a
+                    class="speaker-link"
+                    [routerLink]="['/admin/speakers', speaker.value, 'edit']"
+                    [attr.aria-label]="'Edit speaker ' + (profile.name || 'Unnamed speaker')"
+                  >
+                    @if (profile.imageUrl) {
+                      <img [src]="profile.imageUrl" alt="" />
+                    } @else {
+                      <span class="avatar" aria-hidden="true">{{ profile.name?.[0] ?? '?' }}</span>
+                    }
+                    {{ profile.name || 'Unnamed speaker' }}
+                  </a>
                 } @else {
-                  <span class="avatar" aria-hidden="true">{{ profile?.name?.[0] ?? '?' }}</span>
+                  <span class="avatar" aria-hidden="true">?</span>
+                  Unknown speaker
                 }
-                {{ profile?.name ?? 'Unknown speaker' }}
                 <button
                   type="button"
                   class="remove"

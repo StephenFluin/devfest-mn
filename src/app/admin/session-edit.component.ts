@@ -36,6 +36,17 @@ import { SESSION_PLANNING_PATH } from './session-planning.component';
     .chips {
       margin-bottom: 16px;
     }
+    /* The speaker's picture and name, linking to their edit page. */
+    .speaker-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: inherit;
+      text-decoration: none;
+    }
+    .speaker-link:hover {
+      text-decoration: underline;
+    }
   `,
   imports: [
     MatFormFieldModule,
