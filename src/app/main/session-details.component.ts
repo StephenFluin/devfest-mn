@@ -22,6 +22,13 @@ import { sessionEnd } from '../shared/event-data';
       margin: 0 auto;
       text-align: left;
     }
+    /* Back on the left; for admins, Edit session on the right. */
+    .top {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px 16px;
+    }
     .back {
       display: inline-flex;
       align-items: center;
@@ -53,10 +60,6 @@ import { sessionEnd } from '../shared/event-data';
       line-height: 1.2;
       margin: 12px 0 8px;
       text-align: left;
-    }
-    .edit img {
-      width: 20px;
-      vertical-align: middle;
     }
     .when {
       margin: 0;
