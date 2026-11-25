@@ -170,6 +170,19 @@ export class SpeakersComponent {
     }
   }
 
+  copiedSent = signal(false);
+
+  /** Copies the edit link of the speaker just invited. */
+  async copySent(link: string) {
+    try {
+      await navigator.clipboard.writeText(link);
+      this.copiedSent.set(true);
+      setTimeout(() => this.copiedSent.set(false), 2000);
+    } catch {
+      prompt('Copy this link:', link);
+    }
+  }
+
   showInvite = signal(false);
   inviteName = signal('');
   inviteEmail = signal('');

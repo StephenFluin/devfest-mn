@@ -69,9 +69,15 @@
       @if (speaker.$key && speaker.name) {
         <p class="share">
           <span class="muted">Share link</span>
-          <a [href]="'/s/' + slugify(speaker.name)"
-            >{{ environment.siteUrl }}/s/{{ slugify(speaker.name) }}</a
-          >
+          <span class="link-row">
+            <a [href]="'/s/' + slugify(speaker.name)"
+              >{{ environment.siteUrl }}/s/{{ slugify(speaker.name) }}</a
+            >
+            <app-copy-button
+              [text]="environment.siteUrl + '/s/' + slugify(speaker.name)"
+              label="Copy share link"
+            />
+          </span>
           <span class="muted">Goes to their page, credited to them in the UTM funnel.</span>
         </p>
       }
@@ -119,7 +125,13 @@
                 (emailed {{ invite.emailedAt | date: 'short' }})
               }
             </span>
-            <a [href]="inviteLink(invite.$key)">{{ inviteLink(invite.$key) }}</a>
+            <span class="link-row">
+              <a [href]="inviteLink(invite.$key)">{{ inviteLink(invite.$key) }}</a>
+              <app-copy-button
+                [text]="inviteLink(invite.$key)"
+                [label]="'Copy edit link for ' + invite.name"
+              />
+            </span>
             <span>
               <button mat-button type="button" (click)="resendInvite(invite.$key)">
                 {{ invite.emailedAt ? 'Email it again' : 'Email invite' }}
