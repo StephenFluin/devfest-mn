@@ -19,6 +19,7 @@ import { inviteLink, sendInviteEmail, sendSpeakerKit } from '../speaker-invite/i
 import { AuthService } from '../realtime-data/auth.service';
 import { SpeakerKitComponent } from '../speaker-invite/speaker-kit.component';
 import { formChanged, UnsavedChangesForm, warnOnPageUnload } from '../shared/unsaved-changes';
+import { blueskyHandle, mastodonAddress } from '../shared/speaker-links';
 
 @Component({
   templateUrl: './speaker-edit.component.html',
@@ -50,6 +51,10 @@ import { formChanged, UnsavedChangesForm, warnOnPageUnload } from '../shared/uns
       border-radius: 50%;
       object-fit: cover;
       font: var(--mat-sys-display-medium);
+    }
+    /* Clear of the hints under the links above it. */
+    .photo-url {
+      margin-top: 24px;
     }
     .share {
       display: flex;
@@ -192,6 +197,8 @@ export class SpeakerEditComponent implements UnsavedChangesForm {
   async save(speaker: Speaker, event: Event) {
     event.preventDefault();
     this.finished = true;
+    speaker.bluesky = blueskyHandle(speaker.bluesky);
+    speaker.mastodon = mastodonAddress(speaker.mastodon);
     const saved = this.ds.save('speakers', speaker);
     this.router.navigate(['/', 'speakers']);
     if (!speaker.promoCode && speaker.name?.trim()) {

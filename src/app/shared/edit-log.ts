@@ -140,6 +140,8 @@ export const EDIT_LOG_FIELDS: Record<string, string> = {
   imageUrl: 'Photo',
   website: 'Website',
   linkedin: 'LinkedIn',
+  bluesky: 'Bluesky',
+  mastodon: 'Mastodon',
   promoCode: 'Promo code',
   published: 'Published',
   title: 'Title',

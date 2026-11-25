@@ -9,6 +9,7 @@ import { OurMeta } from '../our-meta.service';
 import { AuthService } from '../realtime-data/auth.service';
 import { DataService, Session, Speaker } from '../shared/data.service';
 import { slugify, summarize } from '../shared/slug';
+import { speakerLinks } from '../shared/speaker-links';
 import { conferenceEvent, sessionEvent } from '../shared/event-data';
 
 /** An absolute URL for an image that may be stored as a site-relative path. */
@@ -35,14 +36,8 @@ export class SpeakerFullComponent {
   talks = computed(() =>
     this.ds.sessionsFor(this.speaker()?.$key, { unpublished: this.auth.isAdmin() }),
   );
-  links = computed(() => {
-    const speaker = this.speaker();
-    return [
-      speaker?.twitter && { label: `@${speaker.twitter}`, url: `https://x.com/${speaker.twitter}` },
-      speaker?.linkedin && { label: 'LinkedIn', url: speaker.linkedin },
-      speaker?.website && { label: 'Website', url: speaker.website },
-    ].filter(Boolean) as { label: string; url: string }[];
-  });
+  /** Only the links the speaker has supplied. */
+  links = computed(() => speakerLinks(this.speaker()));
 
   constructor() {
     const meta = inject(OurMeta);

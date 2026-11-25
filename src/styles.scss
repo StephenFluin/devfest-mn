@@ -798,12 +798,27 @@ button.button.warn {
   color: var(--color-heading);
 }
 
-.speaker-card .speaker-company,
-.speaker-card .speaker-handle {
+.speaker-card .speaker-company {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--color-text-muted);
+}
+
+/* The speaker's links, for the ones they've supplied; they wrap when there are several. */
+.speaker-card .speaker-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.speaker-card .speaker-links a {
+  color: var(--color-text-muted);
+}
+.speaker-card .speaker-links a:hover {
+  color: var(--color-heading);
 }
 
 /* Admin-only extras on the card: an unpublished badge and an edit link pinned to the corner. */
