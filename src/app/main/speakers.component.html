@@ -62,6 +62,9 @@
           Emailed {{ sent.name }} their edit link:
         }
         <a [href]="sent.link">{{ sent.link }}</a>
+        <button type="button" class="text-button" (click)="copySent(sent.link)">
+          {{ copiedSent() ? 'Copied' : 'Copy link' }}
+        </button>
       </p>
     }
   }

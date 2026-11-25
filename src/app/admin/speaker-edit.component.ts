@@ -19,6 +19,7 @@ import { inviteLink, sendInviteEmail, sendSpeakerKit } from '../speaker-invite/i
 import { AuthService } from '../realtime-data/auth.service';
 import { SpeakerKitComponent } from '../speaker-invite/speaker-kit.component';
 import { formChanged, UnsavedChangesForm, warnOnPageUnload } from '../shared/unsaved-changes';
+import { CopyButtonComponent } from './copy-button.component';
 
 @Component({
   templateUrl: './speaker-edit.component.html',
@@ -57,8 +58,19 @@ import { formChanged, UnsavedChangesForm, warnOnPageUnload } from '../shared/uns
       gap: 2px;
       margin: 8px 0 0;
     }
+    /* A link with its Copy button beside it. */
+    .link-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0 8px;
+    }
+    .link-row a {
+      overflow-wrap: anywhere;
+    }
   `,
   imports: [
+    CopyButtonComponent,
     RouterLink,
     TextFieldModule,
     MatFormFieldModule,
